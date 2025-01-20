@@ -1,6 +1,6 @@
 package com.game.model.obj;
 
-
+import com.game.model.Light;
 import com.game.model.Model;
 import com.game.model.texture.ModelTexture;
 import com.game.model.texture.ObjTexture;
@@ -34,6 +34,7 @@ public class ObjModel implements Model {
     private float[] triangleVertexNormals;
 
     private ModelTexture modelTexture;
+    private Light light;
 
     public ObjModel(String objPath) {
         this.objPath = objPath;
@@ -43,6 +44,7 @@ public class ObjModel implements Model {
     public ObjModel(ObjModelProperties properties) {
         this.objPath = properties.getObjPath();
         this.texturePath = properties.getTexturePath();
+        this.light = properties.getLight();
     }
 
     public static void main(String[] args) {
@@ -229,6 +231,11 @@ public class ObjModel implements Model {
             parseObj();
         }
         return BufferUtils.createFloatBuffer4f(triangleVertexNormals);
+    }
+
+    @Override
+    public Light getLight() {
+        return light;
     }
 
     private static class Vertex {

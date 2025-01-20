@@ -78,8 +78,6 @@ public class WorldScreen extends AbstractWindowEventListener {
             renderObjects.setProjectionMatrix(projectionMatrix);
         }
 
-        // TODO
-        renderObjects.setLightPosition(new float[]{-5f, 3f, 5f});
         var cameraState = camera.getCameraState();
         renderObjects.setCameraPosition(new float[]{cameraState.eyeX, cameraState.eyeY, cameraState.eyeZ});
 

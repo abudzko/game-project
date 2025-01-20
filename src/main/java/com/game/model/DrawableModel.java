@@ -9,7 +9,6 @@ public class DrawableModel {
 
     private final FloatBuffer vertices;
     private final GameUnit gameUnit;
-
     private volatile Matrix4f worldMatrix;
 
     public DrawableModel(
@@ -43,6 +42,14 @@ public class DrawableModel {
 
     public int getTextureId() {
         return gameUnit.getModel().modelTexture().textureId();
+    }
+
+    public boolean isLight() {
+        return gameUnit.getModel().isLight();
+    }
+
+    public Light getLight() {
+        return gameUnit.getModel().getLight();
     }
 
     public Matrix4f getWorldMatrix() {

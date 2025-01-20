@@ -5,8 +5,6 @@ uniform mat4 cameraViewMatrix;
 
 attribute vec3 positionAttribute;
 attribute vec2 textureAttribute;
-// Not used
-attribute vec2 normalAttribute;
 
 out vec2 fragmentTextureAttribute;
 

@@ -7,6 +7,7 @@ import com.game.utils.BufferUtils;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
 
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.lwjgl.opengl.GL30.GL_ARRAY_BUFFER;
@@ -48,9 +49,13 @@ public class LightingProgram {
     protected static final String POSITION_ATTRIBUTE_NAME = "positionAttribute";
     protected static final String NORMAL_ATTRIBUTE_NAME = "normalAttribute";
     protected static final String TEXTURE_ATTRIBUTE_NAME = "textureAttribute";
-    protected static final String LIGHT_POSITION_NAME = "lightPosition";
     protected static final String CAMERA_POSITION_NAME = "cameraPosition";
     protected static final String SHADER_PATH = "src/main/resources/shaders/light/";
+
+    protected static final String LIGHT_COLOR_NAME = "lightColor";
+    protected static final String LIGHT_POSITION_NAME = "lightPosition";
+    protected static final String LIGHT_COUNT_NAME = "lightCount";
+    protected static final String IS_LIGHT_NAME = "isLight";
     private final Shader vertexShader;
     private final Shader fragmentShader;
     private final ConcurrentHashMap<String, Integer> uniformCache = new ConcurrentHashMap<>();
@@ -83,8 +88,15 @@ public class LightingProgram {
 
         enable();
 
+        var lights = new ArrayList<DrawableModel>();
         for (var drawableModel : renderObjects.getModels()) {
             setUniformMatrix4f(WORLD_MATRIX_NAME, drawableModel.getWorldMatrix());
+            if (drawableModel.isLight()) {
+                setUniformInt(IS_LIGHT_NAME, 1);
+                lights.add(drawableModel);
+            } else {
+                setUniformInt(IS_LIGHT_NAME, 0);
+            }
             // Bind to the VAO
             glBindVertexArray(drawableModel.getVaoId());
 
@@ -121,9 +133,24 @@ public class LightingProgram {
         if (renderObjects.getProjectionMatrix() != null) {
             setUniformMatrix4f(PROJECTION_MATRIX_NAME, renderObjects.getProjectionMatrix());
         }
-        if (renderObjects.getLightPosition() != null) {
-            setUniformVec3(LIGHT_POSITION_NAME, renderObjects.getLightPosition());
+
+        if (!lights.isEmpty()) {
+            for (int i = 0; i < lights.size(); i++) {
+                var light = lights.get(i).getLight();
+                var lightPosition = light.getLightPosition();
+                setUniformVec3(
+                        LIGHT_POSITION_NAME + "[" + i + "]",
+                        new float[]{lightPosition.x, lightPosition.y, lightPosition.z}
+                );
+                var lightColor = light.getLightColor();
+                setUniformVec3(
+                        LIGHT_COLOR_NAME + "[" + i + "]",
+                        new float[]{lightColor.x, lightColor.y, lightColor.z}
+                );
+            }
+            setUniformInt(LIGHT_COUNT_NAME, lights.size());
         }
+
         if (renderObjects.getCameraPosition() != null) {
             setUniformVec3(CAMERA_POSITION_NAME, renderObjects.getCameraPosition());
         }
@@ -207,6 +234,13 @@ public class LightingProgram {
                 vector3f[0],
                 vector3f[1],
                 vector3f[2]
+        );
+    }
+
+    private void setUniformInt(String name, int value) {
+        GL30.glUniform1i(
+                getUniformIdBy(name),
+                value
         );
     }
 

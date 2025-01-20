@@ -44,8 +44,6 @@ public class TestEngine implements Runnable, KeyEventListener, MouseButtonEventL
         window.registerWindowEventListener(this);
         isRunning = true;
         boolean set = false;
-        //TODO why loop?
-//        while (isRunning) {
         if (!set) {
             set = true;
             var mainUnit = gameUnitDao.getMainUnit();
@@ -53,9 +51,7 @@ public class TestEngine implements Runnable, KeyEventListener, MouseButtonEventL
             window.addGameUnit(mainUnit);
             animate(mainUnit);
             gameUnitDao.getUnits().forEach(window::addGameUnit);
-            var sun = gameUnitDao.createSunGameUnit();
-            window.addGameUnit(sun);
-//            addRandomUnits();
+            addSun();
         }
         try {
             Thread.sleep(100);
@@ -63,7 +59,58 @@ public class TestEngine implements Runnable, KeyEventListener, MouseButtonEventL
             Thread.currentThread().interrupt();
             e.printStackTrace();
         }
-//        }
+    }
+
+    private void addSun() {
+        var sun = gameUnitDao.createSunGameUnit();
+        window.addGameUnit(sun);
+        animateSun(sun);
+    }
+
+    private void animate(GameUnit gameUnit) {
+        Thread thread = new Thread(() -> {
+            while (isRunning) {
+                try {
+                    gameUnit.getRotation().y = rotation(gameUnit.getRotation().y);
+                    window.updateGameUnit(gameUnit);
+                    Thread.sleep(100);
+                } catch (Exception e) {
+                    LogUtil.logError("animate failed", e);
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void animateSun(GameUnit sun) {
+        Thread thread = new Thread(() -> {
+            var direction = 1;
+            var b = 7;
+            var angleDegree = 0.0;
+            var radius = 5f;
+            while (isRunning) {
+                try {
+                    var x = sun.getPosition().x;
+                    var z = sun.getPosition().z;
+                    if ((x > b || x < -b) && (z > b || z < -b)) {
+                        direction = -direction;
+                    }
+                    var deltaX = (float) (radius * Math.cos(Math.toRadians(angleDegree)));
+                    var deltaZ = (float) (radius * Math.sin(Math.toRadians(angleDegree)));
+                    sun.getPosition().x = deltaX;
+                    sun.getPosition().z = deltaZ;
+                    window.updateGameUnit(sun);
+                    Thread.sleep(10);
+                    radius += (moveStep * 0.5f * direction);
+                    angleDegree += 0.5;
+                } catch (Exception e) {
+                    LogUtil.logError("animate failed", e);
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
     private void addRandomUnits() {
@@ -108,22 +155,6 @@ public class TestEngine implements Runnable, KeyEventListener, MouseButtonEventL
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
-                }
-            }
-        });
-        thread.setDaemon(true);
-        thread.start();
-    }
-
-    private void animate(GameUnit gameUnit) {
-        Thread thread = new Thread(() -> {
-            while (isRunning) {
-                try {
-                    gameUnit.getRotation().y = rotation(gameUnit.getRotation().y);
-                    window.updateGameUnit(gameUnit);
-                    Thread.sleep(100);
-                } catch (Exception e) {
-                    LogUtil.logError("animate failed", e);
                 }
             }
         });

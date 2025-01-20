@@ -63,7 +63,6 @@ public class Window extends AbstractWindowEventListener {
             public void run() {
                 try {
                     init();
-                    show();
                     createWorldScreen();
                     countDownLaunch.countDown();
                     while (!shouldBeClosed()) {
@@ -81,6 +80,7 @@ public class Window extends AbstractWindowEventListener {
         windowThread.start();
         // Wait while window will be initialized
         countDownLaunch.await();
+        show();
     }
 
     private void createWorldScreen() {
@@ -135,7 +135,6 @@ public class Window extends AbstractWindowEventListener {
     }
 
     // TODO ??
-
     public Vector3f getWorldCoordinates(MouseButtonEvent mouseButtonEvent) {
         return worldScreen.getWorldCoordinates(mouseButtonEvent);
     }

@@ -1,7 +1,7 @@
 package com.game.window.camera;
 
 public class Camera {
-    private CameraState cameraState;
+    private final CameraState cameraState;
 
     public Camera(CameraState cameraState) {
         this.cameraState = cameraState;

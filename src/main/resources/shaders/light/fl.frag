@@ -5,30 +5,42 @@ in vec3 fragmentPositionAttribute;
 in vec3 fragmentNormalAttribure;
 
 uniform sampler2D textureSampler;
-uniform vec3 lightPosition;
+uniform vec3 lightPosition[3];
+uniform vec3 lightColor[3];
+uniform int lightCount;
+uniform int isLight;
 uniform vec3 cameraPosition;
 
-// Phong Shading
-void main() {
-    vec3 lightColor = vec3(1.0, 1.0, 1.0);
-    float ambientStrength = 0.1;
-    vec3 ambient = ambientStrength * lightColor;
+vec3 phongShadingLighting(vec4 textureColor) {
+    vec3 result = vec3(0.0);
+    for (int i = 0; i < lightCount; i++) {
 
-    vec3 norm = normalize(fragmentNormalAttribure);
-    if (length(norm) == 0.0) {
-        norm = vec3(0.0, 0.0, 1.0);
+        float ambientStrength = 0.2;
+        vec3 color = lightColor[i];
+        vec3 ambient = ambientStrength * color;
+
+        vec3 norm = normalize(fragmentNormalAttribure);
+        vec3 lightDir = normalize(lightPosition[i] - fragmentPositionAttribute);
+        float diff = max(dot(norm, lightDir), 0.0);
+        vec3 diffuse = diff * color;
+
+        float specularStrength = 0.1;
+        vec3 viewDir = normalize(cameraPosition - fragmentPositionAttribute);
+        vec3 reflectDir = reflect(-lightDir, norm);
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 16);
+        vec3 specular = specularStrength * spec * color;
+        result += (ambient + diffuse + specular);
     }
-    vec3 lightDir = normalize(lightPosition - fragmentPositionAttribute);
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
+    return result * textureColor.rgb;
+}
 
-    float specularStrength = 0.8;
-    vec3 viewDir = normalize(cameraPosition - fragmentPositionAttribute);
-    vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64);
-    vec3 specular = specularStrength * spec * lightColor;
-
+void main() {
     vec4 textureColor = texture(textureSampler, fragmentTextureAttribute);
-    vec3 result = (ambient + diffuse + specular) * textureColor.rgb;
-    gl_FragColor = vec4(result, textureColor.a);
+    if (isLight == 1) {
+        gl_FragColor = textureColor;
+    } else {
+        vec4 textureColor = texture(textureSampler, fragmentTextureAttribute);
+        vec3 result = phongShadingLighting(textureColor);
+        gl_FragColor = vec4(result, textureColor.a);
+    }
 }
