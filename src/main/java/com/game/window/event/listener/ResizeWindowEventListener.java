@@ -1,6 +1,6 @@
-package com.game.event.window.listener;
+package com.game.window.event.listener;
 
-import com.game.event.window.resize.ResizeWindowEvent;
+import com.game.window.event.resize.ResizeWindowEvent;
 
 public interface ResizeWindowEventListener extends EventListener {
     default void event(ResizeWindowEvent resizeWindowEvent) {

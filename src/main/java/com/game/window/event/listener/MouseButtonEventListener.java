@@ -1,6 +1,6 @@
-package com.game.event.window.listener;
+package com.game.window.event.listener;
 
-import com.game.event.window.mouse.MouseButtonEvent;
+import com.game.window.event.mouse.MouseButtonEvent;
 
 public interface MouseButtonEventListener extends EventListener {
     default void event(MouseButtonEvent mouseButtonEvent) {

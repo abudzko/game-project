@@ -1,6 +1,6 @@
-package com.game.event.window.listener;
+package com.game.window.event.listener;
 
-import com.game.event.window.scroll.ScrollEvent;
+import com.game.window.event.scroll.ScrollEvent;
 
 public interface ScrollEventListener extends EventListener {
     default void event(ScrollEvent scrollEvent) {

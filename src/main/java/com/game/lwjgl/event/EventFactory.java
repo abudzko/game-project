@@ -1,14 +1,14 @@
 package com.game.lwjgl.event;
 
-import com.game.event.window.cursor.CursorPositionEvent;
-import com.game.event.window.key.KeyActionType;
-import com.game.event.window.key.KeyEvent;
-import com.game.event.window.key.Keys;
-import com.game.event.window.mouse.MouseButton;
-import com.game.event.window.mouse.MouseButtonAction;
-import com.game.event.window.mouse.MouseButtonEvent;
-import com.game.event.window.resize.ResizeWindowEvent;
-import com.game.event.window.scroll.ScrollEvent;
+import com.game.window.event.cursor.CursorPositionEvent;
+import com.game.window.event.key.KeyActionType;
+import com.game.window.event.key.KeyEvent;
+import com.game.window.event.key.Keys;
+import com.game.window.event.mouse.MouseButton;
+import com.game.window.event.mouse.MouseButtonAction;
+import com.game.window.event.mouse.MouseButtonEvent;
+import com.game.window.event.resize.ResizeWindowEvent;
+import com.game.window.event.scroll.ScrollEvent;
 import com.game.utils.log.LogUtil;
 import org.lwjgl.glfw.GLFW;
 

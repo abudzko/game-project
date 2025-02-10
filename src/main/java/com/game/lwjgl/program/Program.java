@@ -2,13 +2,14 @@ package com.game.lwjgl.program;
 
 import com.game.lwjgl.program.shader.Shader;
 import com.game.model.DrawableModel;
-import com.game.model.GameUnit;
+import com.game.model.GraphicUnit;
 import com.game.utils.BufferUtils;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.lwjgl.opengl.GL11.glDrawElements;
 import static org.lwjgl.opengl.GL30.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL30.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL30.GL_DEPTH_BUFFER_BIT;
@@ -92,7 +93,7 @@ public class Program {
 
             // Draw the vertices
             glEnableVertexAttribArray(getPositionAttribute());
-            int verticesCount = drawableModel.getVertices().limit() / POINT_PER_VERTEX_3D;
+            int verticesCount = drawableModel.getVerticesCount();
             // TODO use indexes
             glDrawArrays(GL_TRIANGLES, 0, verticesCount);
 
@@ -119,18 +120,19 @@ public class Program {
         disable();
     }
 
-    public DrawableModel createDrawableModel(GameUnit gameUnit) {
+    public DrawableModel createDrawableModel(GraphicUnit graphicUnit) {
+        var model = graphicUnit.getModel();
         // Load in GPU Memory our model
         // Create VAO per model
         int vaoId = glGenVertexArrays();
         glBindVertexArray(vaoId);
 
         // Vertices
-        var vertices = gameUnit.getModel().triangleVertices();
+        var vertices = model.triangleVertices();
         int verticesVboId = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, verticesVboId);
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(getPositionAttribute(), POINT_PER_VERTEX_3D, GL_FLOAT, false, 0, 0);
+        glVertexAttribPointer(getPositionAttribute(), model.getPointPerVertex3d(), GL_FLOAT, false, 0, 0);
 
         // Unbind the VBO
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -138,7 +140,7 @@ public class Program {
 
         // Textures
         int textureVboId = glGenBuffers();
-        var textureVertices = BufferUtils.createFloatBuffer4f(gameUnit.getModel().modelTexture().textureVertices());
+        var textureVertices = BufferUtils.createFloatBuffer4f(model.modelTexture().textureVertices());
         glBindBuffer(GL_ARRAY_BUFFER, textureVboId);
         glBufferData(GL_ARRAY_BUFFER, textureVertices, GL_STATIC_DRAW);
         glVertexAttribPointer(getTextureAttribute(), 2, GL_FLOAT, false, 0, 0);
@@ -148,12 +150,12 @@ public class Program {
 
         // TODO Normals - Not used
         // Vertex normals
-        var vertexNormals = gameUnit.getModel().triangleVertexNormals();
+        var vertexNormals = model.triangleVertexNormals();
         if (vertexNormals != null) {
             int normalsVboId = glGenBuffers();
             glBindBuffer(GL_ARRAY_BUFFER, normalsVboId);
             glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
-            glVertexAttribPointer(getNormalAttribute(), POINT_PER_VERTEX_3D, GL_FLOAT, false, 0, 0);
+            glVertexAttribPointer(getNormalAttribute(), model.getVerticesCount(), GL_FLOAT, false, 0, 0);
             // Unbind the VBO
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             BufferUtils.memFree(vertexNormals);
@@ -161,7 +163,7 @@ public class Program {
 
         // Unbind the VAO
         glBindVertexArray(0);
-        return new DrawableModel(gameUnit, vaoId, vertices);
+        return new DrawableModel(vaoId, graphicUnit);
     }
 
     private int getPositionAttribute() {

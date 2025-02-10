@@ -1,6 +1,6 @@
-package com.game.event.window.listener;
+package com.game.window.event.listener;
 
-import com.game.event.window.key.KeyEvent;
+import com.game.window.event.key.KeyEvent;
 
 public interface KeyEventListener extends EventListener {
     default void event(KeyEvent keyEvent) {

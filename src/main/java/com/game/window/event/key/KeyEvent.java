@@ -1,4 +1,4 @@
-package com.game.event.window.key;
+package com.game.window.event.key;
 
 public class KeyEvent {
     private final Keys key;

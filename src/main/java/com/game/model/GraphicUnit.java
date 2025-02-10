@@ -1,7 +1,6 @@
 package com.game.model;
 
-import com.game.event.window.key.KeyEvent;
-import com.game.event.window.listener.KeyEventListener;
+import com.game.model.obj.Model;
 import org.joml.Vector3f;
 
 /**
@@ -10,18 +9,18 @@ import org.joml.Vector3f;
  * - rotation
  * - scale
  */
-public class GameUnit {
+public class GraphicUnit {
     private final long id;
     private final Vector3f position;
     /**
-     * An angles measured in degrees
+     * Angles are measured in degrees
      */
     private final Vector3f rotation;
     private final float scale;
 
     private final Model model;
 
-    public GameUnit(
+    public GraphicUnit(
             long id,
             Vector3f position,
             Vector3f rotation,

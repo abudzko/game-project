@@ -1,12 +1,12 @@
 package com.game.window;
 
-import com.game.event.window.listener.AbstractWindowEventListener;
-import com.game.event.window.mouse.MouseButtonEvent;
-import com.game.event.window.resize.ResizeWindowEvent;
 import com.game.lwjgl.annotation.LwjglMainThread;
-import com.game.lwjgl.event.WindowEvents;
-import com.game.model.GameUnit;
+import com.game.lwjgl.event.LwjglEventManager;
+import com.game.model.GraphicUnit;
 import com.game.utils.log.LogUtil;
+import com.game.window.event.listener.AbstractWindowEventListener;
+import com.game.window.event.mouse.MouseButtonEvent;
+import com.game.window.event.resize.ResizeWindowEvent;
 import com.game.window.screen.world.WorldScreen;
 import com.game.window.screen.world.WorldScreenState;
 import org.joml.Vector3f;
@@ -25,12 +25,18 @@ public class Window extends AbstractWindowEventListener {
     private WorldScreen worldScreen;
     private boolean windowSizeChanged;
 
-    public Window() {
-        this.windowState = new WindowState();
-        this.windowId = createWindow();
+    public Window(WindowState windowState) {
+        this.windowState = windowState;
+        this.windowId = initWindow();
+        configureEventManager();
     }
 
-    private long createWindow() {
+    public static Window createWindow() {
+        var windowState = new WindowState();
+        return new Window(windowState);
+    }
+
+    private long initWindow() {
         var monitorId = GLFW.glfwGetPrimaryMonitor();
         var videoMode = GLFW.glfwGetVideoMode(monitorId);
         monitorId = NULL;
@@ -49,22 +55,24 @@ public class Window extends AbstractWindowEventListener {
             throw new IllegalStateException("Failed to create the GLFW window");
         }
         LogUtil.log("Window id = " + id);
-
-        windowEvents = new WindowEvents(id);
-        windowEvents.configureEventCallbacks();
-        registerWindowEventListener(this);
         return id;
     }
 
+    private void configureEventManager() {
+        eventManager = new LwjglEventManager(getWindowId());
+        getEventManager().configureEventCallbacks();
+        addRootEventListener(this);
+    }
+
     public void start() throws InterruptedException {
-        var countDownLaunch = new CountDownLatch(1);
+        var countDownLatch = new CountDownLatch(1);
         var windowRunnable = new Runnable() {
             @Override
             public void run() {
                 try {
                     init();
                     createWorldScreen();
-                    countDownLaunch.countDown();
+                    countDownLatch.countDown();
                     while (!shouldBeClosed()) {
                         render();
                     }
@@ -79,7 +87,7 @@ public class Window extends AbstractWindowEventListener {
         var windowThread = new Thread(windowRunnable);
         windowThread.start();
         // Wait while window will be initialized
-        countDownLaunch.await();
+        countDownLatch.await();
         show();
     }
 
@@ -88,13 +96,12 @@ public class Window extends AbstractWindowEventListener {
         worldScreenState.setWidth(windowState.getWidth());
         worldScreenState.setHeight(windowState.getHeight());
         worldScreen = new WorldScreen(worldScreenState);
-        subscribeOnWindowEvents(worldScreen);
+        addEventChildListener(worldScreen);
     }
 
     private void init() {
         GLFW.glfwMakeContextCurrent(windowId);
         GL.createCapabilities();
-
         GLFW.glfwSwapInterval(windowState.getSwapInterval());
     }
 
@@ -138,21 +145,22 @@ public class Window extends AbstractWindowEventListener {
     public Vector3f getWorldCoordinates(MouseButtonEvent mouseButtonEvent) {
         return worldScreen.getWorldCoordinates(mouseButtonEvent);
     }
+
     @Override
     public void event(ResizeWindowEvent event) {
         super.event(event);
         windowSizeChanged(event);
     }
 
-    public void addGameUnit(GameUnit gameUnit) {
-        worldScreen.addGameUnit(gameUnit);
+    public void addGameUnit(GraphicUnit graphicUnit) {
+        worldScreen.addGameUnit(graphicUnit);
     }
 
-    public void updateGameUnit(GameUnit gameUnit) {
-        worldScreen.updateGameUnit(gameUnit);
+    public void updateGameUnit(GraphicUnit graphicUnit) {
+        worldScreen.updateGameUnit(graphicUnit);
     }
 
-    public void deleteGameUnit(GameUnit gameUnit) {
-        worldScreen.deleteGameUnit(gameUnit);
+    public void deleteGameUnit(GraphicUnit graphicUnit) {
+        worldScreen.deleteGameUnit(graphicUnit);
     }
 }

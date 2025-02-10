@@ -26,18 +26,13 @@ import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
  */
 public class WindowContainer {
     private final Map<Long, Window> windows = new ConcurrentHashMap<>();
-    private final CountDownLatch countDownLaunch = new CountDownLatch(1);
-    private boolean started;
+    private final CountDownLatch countDownLatch = new CountDownLatch(1);
     private boolean run = true;
     private final Thread MAIN_THREAD = new Thread(createTask());
 
     public void startWindows() throws InterruptedException {
-        if (started) {
-            return;
-        }
         MAIN_THREAD.start();
-        countDownLaunch.await();
-        started = true;
+        countDownLatch.await();
     }
 
     private Runnable createTask() {
@@ -54,19 +49,27 @@ public class WindowContainer {
                             throw new RuntimeException(e);
                         }
                     });
-                    countDownLaunch.countDown();
-                    Collection<Window> windowList = windows.values();
-                    while (run) {
-                        windowList.forEach(Window::processPendingEvents);
-                        if (windowList.stream().allMatch(Window::shouldBeClosed)) {
-                            run = false;
-                        }
-                    }
+                    countDownLatch.countDown();
+                    processWindowsEventsLoop();
                 } catch (Exception e) {
                     LogUtil.logError(e.getMessage(), e);
                 }
             }
         };
+    }
+
+    /**
+     * In case of several windows 'glfwPollEvents' should be called from single thread
+     */
+    private void processWindowsEventsLoop() throws InterruptedException {
+        Collection<Window> windowList = windows.values();
+        while (run) {
+            windowList.forEach(Window::processPendingEvents);
+            Thread.sleep(20);
+            if (windowList.stream().allMatch(Window::shouldBeClosed)) {
+                run = false;
+            }
+        }
     }
 
     public Map<Long, Window> getWindows() {
@@ -76,11 +79,10 @@ public class WindowContainer {
     private void createWindows() throws InterruptedException {
         iniLwjgl();
         createWindow();
-//        createWindow();
     }
 
-    private void createWindow() throws InterruptedException {
-        var window = new Window();
+    private void createWindow() {
+        var window = Window.createWindow();
         windows.put(window.getWindowId(), window);
     }
 

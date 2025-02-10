@@ -1,6 +1,6 @@
-package com.game.event.window.listener;
+package com.game.window.event.listener;
 
-import com.game.event.window.cursor.CursorPositionEvent;
+import com.game.window.event.cursor.CursorPositionEvent;
 
 public interface CursorPositionEventListener extends EventListener {
     default void event(CursorPositionEvent cursorPositionEvent) {

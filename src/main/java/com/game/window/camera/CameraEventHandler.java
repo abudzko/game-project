@@ -1,19 +1,19 @@
 package com.game.window.camera;
 
-import com.game.event.window.cursor.CursorPositionEvent;
-import com.game.event.window.key.KeyEvent;
-import com.game.event.window.listener.WindowEventListener;
-import com.game.event.window.mouse.MouseButton;
-import com.game.event.window.mouse.MouseButtonEvent;
-import com.game.event.window.scroll.ScrollEvent;
+import com.game.window.event.cursor.CursorPositionEvent;
+import com.game.window.event.key.KeyEvent;
+import com.game.window.event.listener.WindowEventListener;
+import com.game.window.event.mouse.MouseButton;
+import com.game.window.event.mouse.MouseButtonEvent;
+import com.game.window.event.scroll.ScrollEvent;
 import com.game.utils.log.LogUtil;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-public class CameraEventHandler implements WindowEventListener {
+class CameraEventHandler implements WindowEventListener {
     private final CameraState state;
 
-    public CameraEventHandler(CameraState cameraState) {
+    CameraEventHandler(CameraState cameraState) {
         this.state = cameraState;
         look();
     }

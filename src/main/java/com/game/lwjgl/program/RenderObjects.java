@@ -2,10 +2,11 @@ package com.game.lwjgl.program;
 
 import com.game.model.DrawableModel;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 public class RenderObjects {
     private Iterable<DrawableModel> models;
-    private float[] cameraPosition;
+    private Vector3f cameraPosition;
     private Iterable<DrawableModel> deletedModels;
     private Matrix4f cameraViewMatrix;
     private Matrix4f projectionMatrix;
@@ -42,11 +43,11 @@ public class RenderObjects {
         this.projectionMatrix = projectionMatrix;
     }
 
-    public float[] getCameraPosition() {
+    public Vector3f getCameraPosition() {
         return cameraPosition;
     }
 
-    public void setCameraPosition(float[] cameraPosition) {
+    public void setCameraPosition(Vector3f cameraPosition) {
         this.cameraPosition = cameraPosition;
     }
 }

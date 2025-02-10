@@ -2,25 +2,25 @@ package com.game.window.camera;
 
 import org.joml.Matrix4f;
 
-public class CameraState {
+class CameraState {
 
-    public float centerY = 0;
-    public float eyeX = 0;
-    public float eyeY = 1;
-    public float eyeZ = 1;
-    public float centerX = 0;
-    public float centerZ = 0;
-    public float upX = 0;
-    public float upY = 1f;
-    public float upZ = 0f;
+    float centerY = 0;
+    float eyeX = 0;
+    float eyeY = 1;
+    float eyeZ = 1;
+    float centerX = 0;
+    float centerZ = 0;
+    float upX = 0;
+    float upY = 1f;
+    float upZ = 0f;
     //+Oz
-    public float angle = 0f;
-    public boolean isRightMousePressed = false;
-    public boolean isRightMouseReleased = true;
-    public float cursorPositionX;
-    public float cursorPositionY;
-    public float previousCursorPositionX;
-    public float previousCursorPositionY;
+    float angle = 0f;
+    boolean isRightMousePressed = false;
+    boolean isRightMouseReleased = true;
+    float cursorPositionX;
+    float cursorPositionY;
+    float previousCursorPositionX;
+    float previousCursorPositionY;
     private float fov = (float) Math.toRadians(60f);
     private float zNear = 0.05f;
     private float zFar = 30.f;
@@ -58,6 +58,6 @@ public class CameraState {
 
     public void setCameraViewMatrix(Matrix4f cameraViewMatrix) {
         this.cameraViewMatrix = cameraViewMatrix;
-        this.cameraViewMatrixChanged = true;
+        setCameraViewMatrixChanged(true);
     }
 }

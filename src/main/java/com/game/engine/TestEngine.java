@@ -1,13 +1,12 @@
 package com.game.engine;
 
 import com.game.dao.GameUnitDao;
-import com.game.event.window.key.KeyEvent;
-import com.game.event.window.listener.KeyEventListener;
-import com.game.event.window.listener.MouseButtonEventListener;
-import com.game.event.window.mouse.MouseButton;
-import com.game.event.window.mouse.MouseButtonAction;
-import com.game.event.window.mouse.MouseButtonEvent;
-import com.game.model.GameUnit;
+import com.game.window.event.key.KeyEvent;
+import com.game.window.event.listener.WindowEventListener;
+import com.game.window.event.mouse.MouseButton;
+import com.game.window.event.mouse.MouseButtonAction;
+import com.game.window.event.mouse.MouseButtonEvent;
+import com.game.model.GraphicUnit;
 import com.game.utils.log.LogUtil;
 import com.game.window.Window;
 import org.joml.Vector3f;
@@ -21,15 +20,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * TODO screen??
  */
-public class TestEngine implements Runnable, KeyEventListener, MouseButtonEventListener {
+public class TestEngine implements Runnable, WindowEventListener {
 
     private static final Random RANDOM = new Random();
     private final GameUnitDao gameUnitDao = new GameUnitDao();
     private final Window window;
     private final float moveStep = 0.01f;
-    private final Queue<GameUnit> tmpUnits = new ConcurrentLinkedQueue<>();
+    private final Queue<GraphicUnit> tmpUnits = new ConcurrentLinkedQueue<>();
     private volatile boolean isRunning = false;
-    private GameUnit selectedUnit;
+    private GraphicUnit selectedUnit;
 
     public TestEngine(Window window) {
         this.window = window;
@@ -41,23 +40,20 @@ public class TestEngine implements Runnable, KeyEventListener, MouseButtonEventL
 
     @Override
     public void run() {
-        window.registerWindowEventListener(this);
+        window.addRootEventListener(this);
         isRunning = true;
-        boolean set = false;
-        if (!set) {
-            set = true;
             var mainUnit = gameUnitDao.getMainUnit();
             selectedUnit = mainUnit;
             window.addGameUnit(mainUnit);
             animate(mainUnit);
             gameUnitDao.getUnits().forEach(window::addGameUnit);
             addSun();
-        }
+
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            e.printStackTrace();
+            LogUtil.logError(e.getMessage(), e);
         }
     }
 
@@ -67,12 +63,12 @@ public class TestEngine implements Runnable, KeyEventListener, MouseButtonEventL
         animateSun(sun);
     }
 
-    private void animate(GameUnit gameUnit) {
+    private void animate(GraphicUnit graphicUnit) {
         Thread thread = new Thread(() -> {
             while (isRunning) {
                 try {
-                    gameUnit.getRotation().y = rotation(gameUnit.getRotation().y);
-                    window.updateGameUnit(gameUnit);
+                    graphicUnit.getRotation().y = rotation(graphicUnit.getRotation().y);
+                    window.updateGameUnit(graphicUnit);
                     Thread.sleep(100);
                 } catch (Exception e) {
                     LogUtil.logError("animate failed", e);
@@ -83,7 +79,7 @@ public class TestEngine implements Runnable, KeyEventListener, MouseButtonEventL
         thread.start();
     }
 
-    private void animateSun(GameUnit sun) {
+    private void animateSun(GraphicUnit sun) {
         Thread thread = new Thread(() -> {
             var direction = 1;
             var b = 7;
@@ -114,7 +110,7 @@ public class TestEngine implements Runnable, KeyEventListener, MouseButtonEventL
     }
 
     private void addRandomUnits() {
-        var units = new ArrayList<GameUnit>();
+        var units = new ArrayList<GraphicUnit>();
         for (int i = 0; i < 100; i++) {
             var gameUnit = gameUnitDao.createGameUnit();
             units.add(gameUnit);

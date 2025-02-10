@@ -2,9 +2,10 @@ package com.game.lwjgl.program;
 
 import com.game.lwjgl.program.shader.Shader;
 import com.game.model.DrawableModel;
-import com.game.model.GameUnit;
+import com.game.model.GraphicUnit;
 import com.game.utils.BufferUtils;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
 
 import java.util.ArrayList;
@@ -42,7 +43,6 @@ import static org.lwjgl.opengl.GL30.glValidateProgram;
 import static org.lwjgl.opengl.GL30.glVertexAttribPointer;
 
 public class LightingProgram {
-    protected static final int POINT_PER_VERTEX_3D = 3;
     protected static final String PROJECTION_MATRIX_NAME = "projectionMatrix";
     protected static final String CAMERA_VIEW_MATRIX_NAME = "cameraViewMatrix";
     protected static final String WORLD_MATRIX_NAME = "worldMatrix";
@@ -108,7 +108,7 @@ public class LightingProgram {
 
             // Draw the vertices
             glEnableVertexAttribArray(getPositionAttribute());
-            int verticesCount = drawableModel.getVertices().limit() / POINT_PER_VERTEX_3D;
+            int verticesCount = drawableModel.getVerticesCount();
             // TODO use indexes
             glDrawArrays(GL_TRIANGLES, 0, verticesCount);
 
@@ -140,12 +140,12 @@ public class LightingProgram {
                 var lightPosition = light.getLightPosition();
                 setUniformVec3(
                         LIGHT_POSITION_NAME + "[" + i + "]",
-                        new float[]{lightPosition.x, lightPosition.y, lightPosition.z}
+                        new Vector3f(lightPosition.x, lightPosition.y, lightPosition.z)
                 );
                 var lightColor = light.getLightColor();
                 setUniformVec3(
                         LIGHT_COLOR_NAME + "[" + i + "]",
-                        new float[]{lightColor.x, lightColor.y, lightColor.z}
+                        new Vector3f(lightColor.x, lightColor.y, lightColor.z)
                 );
             }
             setUniformInt(LIGHT_COUNT_NAME, lights.size());
@@ -158,18 +158,19 @@ public class LightingProgram {
         disable();
     }
 
-    public DrawableModel createDrawableModel(GameUnit gameUnit) {
+    public DrawableModel createDrawableModel(GraphicUnit graphicUnit) {
+        var model = graphicUnit.getModel();
         // Load in GPU Memory our model
         // Create VAO per model
         int vaoId = glGenVertexArrays();
         glBindVertexArray(vaoId);
 
         // Vertices
-        var vertices = gameUnit.getModel().triangleVertices();
+        var vertices = model.triangleVertices();
         int verticesVboId = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, verticesVboId);
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(getPositionAttribute(), POINT_PER_VERTEX_3D, GL_FLOAT, false, 0, 0);
+        glVertexAttribPointer(getPositionAttribute(), model.getPointPerVertex3d(), GL_FLOAT, false, 0, 0);
 
         // Unbind the VBO
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -177,7 +178,7 @@ public class LightingProgram {
 
         // Textures
         int textureVboId = glGenBuffers();
-        var textureVertices = BufferUtils.createFloatBuffer4f(gameUnit.getModel().modelTexture().textureVertices());
+        var textureVertices = BufferUtils.createFloatBuffer4f(model.modelTexture().textureVertices());
         glBindBuffer(GL_ARRAY_BUFFER, textureVboId);
         glBufferData(GL_ARRAY_BUFFER, textureVertices, GL_STATIC_DRAW);
         glVertexAttribPointer(getTextureAttribute(), 2, GL_FLOAT, false, 0, 0);
@@ -186,12 +187,12 @@ public class LightingProgram {
         BufferUtils.memFree(textureVertices);
 
         // Vertex normals
-        var vertexNormals = gameUnit.getModel().triangleVertexNormals();
+        var vertexNormals = model.triangleVertexNormals();
         if (vertexNormals != null) {
             int normalsVboId = glGenBuffers();
             glBindBuffer(GL_ARRAY_BUFFER, normalsVboId);
             glBufferData(GL_ARRAY_BUFFER, vertexNormals, GL_STATIC_DRAW);
-            glVertexAttribPointer(getNormalAttribute(), POINT_PER_VERTEX_3D, GL_FLOAT, false, 0, 0);
+            glVertexAttribPointer(getNormalAttribute(), model.getPointPerVertex3d(), GL_FLOAT, false, 0, 0);
             // Unbind the VBO
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             BufferUtils.memFree(vertexNormals);
@@ -199,7 +200,7 @@ public class LightingProgram {
 
         // Unbind the VAO
         glBindVertexArray(0);
-        return new DrawableModel(gameUnit, vaoId, vertices);
+        return new DrawableModel(vaoId, graphicUnit);
     }
 
     private int getPositionAttribute() {
@@ -228,12 +229,12 @@ public class LightingProgram {
         fragmentShader.deleteShader();
     }
 
-    private void setUniformVec3(String name, float[] vector3f) {
+    private void setUniformVec3(String name, Vector3f vector3f) {
         GL30.glUniform3f(
                 getUniformIdBy(name),
-                vector3f[0],
-                vector3f[1],
-                vector3f[2]
+                vector3f.x,
+                vector3f.y,
+                vector3f.z
         );
     }
 

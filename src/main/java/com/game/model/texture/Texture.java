@@ -1,6 +1,6 @@
 package com.game.model.texture;
 
-public interface ModelTexture {
+public interface Texture {
     int textureId();
 
     float[] textureVertices();

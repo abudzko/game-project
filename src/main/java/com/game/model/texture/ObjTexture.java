@@ -2,7 +2,7 @@ package com.game.model.texture;
 
 import com.game.lwjgl.texture.PngTexture;
 
-public class ObjTexture implements ModelTexture {
+public class ObjTexture implements Texture {
 
     private final PngTexture texture;
     private final float[] textureVertices;

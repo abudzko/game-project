@@ -1,6 +1,6 @@
 package com.game.dao;
 
-import com.game.model.GameUnit;
+import com.game.model.GraphicUnit;
 import com.game.model.Light;
 import com.game.model.obj.ObjModel;
 import com.game.model.obj.ObjModelProperties;
@@ -13,18 +13,18 @@ import java.util.Random;
 public class GameUnitDao {
     protected static final Random RANDOM = new Random();
     private static final long MAIN_UNIT_ID = 0;
-    private final List<GameUnit> UNITS = createUnits();
-    private final GameUnit MAIN_UNIT = createMainUnit();
+    private final List<GraphicUnit> UNITS = createUnits();
+    private final GraphicUnit MAIN_UNIT = createMainUnit();
 
-    private static List<GameUnit> createUnits() {
-        var gameUnits = new ArrayList<GameUnit>();
+    private static List<GraphicUnit> createUnits() {
+        var gameUnits = new ArrayList<GraphicUnit>();
         var groundUnit = createGroundUnit();
         gameUnits.add(groundUnit);
         return gameUnits;
     }
 
-    public static GameUnit createCudeGameUnit(Vector3f position) {
-        return new GameUnit(
+    public static GraphicUnit createCudeGameUnit(Vector3f position) {
+        return new GraphicUnit(
                 RANDOM.nextLong(),
                 position,
                 new Vector3f(0f, 0f, 0f),
@@ -37,8 +37,8 @@ public class GameUnitDao {
                 ));
     }
 
-    private static GameUnit createMainUnit() {
-        return new GameUnit(
+    private static GraphicUnit createMainUnit() {
+        return new GraphicUnit(
                 MAIN_UNIT_ID,
                 new Vector3f(0f, 0.5f, 0f),
                 new Vector3f(0f, 0f, 0f),
@@ -51,8 +51,8 @@ public class GameUnitDao {
                 ));
     }
 
-    private static GameUnit createGroundUnit() {
-        return new GameUnit(
+    private static GraphicUnit createGroundUnit() {
+        return new GraphicUnit(
                 1,
                 new Vector3f(0f, 0.0f, 0f),
                 new Vector3f(0f, 0f, 0f),
@@ -65,17 +65,17 @@ public class GameUnitDao {
                 ));
     }
 
-    public List<GameUnit> getUnits() {
+    public List<GraphicUnit> getUnits() {
         return UNITS;
     }
 
-    public GameUnit getMainUnit() {
+    public GraphicUnit getMainUnit() {
         return MAIN_UNIT;
     }
 
-    public GameUnit createGameUnit() {
+    public GraphicUnit createGameUnit() {
         long id = RANDOM.nextLong();
-        return new GameUnit(
+        return new GraphicUnit(
                 id,
                 new Vector3f(0f, 0.5f, 0f),
                 new Vector3f(0f, 0f, 0f),
@@ -89,10 +89,10 @@ public class GameUnitDao {
 
     }
 
-    public GameUnit createSunGameUnit() {
+    public GraphicUnit createSunGameUnit() {
         long id = RANDOM.nextLong();
         var light = new Light();
-        return new GameUnit(
+        return new GraphicUnit(
                 id,
                 light.getLightPosition(),
                 new Vector3f(0f, 0f, 0f),

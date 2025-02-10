@@ -2,33 +2,27 @@ package com.game.model;
 
 import org.joml.Matrix4f;
 
-import java.nio.FloatBuffer;
-
 public class DrawableModel {
     private final int vaoId;
-
-    private final FloatBuffer vertices;
-    private final GameUnit gameUnit;
+    private final GraphicUnit graphicUnit;
     private volatile Matrix4f worldMatrix;
 
     public DrawableModel(
-            GameUnit gameUnit,
             int vaoId,
-            FloatBuffer vertices
+            GraphicUnit graphicUnit
     ) {
-        this.gameUnit = gameUnit;
         this.vaoId = vaoId;
-        this.vertices = vertices;
+        this.graphicUnit = graphicUnit;
         updateWorldMatrix();
     }
 
     public void updateWorldMatrix() {
         Matrix4f matrix4f = new Matrix4f();
-        matrix4f.translate(gameUnit.getPosition())
-                .rotateX((float) Math.toRadians(gameUnit.getRotation().x))
-                .rotateY((float) Math.toRadians(gameUnit.getRotation().y))
-                .rotateZ((float) Math.toRadians(gameUnit.getRotation().z))
-                .scale(gameUnit.getScale());
+        matrix4f.translate(getGraphicUnit().getPosition())
+                .rotateX((float) Math.toRadians(getGraphicUnit().getRotation().x))
+                .rotateY((float) Math.toRadians(getGraphicUnit().getRotation().y))
+                .rotateZ((float) Math.toRadians(getGraphicUnit().getRotation().z))
+                .scale(getGraphicUnit().getScale());
         this.worldMatrix = matrix4f;
     }
 
@@ -36,20 +30,24 @@ public class DrawableModel {
         return vaoId;
     }
 
-    public FloatBuffer getVertices() {
-        return vertices;
+    public int getVerticesCount() {
+        return getGraphicUnit().getModel().getVerticesCount();
     }
 
     public int getTextureId() {
-        return gameUnit.getModel().modelTexture().textureId();
+        return getGraphicUnit().getModel().modelTexture().textureId();
     }
 
     public boolean isLight() {
-        return gameUnit.getModel().isLight();
+        return getGraphicUnit().getModel().isLight();
     }
 
     public Light getLight() {
-        return gameUnit.getModel().getLight();
+        return getGraphicUnit().getModel().getLight();
+    }
+
+    private GraphicUnit getGraphicUnit() {
+        return graphicUnit;
     }
 
     public Matrix4f getWorldMatrix() {

@@ -1,6 +1,6 @@
 package com.game.window.camera.world;
 
-import com.game.event.window.mouse.MouseButtonEvent;
+import com.game.window.event.mouse.MouseButtonEvent;
 import com.game.window.screen.world.WorldScreenState;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

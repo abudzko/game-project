@@ -1,4 +1,4 @@
-package com.game.event.window.mouse;
+package com.game.window.event.mouse;
 
 public enum MouseButtonAction {
     PRESSED,

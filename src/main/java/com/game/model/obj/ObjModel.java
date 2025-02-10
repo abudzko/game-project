@@ -1,8 +1,7 @@
 package com.game.model.obj;
 
 import com.game.model.Light;
-import com.game.model.Model;
-import com.game.model.texture.ModelTexture;
+import com.game.model.texture.Texture;
 import com.game.model.texture.ObjTexture;
 import com.game.utils.BufferUtils;
 
@@ -22,9 +21,9 @@ import java.util.stream.Collectors;
  * When model is exported check-boxes Apply-Modifier and Triangulate-Mesh should be checked
  */
 public class ObjModel implements Model {
-    protected static final String LF = "\n";
-    protected static final String WHITE_SPACE = " ";
-    protected static final String SLASH = "/";
+    private static final String LF = "\n";
+    private static final String WHITE_SPACE = " ";
+    private static final String SLASH = "/";
     private final String objPath;
     private final String texturePath;
     private float[] vertices;
@@ -33,24 +32,13 @@ public class ObjModel implements Model {
     private float[] triangleTextureVertices;
     private float[] triangleVertexNormals;
 
-    private ModelTexture modelTexture;
-    private Light light;
-
-    public ObjModel(String objPath) {
-        this.objPath = objPath;
-        this.texturePath = "/texture/ground.png";
-    }
+    private Texture texture;
+    private final Light light;
 
     public ObjModel(ObjModelProperties properties) {
         this.objPath = properties.getObjPath();
         this.texturePath = properties.getTexturePath();
         this.light = properties.getLight();
-    }
-
-    public static void main(String[] args) {
-        var obj = new ObjModel("src/main/resources/obj/t.obj");
-        obj.parseObj();
-        System.out.println();
     }
 
     private static String resource(String path) {
@@ -69,6 +57,7 @@ public class ObjModel implements Model {
         int verticesIndex = 1;
         int vertexNormalsIndex = 1;
         var triangleList = new ArrayList<Triangle>();
+        var indexList = new ArrayList<Integer>();
         var textureTriangleList = new ArrayList<TextureTriangle>();
         var normalTriangleList = new ArrayList<NormalTriangle>();
         int textureVerticesIndex = 1;
@@ -112,6 +101,10 @@ public class ObjModel implements Model {
                     triangle.v2 = verticesMap.get(element2Indexes.get(0));
                     triangle.v3 = verticesMap.get(element3Indexes.get(0));
                     triangleList.add(triangle);
+
+                    indexList.add(element1Indexes.get(0));
+                    indexList.add(element2Indexes.get(0));
+                    indexList.add(element3Indexes.get(0));
 
                     var textureTriangle = new TextureTriangle();
                     textureTriangle.v1 = textureVerticesMap.get(element1Indexes.get(1));
@@ -217,12 +210,12 @@ public class ObjModel implements Model {
     }
 
     @Override
-    public ModelTexture modelTexture() {
-        if (modelTexture == null) {
+    public Texture modelTexture() {
+        if (texture == null) {
             parseObj();
-            modelTexture = new ObjTexture(texturePath, triangleTextureVertices);
+            texture = new ObjTexture(texturePath, triangleTextureVertices);
         }
-        return modelTexture;
+        return texture;
     }
 
     @Override
