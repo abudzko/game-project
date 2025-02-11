@@ -11,6 +11,9 @@ import org.lwjgl.opengl.GL30;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL11.glDrawElements;
+import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL30.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL30.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL30.GL_DEPTH_BUFFER_BIT;
@@ -29,7 +32,6 @@ import static org.lwjgl.opengl.GL30.glBufferData;
 import static org.lwjgl.opengl.GL30.glClear;
 import static org.lwjgl.opengl.GL30.glCreateProgram;
 import static org.lwjgl.opengl.GL30.glDisableVertexAttribArray;
-import static org.lwjgl.opengl.GL30.glDrawArrays;
 import static org.lwjgl.opengl.GL30.glEnable;
 import static org.lwjgl.opengl.GL30.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL30.glGenBuffers;
@@ -100,17 +102,17 @@ public class LightingProgram {
             // Bind to the VAO
             glBindVertexArray(drawableModel.getVaoId());
 
-            // Enable Texture
+            // Textures
             glEnableVertexAttribArray(getTextureAttribute());
             glBindTexture(GL_TEXTURE_2D, drawableModel.getTextureId());
 
+            // Normals
             glEnableVertexAttribArray(getNormalAttribute());
 
-            // Draw the vertices
+            // Vertices
             glEnableVertexAttribArray(getPositionAttribute());
-            int verticesCount = drawableModel.getVerticesCount();
-            // TODO use indexes
-            glDrawArrays(GL_TRIANGLES, 0, verticesCount);
+            glDrawElements(GL_TRIANGLES, drawableModel.getIndexCount(), GL_UNSIGNED_INT, 0);
+
 
             // Clean resources
             glBindTexture(GL_TEXTURE_2D, 0);
@@ -166,19 +168,19 @@ public class LightingProgram {
         glBindVertexArray(vaoId);
 
         // Vertices
-        var vertices = model.triangleVertices();
+        var vertices = model.vertices();
         int verticesVboId = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, verticesVboId);
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
         glVertexAttribPointer(getPositionAttribute(), model.getPointPerVertex3d(), GL_FLOAT, false, 0, 0);
 
-        // Unbind the VBO
+        // Unbind
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         BufferUtils.memFree(vertices);
 
         // Textures
         int textureVboId = glGenBuffers();
-        var textureVertices = BufferUtils.createFloatBuffer4f(model.modelTexture().textureVertices());
+        var textureVertices = model.modelTexture().textureVertices();
         glBindBuffer(GL_ARRAY_BUFFER, textureVboId);
         glBufferData(GL_ARRAY_BUFFER, textureVertices, GL_STATIC_DRAW);
         glVertexAttribPointer(getTextureAttribute(), 2, GL_FLOAT, false, 0, 0);
@@ -186,8 +188,8 @@ public class LightingProgram {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         BufferUtils.memFree(textureVertices);
 
-        // Vertex normals
-        var vertexNormals = model.triangleVertexNormals();
+        // Normals
+        var vertexNormals = model.normals();
         if (vertexNormals != null) {
             int normalsVboId = glGenBuffers();
             glBindBuffer(GL_ARRAY_BUFFER, normalsVboId);
@@ -197,6 +199,15 @@ public class LightingProgram {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             BufferUtils.memFree(vertexNormals);
         }
+
+        // Indexes
+        var indexes = model.indexes();
+        int indexesVboId = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexesVboId);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes, GL_STATIC_DRAW);
+
+        // Release memory
+        BufferUtils.memFree(indexes);
 
         // Unbind the VAO
         glBindVertexArray(0);

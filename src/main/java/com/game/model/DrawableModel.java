@@ -30,8 +30,8 @@ public class DrawableModel {
         return vaoId;
     }
 
-    public int getVerticesCount() {
-        return getGraphicUnit().getModel().getVerticesCount();
+    public int getIndexCount() {
+        return getGraphicUnit().getModel().geIndexCount();
     }
 
     public int getTextureId() {

@@ -56,4 +56,8 @@ public class BufferUtils {
     public static void memFree(FloatBuffer floatBuffer) {
         MemoryUtil.memFree(floatBuffer);
     }
+
+    public static void memFree(IntBuffer intBuffer) {
+        MemoryUtil.memFree(intBuffer);
+    }
 }

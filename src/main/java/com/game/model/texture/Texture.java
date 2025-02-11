@@ -1,7 +1,9 @@
 package com.game.model.texture;
 
+import java.nio.FloatBuffer;
+
 public interface Texture {
     int textureId();
 
-    float[] textureVertices();
+    FloatBuffer textureVertices();
 }

@@ -1,6 +1,9 @@
 package com.game.model.texture;
 
 import com.game.lwjgl.texture.PngTexture;
+import com.game.utils.BufferUtils;
+
+import java.nio.FloatBuffer;
 
 public class ObjTexture implements Texture {
 
@@ -17,8 +20,9 @@ public class ObjTexture implements Texture {
         return texture.getTextureId();
     }
 
+
     @Override
-    public float[] textureVertices() {
-        return textureVertices;
+    public FloatBuffer textureVertices() {
+        return BufferUtils.createFloatBuffer4f(textureVertices);
     }
 }

@@ -46,7 +46,7 @@ public class GameUnitDao {
                 new ObjModel(
                         ObjModelProperties.create(
                                 "src/main/resources/obj/monkey2.obj",
-                                "/texture/red.png"
+                                "/texture/any.png"
                         )
                 ));
     }

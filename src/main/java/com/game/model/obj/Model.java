@@ -4,6 +4,7 @@ import com.game.model.Light;
 import com.game.model.texture.Texture;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 public interface Model {
 
@@ -13,25 +14,25 @@ public interface Model {
      * Vertices of 3D model [x0, y0, z0, x1, y1, z1, ...]<br>
      * Where x0, y0, z0 is single vertex
      */
-    float[] vertices();
+    FloatBuffer vertices();
+
+    /**
+     * Normals are used in lighting
+     * Normals consist of three coordinates [x0, y0, z0, x1, y1, z1, ...]<br>
+     * Where x0, y0, z0 is single normal
+     */
+    FloatBuffer normals();
 
     /**
      * Indexes of vertices forming triangles<br>
-     * Triangle consists of three indexes
+     * Triangle consists of three vertexes
      * Each index represents a single vertex<br>
      * Vertex consist of three coordinates: x, y, z<br>
+     * Index is used to find tuple of vertex(x0, y0, z0, normal(x1, y1, z1) and texture(x2, y2)
+     * in three arrays vertices[], normals[], textures[]
      */
-    int[] indexes();
+    IntBuffer indexes();
 
-    /**
-     * Vertices grouped in triangles. Vertex consist of three float coordinates x, y, z<br>
-     * Triangle consists of three vertices
-     */
-    FloatBuffer triangleVertices();
-
-    default FloatBuffer triangleVertexNormals() {
-        return null;
-    }
 
     Texture modelTexture();
 
@@ -48,6 +49,10 @@ public interface Model {
     }
 
     default int getVerticesCount() {
-        return triangleVertices().limit() / getPointPerVertex3d();
+        return vertices().limit() / getPointPerVertex3d();
+    }
+
+    default int geIndexCount() {
+        return indexes().limit();
     }
 }

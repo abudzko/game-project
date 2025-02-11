@@ -1,10 +1,11 @@
 unit selection on world screen
 ground(x y z ) - in blender
 sky, sky box https://lwjglgamedev.gitbooks.io/3d-game-development-with-lwjgl/content/chapter13/chapter13.html
+how to draw several screens(3d world and info page(2d), pop up window, for example) together
 reuse textures
 update java and use virtual threads
-use indexes
-how to draw several screens(3d world and info page(2d), pop up window, for example) together
+
++use indexes
 +lighting, Phong shading algorithm
 +multiple lights
 +sun

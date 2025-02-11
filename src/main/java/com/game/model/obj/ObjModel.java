@@ -1,18 +1,21 @@
 package com.game.model.obj;
 
 import com.game.model.Light;
-import com.game.model.texture.Texture;
 import com.game.model.texture.ObjTexture;
+import com.game.model.texture.Texture;
 import com.game.utils.BufferUtils;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -26,14 +29,12 @@ public class ObjModel implements Model {
     private static final String SLASH = "/";
     private final String objPath;
     private final String texturePath;
-    private float[] vertices;
-    private int[] indexes;
-    private float[] triangleVertices;
-    private float[] triangleTextureVertices;
-    private float[] triangleVertexNormals;
-
-    private Texture texture;
     private final Light light;
+    private float[] vertices;
+    private float[] normals;
+    private float[] textures;
+    private int[] indexes;
+    private Texture texture;
 
     public ObjModel(ObjModelProperties properties) {
         this.objPath = properties.getObjPath();
@@ -51,16 +52,16 @@ public class ObjModel implements Model {
 
     private void parseObj() {
         var objStr = resource(objPath);
+
         var verticesMap = new HashMap<Integer, Vertex>();
-        var vertexNormalsMap = new HashMap<Integer, VertexNormal>();
-        var textureVerticesMap = new HashMap<Integer, TextureVertex>();
+        var normalsMap = new HashMap<Integer, VertexNormal>();
+        var textureMap = new HashMap<Integer, TextureVertex>();
+
+        var indexTupleList = new ArrayList<IndexTuple>();
         int verticesIndex = 1;
         int vertexNormalsIndex = 1;
-        var triangleList = new ArrayList<Triangle>();
-        var indexList = new ArrayList<Integer>();
-        var textureTriangleList = new ArrayList<TextureTriangle>();
-        var normalTriangleList = new ArrayList<NormalTriangle>();
         int textureVerticesIndex = 1;
+
         var lines = objStr.split(LF);
         for (var line : lines) {
             var elements = line.split(WHITE_SPACE);
@@ -80,7 +81,7 @@ public class ObjModel implements Model {
                     var textureVertex = new TextureVertex();
                     textureVertex.x = elements[elementIndex++];
                     textureVertex.y = elements[elementIndex];
-                    textureVerticesMap.put(textureVerticesIndex++, textureVertex);
+                    textureMap.put(textureVerticesIndex++, textureVertex);
                     break;
                 // Normals
                 case "vn":
@@ -88,142 +89,131 @@ public class ObjModel implements Model {
                     vertexNormal.x = elements[elementIndex++];
                     vertexNormal.y = elements[elementIndex++];
                     vertexNormal.z = elements[elementIndex];
-                    vertexNormalsMap.put(vertexNormalsIndex++, vertexNormal);
+                    normalsMap.put(vertexNormalsIndex++, vertexNormal);
                     break;
                 // Faces
                 case "f":
-                    var element1Indexes = extractIndexes(elements[elementIndex++]);
-                    var element2Indexes = extractIndexes(elements[elementIndex++]);
-                    var element3Indexes = extractIndexes(elements[elementIndex]);
+                    var vertexIndexList = extractIndexes(elements, 0);
+                    var textureIndexList = extractIndexes(elements, 1);
+                    var normalIndexList = extractIndexes(elements, 2);
 
-                    var triangle = new Triangle();
-                    triangle.v1 = verticesMap.get(element1Indexes.get(0));
-                    triangle.v2 = verticesMap.get(element2Indexes.get(0));
-                    triangle.v3 = verticesMap.get(element3Indexes.get(0));
-                    triangleList.add(triangle);
-
-                    indexList.add(element1Indexes.get(0));
-                    indexList.add(element2Indexes.get(0));
-                    indexList.add(element3Indexes.get(0));
-
-                    var textureTriangle = new TextureTriangle();
-                    textureTriangle.v1 = textureVerticesMap.get(element1Indexes.get(1));
-                    textureTriangle.v2 = textureVerticesMap.get(element2Indexes.get(1));
-                    textureTriangle.v3 = textureVerticesMap.get(element3Indexes.get(1));
-                    textureTriangleList.add(textureTriangle);
-
-                    var normalTriangle = new NormalTriangle();
-                    normalTriangle.v1 = vertexNormalsMap.get(element1Indexes.get(2));
-                    normalTriangle.v2 = vertexNormalsMap.get(element2Indexes.get(2));
-                    normalTriangle.v3 = vertexNormalsMap.get(element3Indexes.get(2));
-                    normalTriangleList.add(normalTriangle);
+                    for (int i = 0; i < 3; i++) {
+                        var indexPair = new IndexTuple();
+                        indexPair.vertexIndex = vertexIndexList.get(i);
+                        indexPair.normalIndex = normalIndexList.get(i);
+                        indexPair.textureIndex = textureIndexList.get(i);
+                        indexTupleList.add(indexPair);
+                    }
                     break;
                 default:
                     break;
             }
         }
-        triangleVertices = new float[triangleList.size() * 9];
-        int i = 0;
-        for (var triangle : triangleList) {
-            addTriangle(triangle, i);
-            i += 9;
-        }
 
-        triangleTextureVertices = new float[textureTriangleList.size() * 9];
-        i = 0;
-        for (var textureTriangle : textureTriangleList) {
-            addTextureTriangle(textureTriangle, i);
-            i += 9;
-        }
+        int uniqueCount = new HashSet<>(indexTupleList).size();
+        vertices = new float[uniqueCount * 3];
+        normals = new float[uniqueCount * 3];
+        textures = new float[uniqueCount * 2];
+        indexes = new int[indexTupleList.size()];
 
-        triangleVertexNormals = new float[normalTriangleList.size() * 9];
-        i = 0;
-        for (var normalTriangle : normalTriangleList) {
-            addNormalTriangle(normalTriangle, i);
-            i += 9;
+        var indexTuplesMap = new HashMap<IndexTuple, Integer>();
+        var vi = 0;
+        var ni = 0;
+        var ti = 0;
+        var indx = 0;
+        var i = 0;
+        for (var indexTuple : indexTupleList) {
+            var existedIndex = indexTuplesMap.get(indexTuple);
+            if (existedIndex == null) {
+                indexTuplesMap.put(indexTuple, indx);
+                indexes[i] = indx++;
+
+                var vertex = verticesMap.get(indexTuple.vertexIndex);
+                addVertex(vertices, vertex, vi);
+
+                var normal = normalsMap.get(indexTuple.normalIndex);
+                addNormal(normals, normal, ni);
+
+                var texture = textureMap.get(indexTuple.textureIndex);
+                addTexture(textures, texture, ti);
+
+                ti += 2;
+                vi += 3;
+                ni += 3;
+            } else {
+                indexes[i] = existedIndex;
+            }
+            i++;
         }
     }
 
+    /**
+     * @param elements : f 21/34/1 10/17/2 2/4/3
+     * @param j        0 or 1 or 2
+     * @return if 0 - 21 10 2, if 1 - 34 17 4, if 2 - 1 2 3
+     */
+    private List<Integer> extractIndexes(String[] elements, int j) {
+        var indexes = new ArrayList<Integer>();
+        for (int i = 1; i <= 3; i++) {
+            indexes.add(extractIndexes(elements[i]).get(j));
+        }
+        return indexes;
+    }
 
     private List<Integer> extractIndexes(String element) {
         return Arrays.stream(element.split(SLASH)).map(Integer::valueOf).collect(Collectors.toList());
     }
 
-    private void addTriangle(Triangle triangle, int index) {
-        addVertex(triangle.v1, index);
-        addVertex(triangle.v2, index + 3);
-        addVertex(triangle.v3, index + 6);
+    private void addVertex(float[] arr, Vertex v, int index) {
+        arr[index++] = Float.parseFloat(v.x);
+        arr[index++] = Float.parseFloat(v.y);
+        arr[index] = Float.parseFloat(v.z);
     }
 
-
-    private void addVertex(Vertex v, int index) {
-        triangleVertices[index++] = Float.parseFloat(v.x);
-        triangleVertices[index++] = Float.parseFloat(v.y);
-        triangleVertices[index] = Float.parseFloat(v.z);
+    private void addNormal(float[] arr, VertexNormal vn, int index) {
+        arr[index++] = Float.parseFloat(vn.x);
+        arr[index++] = Float.parseFloat(vn.y);
+        arr[index] = Float.parseFloat(vn.z);
     }
 
-    private void addNormalTriangle(NormalTriangle normalTriangle, int index) {
-        addVertexNormal(normalTriangle.v1, index);
-        addVertexNormal(normalTriangle.v2, index + 3);
-        addVertexNormal(normalTriangle.v3, index + 6);
-    }
-
-    private void addVertexNormal(VertexNormal vn, int index) {
-        triangleVertexNormals[index++] = Float.parseFloat(vn.x);
-        triangleVertexNormals[index++] = Float.parseFloat(vn.y);
-        triangleVertexNormals[index] = Float.parseFloat(vn.z);
-    }
-
-    private void addTextureTriangle(TextureTriangle textureTriangle, int index) {
-        addTextureTriangle(textureTriangle.v1, index);
-        addTextureTriangle(textureTriangle.v2, index + 3);
-        addTextureTriangle(textureTriangle.v3, index + 6);
-    }
-
-    private void addTextureTriangle(TextureVertex textureVertex, int index) {
-        triangleTextureVertices[index++] = Float.parseFloat(textureVertex.x);
-        triangleTextureVertices[index] = Float.parseFloat(textureVertex.y);
+    private void addTexture(float[] arr, TextureVertex textureVertex, int index) {
+        arr[index++] = Float.parseFloat(textureVertex.x);
+        arr[index] = Float.parseFloat(textureVertex.y);
     }
 
     @Override
-    public float[] vertices() {
+    public FloatBuffer vertices() {
         if (vertices == null) {
             parseObj();
         }
-        return vertices;
+        return BufferUtils.createFloatBuffer4f(vertices);
     }
 
     @Override
-    public int[] indexes() {
+    public FloatBuffer normals() {
+        if (normals == null) {
+            parseObj();
+        }
+        return BufferUtils.createFloatBuffer4f(normals);
+    }
+
+    @Override
+    public IntBuffer indexes() {
         if (indexes == null) {
             parseObj();
         }
-        return indexes;
-    }
-
-    @Override
-    public FloatBuffer triangleVertices() {
-        if (triangleVertices == null) {
-            parseObj();
-        }
-        return BufferUtils.createFloatBuffer4f(triangleVertices);
+        return BufferUtils.createIntBuffer(indexes);
     }
 
     @Override
     public Texture modelTexture() {
-        if (texture == null) {
+        if (textures == null) {
             parseObj();
-            texture = new ObjTexture(texturePath, triangleTextureVertices);
+        }
+        if (texture == null) {
+            texture = new ObjTexture(texturePath, textures);
         }
         return texture;
-    }
-
-    @Override
-    public FloatBuffer triangleVertexNormals() {
-        if (triangleVertexNormals == null) {
-            parseObj();
-        }
-        return BufferUtils.createFloatBuffer4f(triangleVertexNormals);
     }
 
     @Override
@@ -237,21 +227,9 @@ public class ObjModel implements Model {
         private String z;
     }
 
-    private static class Triangle {
-        private Vertex v1;
-        private Vertex v2;
-        private Vertex v3;
-    }
-
     private static class TextureVertex {
         private String x;
         private String y;
-    }
-
-    private static class TextureTriangle {
-        private TextureVertex v1;
-        private TextureVertex v2;
-        private TextureVertex v3;
     }
 
     private static class VertexNormal {
@@ -260,9 +238,28 @@ public class ObjModel implements Model {
         private String z;
     }
 
-    private static class NormalTriangle {
-        private VertexNormal v1;
-        private VertexNormal v2;
-        private VertexNormal v3;
+    private static class IndexTuple {
+        private Integer vertexIndex;
+        private Integer textureIndex;
+        private Integer normalIndex;
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(vertexIndex, textureIndex, normalIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof IndexTuple)) {
+                return false;
+            }
+            var tuple = (IndexTuple) obj;
+            return Objects.equals(vertexIndex, tuple.vertexIndex)
+                    && Objects.equals(textureIndex, tuple.textureIndex)
+                    && Objects.equals(normalIndex, tuple.normalIndex);
+        }
     }
 }
