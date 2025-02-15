@@ -6,15 +6,15 @@ import org.joml.Vector3f;
 public class GroundIntersection {
 
     private final Vector3f cameraPosition;
-    private final int RECURSION_COUNT = 200;
+    private static final int RECURSION_COUNT = 200;
 
     public GroundIntersection(Vector3f cameraPosition) {
         this.cameraPosition = cameraPosition;
     }
 
     private Vector3f getPointOnRay(Vector3f ray, float distance) {
-        Vector3f start = new Vector3f(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-        Vector3f scaledRay = new Vector3f(ray.x * distance, ray.y * distance, ray.z * distance);
+        var start = new Vector3f(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        var scaledRay = new Vector3f(ray.x * distance, ray.y * distance, ray.z * distance);
         return start.add(scaledRay);
     }
 
@@ -43,8 +43,8 @@ public class GroundIntersection {
 
 
     private boolean intersectionInRange(float start, float finish, Vector3f ray) {
-        Vector3f startPoint = getPointOnRay(ray, start);
-        Vector3f endPoint = getPointOnRay(ray, finish);
+        var startPoint = getPointOnRay(ray, start);
+        var endPoint = getPointOnRay(ray, finish);
         if (!isUnderGround(startPoint) && isUnderGround(endPoint)) {
             return true;
         } else {

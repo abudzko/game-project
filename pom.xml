@@ -18,6 +18,8 @@
         <lwjgl.version>3.3.4-SNAPSHOT</lwjgl.version>
         <swt.maven.version>3.123.0</swt.maven.version> <!-- contains Eclipse SWT 4.958 software -->
         <joml.version>1.10.8</joml.version>
+        <commons-math3.version>3.6.1</commons-math3.version>
+        <commons-io.version>2.18.0</commons-io.version>
     </properties>
     <profiles>
         <profile>
@@ -215,6 +217,16 @@
             <groupId>org.joml</groupId>
             <artifactId>joml</artifactId>
             <version>${joml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>${commons-math3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>

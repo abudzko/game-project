@@ -9,6 +9,7 @@ import com.game.utils.log.LogUtil;
 import com.game.window.camera.Camera;
 import com.game.window.camera.world.CameraToWorldConverter;
 import com.game.window.camera.world.GroundIntersection;
+import com.game.window.camera.world.surface.Ray;
 import com.game.window.event.listener.AbstractWindowEventListener;
 import com.game.window.event.mouse.MouseButtonEvent;
 import com.game.window.event.resize.ResizeWindowEvent;
@@ -124,13 +125,21 @@ public class WorldScreen extends AbstractWindowEventListener {
 
     // TODO ??
     public Vector3f getWorldCoordinates(MouseButtonEvent mouseButtonEvent) {
-        var projectionMatrix = createProjectionMatrix();
-        var c = new CameraToWorldConverter(mouseButtonEvent, projectionMatrix, getCamera().getCameraViewMatrixCopy());
-        var rayVector = c.rayVector(worldScreenState);
+        var converter = new CameraToWorldConverter(mouseButtonEvent, createProjectionMatrix(), getCamera().getCameraViewMatrixCopy());
+        var rayVector = converter.directionPoint(worldScreenState);
         var wordCoordinates = new GroundIntersection(getCamera().getCameraPosition()).findPoint(rayVector);
         LogUtil.log(String.format("wordCoordinates: X = %s, Y = %s, Z = %s", wordCoordinates.x, wordCoordinates.y, wordCoordinates.z));
         return wordCoordinates;
     }
+
+    public Ray getRay(MouseButtonEvent mouseButtonEvent) {
+        var converter = new CameraToWorldConverter(mouseButtonEvent, createProjectionMatrix(), getCamera().getCameraViewMatrixCopy());
+        LogUtil.log(getCamera().getCameraViewMatrixCopy().toString());
+        var directionPoint = converter.directionPoint(worldScreenState);
+        LogUtil.log(String.format("directionPoint: X = %s, Y = %s, Z = %s", directionPoint.x, directionPoint.y, directionPoint.z));
+        return new Ray(getCamera().getCameraPosition(), directionPoint);
+    }
+
 
     private LightingProgram getProgram() {
         if (program == null) {

@@ -174,8 +174,7 @@ public class LightingProgram {
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
         glVertexAttribPointer(getPositionAttribute(), model.getPointPerVertex3d(), GL_FLOAT, false, 0, 0);
 
-        // Unbind
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // Free
         BufferUtils.memFree(vertices);
 
         // Textures
@@ -184,8 +183,8 @@ public class LightingProgram {
         glBindBuffer(GL_ARRAY_BUFFER, textureVboId);
         glBufferData(GL_ARRAY_BUFFER, textureVertices, GL_STATIC_DRAW);
         glVertexAttribPointer(getTextureAttribute(), 2, GL_FLOAT, false, 0, 0);
-        // Unbind the VBO
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // Free
         BufferUtils.memFree(textureVertices);
 
         // Normals
@@ -195,8 +194,8 @@ public class LightingProgram {
             glBindBuffer(GL_ARRAY_BUFFER, normalsVboId);
             glBufferData(GL_ARRAY_BUFFER, vertexNormals, GL_STATIC_DRAW);
             glVertexAttribPointer(getNormalAttribute(), model.getPointPerVertex3d(), GL_FLOAT, false, 0, 0);
-            // Unbind the VBO
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            // Free
             BufferUtils.memFree(vertexNormals);
         }
 
@@ -206,7 +205,7 @@ public class LightingProgram {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexesVboId);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes, GL_STATIC_DRAW);
 
-        // Release memory
+        // Free
         BufferUtils.memFree(indexes);
 
         // Unbind the VAO

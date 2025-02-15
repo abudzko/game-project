@@ -1,6 +1,6 @@
 # Blender 3.3.21
 # www.blender.org
-mtllib sun.mtl
+mtllib smallSphere.mtl
 o Sphere
 v 0.000000 0.193185 -0.051764
 v 0.000000 0.173205 -0.100000

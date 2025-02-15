@@ -1,15 +1,13 @@
 package com.game.model.obj;
 
+import com.game.lwjgl.texture.TextureProperties;
 import com.game.model.Light;
 import com.game.model.texture.ObjTexture;
 import com.game.model.texture.Texture;
 import com.game.utils.BufferUtils;
 
-import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,32 +25,28 @@ public class ObjModel implements Model {
     private static final String LF = "\n";
     private static final String WHITE_SPACE = " ";
     private static final String SLASH = "/";
-    private final String objPath;
-    private final String texturePath;
+    private final String objectSource;
     private final Light light;
+    private final TextureProperties textureProperties;
     private float[] vertices;
     private float[] normals;
     private float[] textures;
     private int[] indexes;
     private Texture texture;
 
-    public ObjModel(ObjModelProperties properties) {
-        this.objPath = properties.getObjPath();
-        this.texturePath = properties.getTexturePath();
+    private ObjModel(ObjModelProperties properties) {
+        this.objectSource = properties.getObjectSource();
+        this.textureProperties = properties.getTextureProperties();
         this.light = properties.getLight();
+        parseObj();
+        modelTexture();
     }
 
-    private static String resource(String path) {
-        try {
-            return Files.readString(Path.of(path));
-        } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Failed to load resource %s", path), e);
-        }
+    public static ObjModel createObjectModel(ObjModelProperties properties) {
+        return new ObjModel(properties);
     }
 
     private void parseObj() {
-        var objStr = resource(objPath);
-
         var verticesMap = new HashMap<Integer, Vertex>();
         var normalsMap = new HashMap<Integer, VertexNormal>();
         var textureMap = new HashMap<Integer, TextureVertex>();
@@ -62,7 +56,7 @@ public class ObjModel implements Model {
         int vertexNormalsIndex = 1;
         int textureVerticesIndex = 1;
 
-        var lines = objStr.split(LF);
+        var lines = objectSource.split(LF);
         for (var line : lines) {
             var elements = line.split(WHITE_SPACE);
             var elementIndex = 0;
@@ -206,12 +200,20 @@ public class ObjModel implements Model {
     }
 
     @Override
+    public int indexesCount() {
+        if (indexes == null) {
+            parseObj();
+        }
+        return indexes.length;
+    }
+
+    @Override
     public Texture modelTexture() {
         if (textures == null) {
             parseObj();
         }
         if (texture == null) {
-            texture = new ObjTexture(texturePath, textures);
+            texture = ObjTexture.createObjTexture(textureProperties.setTextureVertices(vertices));
         }
         return texture;
     }

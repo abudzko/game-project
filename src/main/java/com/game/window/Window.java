@@ -4,6 +4,7 @@ import com.game.lwjgl.annotation.LwjglMainThread;
 import com.game.lwjgl.event.LwjglEventManager;
 import com.game.model.GraphicUnit;
 import com.game.utils.log.LogUtil;
+import com.game.window.camera.world.surface.Ray;
 import com.game.window.event.listener.AbstractWindowEventListener;
 import com.game.window.event.mouse.MouseButtonEvent;
 import com.game.window.event.resize.ResizeWindowEvent;
@@ -144,6 +145,11 @@ public class Window extends AbstractWindowEventListener {
     // TODO ??
     public Vector3f getWorldCoordinates(MouseButtonEvent mouseButtonEvent) {
         return worldScreen.getWorldCoordinates(mouseButtonEvent);
+    }
+
+    // TODO ??
+    public Ray getRay(MouseButtonEvent mouseButtonEvent) {
+        return worldScreen.getRay(mouseButtonEvent);
     }
 
     @Override

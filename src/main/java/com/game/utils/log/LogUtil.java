@@ -13,4 +13,8 @@ public class LogUtil {
     public static void logError(String message) {
         System.out.println("ERROR:" + message);
     }
+
+    public static void logWarn(String message) {
+        System.out.println("WARN:" + message);
+    }
 }

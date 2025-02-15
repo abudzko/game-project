@@ -12,6 +12,10 @@ public class CameraToWorldConverter {
     private final Matrix4f projectionMatrix;
     private final Matrix4f viewMatrix;
 
+    /**
+     * @param projectionMatrix - the copy of projectionMatrix is required
+     * @param viewMatrix - the copy of viewMatrix is required
+     */
     public CameraToWorldConverter(
             MouseButtonEvent mouseButtonEvent,
             Matrix4f projectionMatrix,
@@ -23,7 +27,7 @@ public class CameraToWorldConverter {
         this.viewMatrix = viewMatrix;
     }
 
-    public Vector3f rayVector(WorldScreenState worldScreenState) {
+    public Vector3f directionPoint(WorldScreenState worldScreenState) {
         // Get the width and height of the window
         float width = worldScreenState.getWidth()/* Your window width */;
         float height = worldScreenState.getHeight()/* Your window height */;
@@ -33,16 +37,16 @@ public class CameraToWorldConverter {
         float y = (float) (1.0 - 2.0 * mouseY / height);
 
         // Create the clip coordinates
-        Vector4f clipCoordinates = new Vector4f(x, y, -1.0f, 1.0f);
+        var clipCoordinates = new Vector4f(x, y, -1.0f, 1.0f);
 
-        Matrix4f invertedProjection = projectionMatrix.invert();
-        Vector4f eyeCoordinates = invertedProjection.transform(clipCoordinates);
+        var invertedProjection = projectionMatrix.invert();
+        var eyeCoordinates = invertedProjection.transform(clipCoordinates);
         eyeCoordinates.z = -1.0f; // Set Z to -1.0 for the ray
         eyeCoordinates.w = 0.0f; // Set W to 0 to make it a direction vector
 
         // Convert to world coordinates
-        Matrix4f viewMatrixInverse = viewMatrix.invert();
-        Vector4f worldRay = viewMatrixInverse.transform(eyeCoordinates);
+        var viewMatrixInverse = viewMatrix.invert();
+        var worldRay = viewMatrixInverse.transform(eyeCoordinates);
 
         // Create a direction vector from the ray
         Vector3f direction = new Vector3f(worldRay.x, worldRay.y, worldRay.z);

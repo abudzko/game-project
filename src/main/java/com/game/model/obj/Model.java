@@ -33,6 +33,7 @@ public interface Model {
      */
     IntBuffer indexes();
 
+    int indexesCount();
 
     Texture modelTexture();
 
@@ -48,11 +49,7 @@ public interface Model {
         return POINT_PER_VERTEX_3D;
     }
 
-    default int getVerticesCount() {
-        return vertices().limit() / getPointPerVertex3d();
-    }
-
     default int geIndexCount() {
-        return indexes().limit();
+        return indexesCount();
     }
 }

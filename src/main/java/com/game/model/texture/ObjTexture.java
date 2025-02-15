@@ -1,6 +1,7 @@
 package com.game.model.texture;
 
 import com.game.lwjgl.texture.PngTexture;
+import com.game.lwjgl.texture.TextureProperties;
 import com.game.utils.BufferUtils;
 
 import java.nio.FloatBuffer;
@@ -10,9 +11,13 @@ public class ObjTexture implements Texture {
     private final PngTexture texture;
     private final float[] textureVertices;
 
-    public ObjTexture(String imagePath, float[] textureVertices) {
-        this.texture = new PngTexture(imagePath);
-        this.textureVertices = textureVertices;
+    private ObjTexture(TextureProperties properties) {
+        this.texture = PngTexture.createPngTexture(properties);
+        this.textureVertices = properties.getTextureVertices();
+    }
+
+    public static ObjTexture createObjTexture(TextureProperties properties) {
+        return new ObjTexture(properties);
     }
 
     @Override

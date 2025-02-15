@@ -1,21 +1,27 @@
 package com.game.engine;
 
 import com.game.dao.GameUnitDao;
+import com.game.model.GraphicUnit;
+import com.game.utils.log.LogUtil;
+import com.game.window.Window;
+import com.game.window.camera.world.surface.Surface;
+import com.game.window.camera.world.surface.TrianglesBuilder;
 import com.game.window.event.key.KeyEvent;
 import com.game.window.event.listener.WindowEventListener;
 import com.game.window.event.mouse.MouseButton;
 import com.game.window.event.mouse.MouseButtonAction;
 import com.game.window.event.mouse.MouseButtonEvent;
-import com.game.model.GraphicUnit;
-import com.game.utils.log.LogUtil;
-import com.game.window.Window;
+import org.apache.commons.math3.util.Precision;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * TODO screen??
@@ -24,11 +30,19 @@ public class TestEngine implements Runnable, WindowEventListener {
 
     private static final Random RANDOM = new Random();
     private final GameUnitDao gameUnitDao = new GameUnitDao();
+    private final Surface surface = new Surface();
     private final Window window;
     private final float moveStep = 0.01f;
     private final Queue<GraphicUnit> tmpUnits = new ConcurrentLinkedQueue<>();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4,
+            runnable -> {
+                var t = Executors.defaultThreadFactory().newThread(runnable);
+                t.setDaemon(true);
+                return t;
+            });
     private volatile boolean isRunning = false;
     private GraphicUnit selectedUnit;
+
 
     public TestEngine(Window window) {
         this.window = window;
@@ -42,19 +56,18 @@ public class TestEngine implements Runnable, WindowEventListener {
     public void run() {
         window.addRootEventListener(this);
         isRunning = true;
-            var mainUnit = gameUnitDao.getMainUnit();
-            selectedUnit = mainUnit;
-            window.addGameUnit(mainUnit);
-            animate(mainUnit);
-            gameUnitDao.getUnits().forEach(window::addGameUnit);
-            addSun();
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            LogUtil.logError(e.getMessage(), e);
-        }
+        var mainUnit = gameUnitDao.getMainUnit();
+        var groundUnit = gameUnitDao.getGroundUnit();
+        selectedUnit = mainUnit;
+        window.addGameUnit(mainUnit);
+        animate(mainUnit);
+        window.addGameUnit(groundUnit);
+        gameUnitDao.getUnits().forEach(window::addGameUnit);
+        addSun();
+        var trianglesBuilder = new TrianglesBuilder();
+        surface.addTriangles(trianglesBuilder.toTriangles(mainUnit.getModel()));
+        surface.addTriangles(trianglesBuilder.toTriangles(groundUnit.getModel()));
+        surface.build();
     }
 
     private void addSun() {
@@ -247,14 +260,58 @@ public class TestEngine implements Runnable, WindowEventListener {
     public void event(MouseButtonEvent mouseButtonEvent) {
         if (MouseButtonAction.PRESSED.equals(mouseButtonEvent.getAction())
                 && MouseButton.LEFT.equals(mouseButtonEvent.getButton())) {
-            Vector3f worldCoordinates = window.getWorldCoordinates(mouseButtonEvent);
-            var tmpGameUnit = GameUnitDao.createCudeGameUnit(worldCoordinates);
-            window.addGameUnit(tmpGameUnit);
-            tmpUnits.add(tmpGameUnit);
-            if (tmpUnits.size() > 10) {
-                var last = tmpUnits.remove();
-                window.deleteGameUnit(last);
-            }
+            Runnable runnable = () -> {
+                try {
+                    runTask(mouseButtonEvent);
+                } catch (Exception e) {
+                    LogUtil.logError(e.getMessage(), e);
+                }
+            };
+            executorService.submit(runnable);
+
         }
+    }
+
+    private void runTask(MouseButtonEvent mouseButtonEvent) {
+        var newLogic = true;
+        if (newLogic) {
+            var ray = window.getRay(mouseButtonEvent);
+            Optional.ofNullable(surface.findIntersection(ray))
+                    .ifPresentOrElse(
+                            point -> {
+                                LogUtil.log("Intersection point: " + toStr(point));
+                                var tmpGraphicUnit = GameUnitDao.createSmallCircleGraphicUnit(point);
+                                addUnit(tmpGraphicUnit);
+                            },
+                            () -> LogUtil.log("No intersection")
+                    );
+        } else {
+            var worldCoordinates = window.getWorldCoordinates(mouseButtonEvent);
+            var tmpGraphicUnit = GameUnitDao.createCubeGraphicUnit(worldCoordinates);
+            addUnit(tmpGraphicUnit);
+            Optional.ofNullable(worldCoordinates)
+                    .ifPresentOrElse(
+                            point -> LogUtil.log("Intersection point: " + toStr(point)),
+                            () -> LogUtil.log("No intersection")
+                    );
+        }
+    }
+
+    private String toStr(Vector3f point) {
+        int scale = 3;
+        return String.format("%s %s %s",
+                Precision.round(point.x, scale),
+                Precision.round(point.y, scale),
+                Precision.round(point.z, scale)
+        );
+    }
+
+    private void addUnit(GraphicUnit tmpGraphicUnit) {
+        window.addGameUnit(tmpGraphicUnit);
+        tmpUnits.add(tmpGraphicUnit);
+//        if (tmpUnits.size() > 10) {
+//            var last = tmpUnits.remove();
+//            window.deleteGameUnit(last);
+//        }
     }
 }

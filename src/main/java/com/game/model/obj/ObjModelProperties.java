@@ -1,16 +1,36 @@
 package com.game.model.obj;
 
+import com.game.lwjgl.texture.TextureProperties;
 import com.game.model.Light;
 
 public class ObjModelProperties {
     private String objPath;
-    private String texturePath;
-
+    private String objectSource;
+    private TextureProperties textureProperties;
     private Light light;
 
-    public static ObjModelProperties create(String objPath, String texturePath) {
-        return new ObjModelProperties().setObjPath(objPath).setTexturePath(texturePath);
+    public static ObjModelProperties create() {
+        return new ObjModelProperties();
     }
+
+    public TextureProperties getTextureProperties() {
+        return textureProperties;
+    }
+
+    public ObjModelProperties setTextureProperties(TextureProperties textureProperties) {
+        this.textureProperties = textureProperties;
+        return this;
+    }
+
+    public String getObjectSource() {
+        return objectSource;
+    }
+
+    public ObjModelProperties setObjectSource(String objectSource) {
+        this.objectSource = objectSource;
+        return this;
+    }
+
 
     public String getObjPath() {
         return objPath;
@@ -18,15 +38,6 @@ public class ObjModelProperties {
 
     public ObjModelProperties setObjPath(String objPath) {
         this.objPath = objPath;
-        return this;
-    }
-
-    public String getTexturePath() {
-        return texturePath;
-    }
-
-    public ObjModelProperties setTexturePath(String texturePath) {
-        this.texturePath = texturePath;
         return this;
     }
 
