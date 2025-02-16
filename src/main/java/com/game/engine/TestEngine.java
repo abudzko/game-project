@@ -64,6 +64,7 @@ public class TestEngine implements Runnable, WindowEventListener {
         window.addGameUnit(groundUnit);
         gameUnitDao.getUnits().forEach(window::addGameUnit);
         addSun();
+        addSun();
         var trianglesBuilder = new TrianglesBuilder();
         surface.addTriangles(trianglesBuilder.toTriangles(mainUnit.getModel()));
         surface.addTriangles(trianglesBuilder.toTriangles(groundUnit.getModel()));
@@ -71,7 +72,7 @@ public class TestEngine implements Runnable, WindowEventListener {
     }
 
     private void addSun() {
-        var sun = gameUnitDao.createSunGameUnit();
+        var sun = gameUnitDao.createSunUnit();
         window.addGameUnit(sun);
         animateSun(sun);
     }
@@ -94,24 +95,24 @@ public class TestEngine implements Runnable, WindowEventListener {
 
     private void animateSun(GraphicUnit sun) {
         Thread thread = new Thread(() -> {
-            var direction = 1;
+            var direction = 1f;
             var b = 7;
             var angleDegree = 0.0;
-            var radius = 5f;
+            var radius = RANDOM.nextInt(5) + 1f;
             while (isRunning) {
                 try {
                     var x = sun.getPosition().x;
                     var z = sun.getPosition().z;
                     if ((x > b || x < -b) && (z > b || z < -b)) {
-                        direction = -direction;
+                        direction = -1f * direction;
                     }
                     var deltaX = (float) (radius * Math.cos(Math.toRadians(angleDegree)));
                     var deltaZ = (float) (radius * Math.sin(Math.toRadians(angleDegree)));
                     sun.getPosition().x = deltaX;
                     sun.getPosition().z = deltaZ;
                     window.updateGameUnit(sun);
-                    Thread.sleep(10);
-                    radius += (moveStep * 0.5f * direction);
+                    Thread.sleep(RANDOM.nextInt(5) + 5);
+                    radius += (direction * RANDOM.nextFloat() * moveStep);
                     angleDegree += 0.5;
                 } catch (Exception e) {
                     LogUtil.logError("animate failed", e);
@@ -273,28 +274,16 @@ public class TestEngine implements Runnable, WindowEventListener {
     }
 
     private void runTask(MouseButtonEvent mouseButtonEvent) {
-        var newLogic = true;
-        if (newLogic) {
-            var ray = window.getRay(mouseButtonEvent);
-            Optional.ofNullable(surface.findIntersection(ray))
-                    .ifPresentOrElse(
-                            point -> {
-                                LogUtil.log("Intersection point: " + toStr(point));
-                                var tmpGraphicUnit = GameUnitDao.createSmallCircleGraphicUnit(point);
-                                addUnit(tmpGraphicUnit);
-                            },
-                            () -> LogUtil.log("No intersection")
-                    );
-        } else {
-            var worldCoordinates = window.getWorldCoordinates(mouseButtonEvent);
-            var tmpGraphicUnit = GameUnitDao.createCubeGraphicUnit(worldCoordinates);
-            addUnit(tmpGraphicUnit);
-            Optional.ofNullable(worldCoordinates)
-                    .ifPresentOrElse(
-                            point -> LogUtil.log("Intersection point: " + toStr(point)),
-                            () -> LogUtil.log("No intersection")
-                    );
-        }
+        var ray = window.getRay(mouseButtonEvent);
+        Optional.ofNullable(surface.findIntersection(ray))
+                .ifPresentOrElse(
+                        point -> {
+                            LogUtil.log("Intersection point: " + toStr(point));
+                            var tmpGraphicUnit = GameUnitDao.createSmallCircleGraphicUnit(point);
+                            addUnit(tmpGraphicUnit);
+                        },
+                        () -> LogUtil.log("No intersection")
+                );
     }
 
     private String toStr(Vector3f point) {

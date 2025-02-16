@@ -31,14 +31,7 @@ public class GameUnitDao {
                 position,
                 new Vector3f(0f, 0f, 0f),
                 1f,
-                ObjModel.createObjectModel(
-                        ObjModelProperties.create()
-                                .setObjectSource(objectCache.getObject("/obj/cube.obj"))
-                                .setTextureProperties(
-                                        TextureProperties
-                                                .create().setTextureProperties(textureCache.getTexture("/texture/any.png")))
-
-                ));
+                ObjModel.createObjectModel(createObjModelProperties("/obj/cube.obj", "/texture/any.png")));
     }
 
     public static GraphicUnit createSmallCircleGraphicUnit(Vector3f position) {
@@ -47,14 +40,11 @@ public class GameUnitDao {
                 position,
                 new Vector3f(0f, 0f, 0f),
                 1f,
-                ObjModel.createObjectModel(
-                        ObjModelProperties.create()
-                                .setObjectSource(objectCache.getObject("/obj/smallSphere.obj"))
-                                .setTextureProperties(
-                                        TextureProperties
-                                                .create().setTextureProperties(textureCache.getTexture("/texture/yellow.png")))
+                ObjModel.createObjectModel(createObjModelProperties("/obj/smallSphere.obj", "/texture/yellow.png")));
+    }
 
-                ));
+    private static String getObjectSource(String objPath) {
+        return objectCache.getObject(objPath);
     }
 
     private static GraphicUnit createMainUnit() {
@@ -63,14 +53,7 @@ public class GameUnitDao {
                 new Vector3f(0f, 0.0f, 0f),
                 new Vector3f(0f, 0f, 0f),
                 1f,
-                ObjModel.createObjectModel(
-                        ObjModelProperties.create()
-                                .setObjectSource(objectCache.getObject("/obj/cube.obj"))
-                                .setTextureProperties(
-                                        TextureProperties
-                                                .create().setTextureProperties(textureCache.getTexture("/texture/any.png")))
-
-                ));
+                ObjModel.createObjectModel(createObjModelProperties("/obj/cube.obj", "/texture/any.png")));
     }
 
     private static GraphicUnit createGroundUnit() {
@@ -79,14 +62,17 @@ public class GameUnitDao {
                 new Vector3f(0f, 0.0f, 0f),
                 new Vector3f(0f, 0f, 0f),
                 1f,
-                ObjModel.createObjectModel(
-                        ObjModelProperties.create()
-                                .setObjectSource(objectCache.getObject("/obj/map3.obj"))
-                                .setTextureProperties(
-                                        TextureProperties
-                                                .create().setTextureProperties(textureCache.getTexture("/texture/dark-green.png")))
+                ObjModel.createObjectModel(createObjModelProperties("/obj/map3.obj", "/texture/dark-green.png")));
+    }
 
-                ));
+    private static TextureProperties createTextureProperties(String imagePath) {
+        return TextureProperties.create().setTextureProperties(textureCache.getTexture(imagePath));
+    }
+
+    private static ObjModelProperties createObjModelProperties(String objPath, String imagePath) {
+        return ObjModelProperties.create()
+                .setObjectSource(getObjectSource(objPath))
+                .setTextureProperties(createTextureProperties(imagePath));
     }
 
     public List<GraphicUnit> getUnits() {
@@ -108,18 +94,11 @@ public class GameUnitDao {
                 new Vector3f(0f, 0.5f, 0f),
                 new Vector3f(0f, 0f, 0f),
                 1f,
-                ObjModel.createObjectModel(
-                        ObjModelProperties.create()
-                                .setObjectSource(objectCache.getObject("/obj/tor1.obj"))
-                                .setTextureProperties(
-                                        TextureProperties
-                                                .create().setTextureProperties(textureCache.getTexture("/texture/any.png")))
-
-                ));
+                ObjModel.createObjectModel(createObjModelProperties("/obj/tor1.obj", "/texture/any.png")));
 
     }
 
-    public GraphicUnit createSunGameUnit() {
+    public GraphicUnit createSunUnit() {
         long id = RANDOM.nextLong();
         var light = new Light();
         return new GraphicUnit(
@@ -128,13 +107,9 @@ public class GameUnitDao {
                 new Vector3f(0f, 0f, 0f),
                 1f,
                 ObjModel.createObjectModel(
-                        ObjModelProperties.create()
-                                .setObjectSource(objectCache.getObject("/obj/sun.obj"))
-                                .setTextureProperties(
-                                        TextureProperties
-                                                .create().setTextureProperties(textureCache.getTexture("/texture/sun.png")))
-                                .setLight(light)
-
-                ));
+                        createObjModelProperties(
+                                "/obj/sun.obj",
+                                "/texture/sun.png"
+                        ).setLight(light)));
     }
 }

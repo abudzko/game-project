@@ -2,6 +2,7 @@ package com.game.lwjgl.event;
 
 import com.game.lwjgl.annotation.LwjglMainThread;
 import com.game.utils.BufferUtils;
+import com.game.utils.log.LogUtil;
 import com.game.window.event.cursor.CursorPositionEvent;
 import com.game.window.event.key.KeyEvent;
 import com.game.window.event.listener.WindowEventListener;
@@ -32,8 +33,12 @@ public class LwjglEventManager {
         GLFW.glfwSetKeyCallback(windowId, new GLFWKeyCallback() {
             @Override
             public void invoke(long windowId, int key, int scanCode, int action, int mods) {
-                var keyEvent = EventFactory.buildKeyEvent(key, scanCode, action, mods);
-                processKeyEvent(keyEvent);
+                try {
+                    var keyEvent = EventFactory.buildKeyEvent(key, scanCode, action, mods);
+                    processKeyEvent(keyEvent);
+                } catch (Exception e) {
+                    LogUtil.logError(e.getMessage(), e);
+                }
             }
         });
 
@@ -43,31 +48,43 @@ public class LwjglEventManager {
 
             @Override
             public void invoke(long windowId, int button, int action, int mods) {
-                GLFW.glfwGetCursorPos(windowId, cursorX.asDoubleBuffer(), cursorY.asDoubleBuffer());
-                var x = cursorX.getDouble();
-                var y = cursorY.getDouble();
+                try {
+                    GLFW.glfwGetCursorPos(windowId, cursorX.asDoubleBuffer(), cursorY.asDoubleBuffer());
+                    var x = cursorX.getDouble();
+                    var y = cursorY.getDouble();
 
-                var mouseEvent = EventFactory.buildMouseEvent(button, action, mods, x, y);
-                processMouseEvent(mouseEvent);
-
-                cursorX.flip();
-                cursorY.flip();
+                    var mouseEvent = EventFactory.buildMouseEvent(button, action, mods, x, y);
+                    processMouseEvent(mouseEvent);
+                } catch (Exception e) {
+                    LogUtil.logError(e.getMessage(), e);
+                } finally {
+                    cursorX.flip();
+                    cursorY.flip();
+                }
             }
         });
 
         GLFW.glfwSetScrollCallback(windowId, new GLFWScrollCallback() {
             @Override
             public void invoke(long windowId, double offsetX, double offsetY) {
-                var scrollEvent = EventFactory.buildScrollEvent(offsetX, offsetY);
-                processScrollEvent(scrollEvent);
+                try {
+                    var scrollEvent = EventFactory.buildScrollEvent(offsetX, offsetY);
+                    processScrollEvent(scrollEvent);
+                } catch (Exception e) {
+                    LogUtil.logError(e.getMessage(), e);
+                }
             }
         });
 
         GLFW.glfwSetCursorPosCallback(windowId, new GLFWCursorPosCallback() {
             @Override
             public void invoke(long windowId, double x, double y) {
-                var cursorPositionEvent = EventFactory.buildCursorPositionEvent(x, y);
-                processCursorPositionEvent(cursorPositionEvent);
+                try {
+                    var cursorPositionEvent = EventFactory.buildCursorPositionEvent(x, y);
+                    processCursorPositionEvent(cursorPositionEvent);
+                } catch (Exception e) {
+                    LogUtil.logError(e.getMessage(), e);
+                }
             }
         });
 
@@ -80,8 +97,12 @@ public class LwjglEventManager {
         GLFW.glfwSetWindowSizeCallback(windowId, new GLFWWindowSizeCallback() {
             @Override
             public void invoke(long windowId, int newWidth, int newHeight) {
-                var windowResizeEvent = EventFactory.buildWindowResizeEvent(newWidth, newHeight);
-                processWindowResizeEvent(windowResizeEvent);
+                try {
+                    var windowResizeEvent = EventFactory.buildWindowResizeEvent(newWidth, newHeight);
+                    processWindowResizeEvent(windowResizeEvent);
+                } catch (Exception e) {
+                    LogUtil.logError(e.getMessage(), e);
+                }
             }
         });
     }

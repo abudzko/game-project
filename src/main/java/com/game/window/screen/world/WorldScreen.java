@@ -123,15 +123,6 @@ public class WorldScreen extends AbstractWindowEventListener {
         deletedGraphicUnits.add(graphicUnit);
     }
 
-    // TODO ??
-    public Vector3f getWorldCoordinates(MouseButtonEvent mouseButtonEvent) {
-        var converter = new CameraToWorldConverter(mouseButtonEvent, createProjectionMatrix(), getCamera().getCameraViewMatrixCopy());
-        var rayVector = converter.directionPoint(worldScreenState);
-        var wordCoordinates = new GroundIntersection(getCamera().getCameraPosition()).findPoint(rayVector);
-        LogUtil.log(String.format("wordCoordinates: X = %s, Y = %s, Z = %s", wordCoordinates.x, wordCoordinates.y, wordCoordinates.z));
-        return wordCoordinates;
-    }
-
     public Ray getRay(MouseButtonEvent mouseButtonEvent) {
         var converter = new CameraToWorldConverter(mouseButtonEvent, createProjectionMatrix(), getCamera().getCameraViewMatrixCopy());
         LogUtil.log(getCamera().getCameraViewMatrixCopy().toString());

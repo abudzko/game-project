@@ -143,11 +143,6 @@ public class Window extends AbstractWindowEventListener {
     }
 
     // TODO ??
-    public Vector3f getWorldCoordinates(MouseButtonEvent mouseButtonEvent) {
-        return worldScreen.getWorldCoordinates(mouseButtonEvent);
-    }
-
-    // TODO ??
     public Ray getRay(MouseButtonEvent mouseButtonEvent) {
         return worldScreen.getRay(mouseButtonEvent);
     }

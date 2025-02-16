@@ -35,7 +35,6 @@ public class PngTexture {
             // Create a byte buffer big enough to store RGBA values
 
             this.buffer = BufferUtils.createByteBuffer(new byte[RGBA.getNumComponents() * pngDecoder.getWidth() * pngDecoder.getHeight()]);
-//            this.buffer = ByteBuffer.allocateDirect(RGBA.getNumComponents() * pngDecoder.getWidth() * pngDecoder.getHeight());
             // Decode
             pngDecoder.decode(buffer, pngDecoder.getWidth() * RGBA.getNumComponents(), RGBA);
             // Flip the buffer(prepare for reading)
@@ -46,7 +45,7 @@ public class PngTexture {
         }
     }
 
-    public void loadTexture() {
+    private void loadTexture() {
         // Create a texture
         var id = GL30.glGenTextures();
 
