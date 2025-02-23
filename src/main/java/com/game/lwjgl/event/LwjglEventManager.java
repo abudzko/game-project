@@ -42,12 +42,13 @@ public class LwjglEventManager {
             }
         });
 
-        var cursorX = BufferUtils.createByteBuffer(new byte[8]);
-        var cursorY = BufferUtils.createByteBuffer(new byte[8]);
+
         GLFW.glfwSetMouseButtonCallback(windowId, new GLFWMouseButtonCallback() {
 
             @Override
             public void invoke(long windowId, int button, int action, int mods) {
+                var cursorX = BufferUtils.createByteBuffer(new byte[8]);
+                var cursorY = BufferUtils.createByteBuffer(new byte[8]);
                 try {
                     GLFW.glfwGetCursorPos(windowId, cursorX.asDoubleBuffer(), cursorY.asDoubleBuffer());
                     var x = cursorX.getDouble();
@@ -58,8 +59,8 @@ public class LwjglEventManager {
                 } catch (Exception e) {
                     LogUtil.logError(e.getMessage(), e);
                 } finally {
-                    cursorX.flip();
-                    cursorY.flip();
+                    BufferUtils.memFree(cursorX);
+                    BufferUtils.memFree(cursorY);
                 }
             }
         });

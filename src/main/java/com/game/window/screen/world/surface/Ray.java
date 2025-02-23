@@ -1,4 +1,4 @@
-package com.game.window.camera.world.surface;
+package com.game.window.screen.world.surface;
 
 import org.joml.Vector3f;
 

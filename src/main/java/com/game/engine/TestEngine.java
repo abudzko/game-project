@@ -4,18 +4,16 @@ import com.game.dao.GameUnitDao;
 import com.game.model.GraphicUnit;
 import com.game.utils.log.LogUtil;
 import com.game.window.Window;
-import com.game.window.camera.world.surface.Surface;
-import com.game.window.camera.world.surface.TrianglesBuilder;
 import com.game.window.event.key.KeyEvent;
 import com.game.window.event.listener.WindowEventListener;
 import com.game.window.event.mouse.MouseButton;
 import com.game.window.event.mouse.MouseButtonAction;
 import com.game.window.event.mouse.MouseButtonEvent;
+import com.game.window.screen.world.surface.StaticDynamicSurface;
 import org.apache.commons.math3.util.Precision;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Random;
@@ -30,7 +28,7 @@ public class TestEngine implements Runnable, WindowEventListener {
 
     private static final Random RANDOM = new Random();
     private final GameUnitDao gameUnitDao = new GameUnitDao();
-    private final Surface surface = new Surface();
+    private final StaticDynamicSurface surface = StaticDynamicSurface.create();
     private final Window window;
     private final float moveStep = 0.01f;
     private final Queue<GraphicUnit> tmpUnits = new ConcurrentLinkedQueue<>();
@@ -54,21 +52,23 @@ public class TestEngine implements Runnable, WindowEventListener {
 
     @Override
     public void run() {
-        window.addRootEventListener(this);
+        window.addEventChildListener(this);
         isRunning = true;
         var mainUnit = gameUnitDao.getMainUnit();
         var groundUnit = gameUnitDao.getGroundUnit();
         selectedUnit = mainUnit;
         window.addGameUnit(mainUnit);
+
+        surface.addDynamicGraphicUnit(mainUnit);
         animate(mainUnit);
         window.addGameUnit(groundUnit);
         gameUnitDao.getUnits().forEach(window::addGameUnit);
+
         addSun();
-        addSun();
-        var trianglesBuilder = new TrianglesBuilder();
-        surface.addTriangles(trianglesBuilder.toTriangles(mainUnit.getModel()));
-        surface.addTriangles(trianglesBuilder.toTriangles(groundUnit.getModel()));
-        surface.build();
+        surface.addStaticGraphicUnit(groundUnit);
+
+        surface.buildStaticSurface();
+        surface.buildDynamicSurface();
     }
 
     private void addSun() {
@@ -82,7 +82,8 @@ public class TestEngine implements Runnable, WindowEventListener {
             while (isRunning) {
                 try {
                     graphicUnit.getRotation().y = rotation(graphicUnit.getRotation().y);
-                    window.updateGameUnit(graphicUnit);
+                    graphicUnit.updateWorldMatrix();
+//                    surface.buildDynamicSurface();
                     Thread.sleep(100);
                 } catch (Exception e) {
                     LogUtil.logError("animate failed", e);
@@ -110,7 +111,7 @@ public class TestEngine implements Runnable, WindowEventListener {
                     var deltaZ = (float) (radius * Math.sin(Math.toRadians(angleDegree)));
                     sun.getPosition().x = deltaX;
                     sun.getPosition().z = deltaZ;
-                    window.updateGameUnit(sun);
+                    sun.updateWorldMatrix();
                     Thread.sleep(RANDOM.nextInt(5) + 5);
                     radius += (direction * RANDOM.nextFloat() * moveStep);
                     angleDegree += 0.5;
@@ -123,70 +124,16 @@ public class TestEngine implements Runnable, WindowEventListener {
         thread.start();
     }
 
-    private void addRandomUnits() {
-        var units = new ArrayList<GraphicUnit>();
-        for (int i = 0; i < 100; i++) {
-            var gameUnit = gameUnitDao.createGameUnit();
-            units.add(gameUnit);
-            window.addGameUnit(gameUnit);
-        }
-        Thread thread = new Thread(() -> {
-            final var path = new float[]{0};
-            final var xDirections = new int[units.size()];
-            final var yDirections = new int[units.size()];
-            final var zDirections = new int[units.size()];
-            for (int i = 0; i < xDirections.length; i++) {
-                xDirections[i] = (RANDOM.nextBoolean() ? 1 : -1);
-                yDirections[i] = (RANDOM.nextBoolean() ? 1 : -1);
-                zDirections[i] = (RANDOM.nextBoolean() ? 1 : -1);
-            }
-            while (isRunning) {
-                for (int i = 0; i < units.size(); i++) {
-                    var unit = units.get(i);
-                    var xd = xDirections[i];
-                    var yd = yDirections[i];
-                    var zd = zDirections[i];
-                    unit.getPosition().x = resolvePosition(unit.getPosition().x, xd);
-                    unit.getPosition().y = resolveYPosition(unit.getPosition().y, yd);
-                    unit.getPosition().z = resolvePosition(unit.getPosition().z, zd);
-                    unit.getRotation().x = rotation(unit.getRotation().x);
-                    window.updateGameUnit(unit);
-                }
-                path[0] += moveStep;
-                if (path[0] >= .2) {
-                    path[0] = 0;
-                    for (int i = 0; i < xDirections.length; i++) {
-                        xDirections[i] = (RANDOM.nextBoolean() ? 1 : -1);
-                        yDirections[i] = (RANDOM.nextBoolean() ? 1 : -1);
-                        zDirections[i] = (RANDOM.nextBoolean() ? 1 : -1);
-                    }
-                }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        thread.setDaemon(true);
-        thread.start();
-    }
-
-    private float resolvePosition(float pos, int direction) {
-        return pos >= 10 || pos <= -10 ? 0 : pos + moveStep * direction;
-    }
-
-    private float resolveYPosition(float pos, int direction) {
-        return pos >= 5 || pos <= 0 ? 1 : pos + moveStep * direction;
-    }
-
-    public void setRunning(boolean isRunning) {
-        this.isRunning = isRunning;
-    }
-
     @Override
     public void event(KeyEvent keyEvent) {
-        handleKeyEventForSelectedGameUnit(keyEvent);
+        Runnable runnable = () -> {
+            try {
+                handleKeyEventForSelectedGameUnit(keyEvent);
+            } catch (Exception e) {
+                LogUtil.logError(e.getMessage(), e);
+            }
+        };
+        executorService.submit(runnable);
     }
 
     private void handleKeyEventForSelectedGameUnit(KeyEvent keyEvent) {
@@ -207,10 +154,10 @@ public class TestEngine implements Runnable, WindowEventListener {
                         break;
                     case KEY_ESCAPE:
                         GLFW.glfwSetWindowShouldClose(window.getWindowId(), true);
-                        LogUtil.log(String.format("Close window %s", window.getWindowId()));
+                        LogUtil.logDebug(String.format("Close window %s", window.getWindowId()));
                         break;
                     default:
-                        LogUtil.log(String.format("Pressed %s", keyEvent.getKeyDeprecated()));
+//                        LogUtil.logDebug(String.format("Pressed %s", keyEvent.getKeyDeprecated()));
                         break;
                 }
                 break;
@@ -242,9 +189,10 @@ public class TestEngine implements Runnable, WindowEventListener {
     private void moveX(float stepX) {
         var localSelectedUnit = selectedUnit;
         if (localSelectedUnit != null) {
-            System.out.println("X: " + localSelectedUnit.getPosition().x);
+//            System.out.println("X: " + localSelectedUnit.getPosition().x);
             localSelectedUnit.getPosition().x += stepX;
-            window.updateGameUnit(localSelectedUnit);
+            localSelectedUnit.updateWorldMatrix();
+            surface.buildDynamicSurface();
         }
     }
 
@@ -253,7 +201,8 @@ public class TestEngine implements Runnable, WindowEventListener {
         if (localSelectedUnit != null) {
             System.out.println("Z: " + localSelectedUnit.getPosition().z);
             localSelectedUnit.getPosition().z += stepZ;
-            window.updateGameUnit(localSelectedUnit);
+            localSelectedUnit.updateWorldMatrix();
+            surface.buildDynamicSurface();
         }
     }
 
@@ -269,7 +218,6 @@ public class TestEngine implements Runnable, WindowEventListener {
                 }
             };
             executorService.submit(runnable);
-
         }
     }
 
@@ -278,11 +226,11 @@ public class TestEngine implements Runnable, WindowEventListener {
         Optional.ofNullable(surface.findIntersection(ray))
                 .ifPresentOrElse(
                         point -> {
-                            LogUtil.log("Intersection point: " + toStr(point));
+                            LogUtil.logDebug("Intersection point: " + toStr(point));
                             var tmpGraphicUnit = GameUnitDao.createSmallCircleGraphicUnit(point);
                             addUnit(tmpGraphicUnit);
                         },
-                        () -> LogUtil.log("No intersection")
+                        () -> LogUtil.logDebug("No intersection")
                 );
     }
 
@@ -298,6 +246,9 @@ public class TestEngine implements Runnable, WindowEventListener {
     private void addUnit(GraphicUnit tmpGraphicUnit) {
         window.addGameUnit(tmpGraphicUnit);
         tmpUnits.add(tmpGraphicUnit);
+
+        surface.addDynamicGraphicUnit(tmpGraphicUnit);
+        surface.buildDynamicSurface();
 //        if (tmpUnits.size() > 10) {
 //            var last = tmpUnits.remove();
 //            window.deleteGameUnit(last);

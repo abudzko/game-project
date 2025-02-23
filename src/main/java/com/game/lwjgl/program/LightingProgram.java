@@ -168,7 +168,7 @@ public class LightingProgram {
         glBindVertexArray(vaoId);
 
         // Vertices
-        var vertices = model.vertices();
+        var vertices = model.verticesBuffer();
         int verticesVboId = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, verticesVboId);
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
@@ -188,7 +188,7 @@ public class LightingProgram {
         BufferUtils.memFree(textureVertices);
 
         // Normals
-        var vertexNormals = model.normals();
+        var vertexNormals = model.normalsBuffer();
         if (vertexNormals != null) {
             int normalsVboId = glGenBuffers();
             glBindBuffer(GL_ARRAY_BUFFER, normalsVboId);
@@ -200,7 +200,7 @@ public class LightingProgram {
         }
 
         // Indexes
-        var indexes = model.indexes();
+        var indexes = model.indexesBuffer();
         int indexesVboId = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexesVboId);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes, GL_STATIC_DRAW);

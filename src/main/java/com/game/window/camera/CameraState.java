@@ -23,7 +23,7 @@ class CameraState {
     float previousCursorPositionY;
     private float fov = (float) Math.toRadians(60f);
     private float zNear = 0.05f;
-    private float zFar = 30.f;
+    private float zFar = 120.f;
     private float moveStep = 0.1f;
     private Matrix4f cameraViewMatrix;
     private boolean cameraViewMatrixChanged = false;

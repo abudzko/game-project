@@ -66,7 +66,7 @@ public class EventFactory {
                 break;
             default:
                 k = Keys.KEY_UNSUPPORTED;
-                LogUtil.log(String.format("Pressed %s", key));
+//                LogUtil.logDebug(String.format("Pressed %s", key));
                 break;
         }
         return k;

@@ -5,6 +5,7 @@ import com.game.model.GraphicUnit;
 import com.game.model.Light;
 import com.game.model.obj.ObjModel;
 import com.game.model.obj.ObjModelProperties;
+import com.game.utils.log.LogUtil;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -57,12 +58,15 @@ public class GameUnitDao {
     }
 
     private static GraphicUnit createGroundUnit() {
-        return new GraphicUnit(
+        var start = System.currentTimeMillis();
+        var groundUnit = new GraphicUnit(
                 1,
                 new Vector3f(0f, 0.0f, 0f),
                 new Vector3f(0f, 0f, 0f),
                 1f,
-                ObjModel.createObjectModel(createObjModelProperties("/obj/map3.obj", "/texture/dark-green.png")));
+                ObjModel.createObjectModel(createObjModelProperties("/obj/map2.obj", "/texture/dark-green.png")));
+        LogUtil.logDebug("createGroundUnit: " + (System.currentTimeMillis() - start) + "ms");
+        return groundUnit;
     }
 
     private static TextureProperties createTextureProperties(String imagePath) {

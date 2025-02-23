@@ -5,6 +5,7 @@ import com.game.model.Light;
 import com.game.model.texture.ObjTexture;
 import com.game.model.texture.Texture;
 import com.game.utils.BufferUtils;
+import com.game.utils.log.LogUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -56,7 +57,11 @@ public class ObjModel implements Model {
         int vertexNormalsIndex = 1;
         int textureVerticesIndex = 1;
 
+        var start = System.currentTimeMillis();
         var lines = objectSource.split(LF);
+        LogUtil.logDebug("split: " + (System.currentTimeMillis() - start) + "ms");
+
+        start = System.currentTimeMillis();
         for (var line : lines) {
             var elements = line.split(WHITE_SPACE);
             var elementIndex = 0;
@@ -103,7 +108,9 @@ public class ObjModel implements Model {
                     break;
             }
         }
+        LogUtil.logDebug("for: " + (System.currentTimeMillis() - start) + "ms");
 
+        start = System.currentTimeMillis();
         int uniqueCount = new HashSet<>(indexTupleList).size();
         vertices = new float[uniqueCount * 3];
         normals = new float[uniqueCount * 3];
@@ -139,6 +146,7 @@ public class ObjModel implements Model {
             }
             i++;
         }
+        LogUtil.logDebug("vertices: " + (System.currentTimeMillis() - start) + "ms");
     }
 
     /**
@@ -176,15 +184,22 @@ public class ObjModel implements Model {
     }
 
     @Override
-    public FloatBuffer vertices() {
+    public FloatBuffer verticesBuffer() {
         if (vertices == null) {
             parseObj();
         }
         return BufferUtils.createFloatBuffer4f(vertices);
     }
 
+    public float[] getVertices() {
+        if (vertices == null) {
+            parseObj();
+        }
+        return vertices;
+    }
+
     @Override
-    public FloatBuffer normals() {
+    public FloatBuffer normalsBuffer() {
         if (normals == null) {
             parseObj();
         }
@@ -192,11 +207,19 @@ public class ObjModel implements Model {
     }
 
     @Override
-    public IntBuffer indexes() {
+    public IntBuffer indexesBuffer() {
         if (indexes == null) {
             parseObj();
         }
         return BufferUtils.createIntBuffer(indexes);
+    }
+
+    @Override
+    public int[] getIndexes() {
+        if (indexes == null) {
+            parseObj();
+        }
+        return indexes;
     }
 
     @Override

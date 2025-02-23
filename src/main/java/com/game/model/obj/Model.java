@@ -14,14 +14,16 @@ public interface Model {
      * Vertices of 3D model [x0, y0, z0, x1, y1, z1, ...]<br>
      * Where x0, y0, z0 is single vertex
      */
-    FloatBuffer vertices();
+    FloatBuffer verticesBuffer();
+
+    float[] getVertices();
 
     /**
      * Normals are used in lighting
      * Normals consist of three coordinates [x0, y0, z0, x1, y1, z1, ...]<br>
      * Where x0, y0, z0 is single normal
      */
-    FloatBuffer normals();
+    FloatBuffer normalsBuffer();
 
     /**
      * Indexes of vertices forming triangles<br>
@@ -31,7 +33,9 @@ public interface Model {
      * Index is used to find tuple of vertex(x0, y0, z0, normal(x1, y1, z1) and texture(x2, y2)
      * in three arrays vertices[], normals[], textures[]
      */
-    IntBuffer indexes();
+    IntBuffer indexesBuffer();
+
+    int[] getIndexes();
 
     int indexesCount();
 

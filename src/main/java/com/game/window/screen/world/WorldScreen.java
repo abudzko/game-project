@@ -7,14 +7,11 @@ import com.game.model.DrawableModel;
 import com.game.model.GraphicUnit;
 import com.game.utils.log.LogUtil;
 import com.game.window.camera.Camera;
-import com.game.window.camera.world.CameraToWorldConverter;
-import com.game.window.camera.world.GroundIntersection;
-import com.game.window.camera.world.surface.Ray;
+import com.game.window.screen.world.surface.Ray;
 import com.game.window.event.listener.AbstractWindowEventListener;
 import com.game.window.event.mouse.MouseButtonEvent;
 import com.game.window.event.resize.ResizeWindowEvent;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -112,22 +109,15 @@ public class WorldScreen extends AbstractWindowEventListener {
         }
     }
 
-    public void updateGameUnit(GraphicUnit graphicUnit) {
-        var drawableModel = drawableModels.get(graphicUnit.getId());
-        if (drawableModel != null) {
-            drawableModel.updateWorldMatrix();
-        }
-    }
-
     public void deleteGameUnit(GraphicUnit graphicUnit) {
         deletedGraphicUnits.add(graphicUnit);
     }
 
     public Ray getRay(MouseButtonEvent mouseButtonEvent) {
         var converter = new CameraToWorldConverter(mouseButtonEvent, createProjectionMatrix(), getCamera().getCameraViewMatrixCopy());
-        LogUtil.log(getCamera().getCameraViewMatrixCopy().toString());
+//        LogUtil.logDebug(getCamera().getCameraViewMatrixCopy().toString());
         var directionPoint = converter.directionPoint(worldScreenState);
-        LogUtil.log(String.format("directionPoint: X = %s, Y = %s, Z = %s", directionPoint.x, directionPoint.y, directionPoint.z));
+//        LogUtil.logDebug(String.format("directionPoint: X = %s, Y = %s, Z = %s", directionPoint.x, directionPoint.y, directionPoint.z));
         return new Ray(getCamera().getCameraPosition(), directionPoint);
     }
 

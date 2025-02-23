@@ -26,18 +26,18 @@ class CameraEventHandler implements WindowEventListener {
         float deltaX = delta * (float) Math.cos(state.angle);
         state.centerX += deltaX;
         state.eyeX += deltaX;
-        LogUtil.log(String.format("Move camera to %s eyeX position dX = %s, dZ = %s angle = %s ", state.eyeX, deltaX, deltaZ, state.angle * 180 / Math.PI));
+//        LogUtil.logDebug(String.format("Move camera to %s eyeX position dX = %s, dZ = %s angle = %s ", state.eyeX, deltaX, deltaZ, state.angle * 180 / Math.PI));
         look();
     }
 
     private void stepY(float delta) {
         float newValueY = state.eyeY + delta;
         if (newValueY > 0.1) {
-            LogUtil.log(String.format("Move camera from %s to %s eyeY position", state.eyeY, newValueY));
+//            LogUtil.logDebug(String.format("Move camera from %s to %s eyeY position", state.eyeY, newValueY));
             state.eyeY = newValueY;
             look();
         } else {
-            LogUtil.log(String.format("Can't move camera from %s to %s eyeY position", state.eyeY, newValueY));
+//            LogUtil.logDebug(String.format("Can't move camera from %s to %s eyeY position", state.eyeY, newValueY));
         }
     }
 
@@ -49,7 +49,7 @@ class CameraEventHandler implements WindowEventListener {
         float deltaX = delta * (float) Math.sin(state.angle);
         state.centerX += deltaX;
         state.eyeX += deltaX;
-        LogUtil.log(String.format("Move camera to %s eyeZ position angle = %s deltaZ = %s", state.eyeZ, state.angle * 180 / Math.PI, deltaZ));
+        LogUtil.logDebug(String.format("Move camera to %s eyeZ position angle = %s deltaZ = %s", state.eyeZ, state.angle * 180 / Math.PI, deltaZ));
         look();
     }
 
@@ -59,7 +59,7 @@ class CameraEventHandler implements WindowEventListener {
         state.angle += angleDelta;
         state.eyeX = state.centerX + (float) (Math.sin(state.angle) * r);
         state.eyeZ = state.centerZ + (float) (Math.cos(state.angle) * r);
-//        LogUtil.log(String.format("r: %s, angle: %s, eyeX: %s, eyeZ: %s", r, state.angle, state.eyeX, state.eyeZ));
+//        LogUtil.logDebug(String.format("r: %s, angle: %s, eyeX: %s, eyeZ: %s", r, state.angle, state.eyeX, state.eyeZ));
         look();
     }
 

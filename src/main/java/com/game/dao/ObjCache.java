@@ -17,7 +17,10 @@ public class ObjCache {
                 objPath,
                 path -> {
                     try {
-                        return IOUtils.resourceToString(path, StandardCharsets.UTF_8);
+                        var start = System.currentTimeMillis();
+                        String resource = IOUtils.resourceToString(path, StandardCharsets.UTF_8);
+                        LogUtil.logDebug("getObject: " + (System.currentTimeMillis() - start) + "ms");
+                        return resource;
                     } catch (IOException e) {
                         LogUtil.logError(e.getMessage(), e);
                         return "";

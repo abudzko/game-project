@@ -4,13 +4,12 @@ import com.game.lwjgl.annotation.LwjglMainThread;
 import com.game.lwjgl.event.LwjglEventManager;
 import com.game.model.GraphicUnit;
 import com.game.utils.log.LogUtil;
-import com.game.window.camera.world.surface.Ray;
+import com.game.window.screen.world.surface.Ray;
 import com.game.window.event.listener.AbstractWindowEventListener;
 import com.game.window.event.mouse.MouseButtonEvent;
 import com.game.window.event.resize.ResizeWindowEvent;
 import com.game.window.screen.world.WorldScreen;
 import com.game.window.screen.world.WorldScreenState;
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
@@ -55,7 +54,7 @@ public class Window extends AbstractWindowEventListener {
             GLFW.glfwTerminate();
             throw new IllegalStateException("Failed to create the GLFW window");
         }
-        LogUtil.log("Window id = " + id);
+        LogUtil.logInfo("Window id = " + id);
         return id;
     }
 
@@ -155,10 +154,6 @@ public class Window extends AbstractWindowEventListener {
 
     public void addGameUnit(GraphicUnit graphicUnit) {
         worldScreen.addGameUnit(graphicUnit);
-    }
-
-    public void updateGameUnit(GraphicUnit graphicUnit) {
-        worldScreen.updateGameUnit(graphicUnit);
     }
 
     public void deleteGameUnit(GraphicUnit graphicUnit) {

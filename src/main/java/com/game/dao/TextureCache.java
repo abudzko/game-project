@@ -18,7 +18,10 @@ public class TextureCache {
                 imagePath,
                 path -> {
                     try {
-                        return IOUtils.resourceToByteArray(path);
+                        var start = System.currentTimeMillis();
+                        byte[] texture = IOUtils.resourceToByteArray(path);
+                        LogUtil.logDebug("getTexture: " + (System.currentTimeMillis() - start) + "ms");
+                        return texture;
                     } catch (IOException e) {
                         LogUtil.logError(e.getMessage(), e);
                         return new byte[0];

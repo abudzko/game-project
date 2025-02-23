@@ -2,7 +2,7 @@ package com.game;
 
 import org.lwjgl.Version;
 
-import static com.game.utils.log.LogUtil.log;
+import static com.game.utils.log.LogUtil.logInfo;
 
 /**
  * Launch new Game instance
@@ -13,7 +13,7 @@ public class GameLauncher {
     }
 
     public void launch() {
-        log(String.format("Starting LWJGL: %s version.", Version.getVersion()));
+        logInfo(String.format("Starting LWJGL: %s version.", Version.getVersion()));
         new Game().start();
     }
 }

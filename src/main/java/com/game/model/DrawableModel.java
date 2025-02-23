@@ -5,7 +5,6 @@ import org.joml.Matrix4f;
 public class DrawableModel {
     private final int vaoId;
     private final GraphicUnit graphicUnit;
-    private volatile Matrix4f worldMatrix;
 
     public DrawableModel(
             int vaoId,
@@ -17,13 +16,7 @@ public class DrawableModel {
     }
 
     public void updateWorldMatrix() {
-        Matrix4f matrix4f = new Matrix4f();
-        matrix4f.translate(getGraphicUnit().getPosition())
-                .rotateX((float) Math.toRadians(getGraphicUnit().getRotation().x))
-                .rotateY((float) Math.toRadians(getGraphicUnit().getRotation().y))
-                .rotateZ((float) Math.toRadians(getGraphicUnit().getRotation().z))
-                .scale(getGraphicUnit().getScale());
-        this.worldMatrix = matrix4f;
+        getGraphicUnit().updateWorldMatrix();
     }
 
     public int getVaoId() {
@@ -51,6 +44,6 @@ public class DrawableModel {
     }
 
     public Matrix4f getWorldMatrix() {
-        return worldMatrix;
+        return getGraphicUnit().getWorldMatrix();
     }
 }
