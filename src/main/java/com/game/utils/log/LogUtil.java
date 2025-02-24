@@ -1,7 +1,10 @@
 package com.game.utils.log;
 
+import org.apache.commons.math3.util.Precision;
+import org.joml.Vector3f;
+
 public class LogUtil {
-    private static boolean debug = true;
+    private static final boolean debug = true;
 
     public static void logInfo(String message) {
         System.out.println("INFO: " + message);
@@ -24,5 +27,14 @@ public class LogUtil {
         if (debug) {
             System.out.println("DEBUG: " + message);
         }
+    }
+
+    public static String toStr(Vector3f point) {
+        int scale = 3;
+        return String.format("%s %s %s",
+                Precision.round(point.x, scale),
+                Precision.round(point.y, scale),
+                Precision.round(point.z, scale)
+        );
     }
 }

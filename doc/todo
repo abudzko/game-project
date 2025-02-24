@@ -9,3 +9,8 @@ update java and use virtual threads
 +lighting, Phong shading algorithm
 +multiple lights
 +sun
+
+
+npc
+"patrol the area," "sell items," "attack the player"
+chasing, fleeing

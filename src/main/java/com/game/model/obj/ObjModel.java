@@ -10,12 +10,9 @@ import com.game.utils.log.LogUtil;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Represents Blender .obj file
@@ -24,8 +21,6 @@ import java.util.stream.Collectors;
  */
 public class ObjModel implements Model {
     private static final String LF = "\n";
-    private static final String WHITE_SPACE = " ";
-    private static final String SLASH = "/";
     private final String objectSource;
     private final Light light;
     private final TextureProperties textureProperties;
@@ -47,61 +42,117 @@ public class ObjModel implements Model {
         return new ObjModel(properties);
     }
 
+    /**
+     * @param line   = "f 1/2/2 2/3/2 3/32/2"
+     * @param result size is 9 - index, texture, normal
+     */
+    private static void parseFLine(String line, int[] result) {
+        int j = 0;
+        int start = 2;
+        int radix = 10;
+        for (int i = start; i < line.length(); i++) {
+            char ch = line.charAt(i);
+            if (ch == '/' || ch == ' ') {
+                result[j] = Integer.parseInt(line, start, i, radix);
+                start = i + 1;
+                j++;
+            }
+        }
+        result[j] = Integer.parseInt(line, start, line.length(), radix);
+    }
+
+    /**
+     * @param line   = "v 0.2 0.3 1.3"
+     * @param result size is 3 - x, y, z
+     */
+    private static void parseVertexLine(String line, float[] result) {
+        int j = 0;
+        int start = line.indexOf(' ') + 1;
+        for (int i = start; i < line.length(); i++) {
+            char ch = line.charAt(i);
+            if (ch == ' ') {
+                result[j] = Float.parseFloat(line.substring(start, i));
+                start = i + 1;
+                j++;
+            }
+        }
+        result[j] = Float.parseFloat(line.substring(start));
+    }
+
+    /**
+     * @param line   = "v 0.2 0.3 1.3"
+     * @param result size is 2 - x, y
+     */
+    private static void parseTextureLine(String line, float[] result) {
+        int j = 0;
+        int start = line.indexOf(' ') + 1;
+        for (int i = start; i < line.length(); i++) {
+            char ch = line.charAt(i);
+            if (ch == ' ') {
+                result[j] = Float.parseFloat(line.substring(start, i));
+                start = i + 1;
+                j++;
+            }
+        }
+        result[j] = Float.parseFloat(line.substring(start));
+    }
+
     private void parseObj() {
         var verticesMap = new HashMap<Integer, Vertex>();
         var normalsMap = new HashMap<Integer, VertexNormal>();
         var textureMap = new HashMap<Integer, TextureVertex>();
 
-        var indexTupleList = new ArrayList<IndexTuple>();
+        var indexTupleList = new ArrayList<IndexTuple>(32);
         int verticesIndex = 1;
         int vertexNormalsIndex = 1;
         int textureVerticesIndex = 1;
 
         var start = System.currentTimeMillis();
         var lines = objectSource.split(LF);
-        LogUtil.logDebug("split: " + (System.currentTimeMillis() - start) + "ms");
+        LogUtil.logDebug("objectSource split: " + (System.currentTimeMillis() - start) + "ms");
 
         start = System.currentTimeMillis();
+        var int9Result = new int[9];
+        var float3Result = new float[3];
+        var float2Result = new float[2];
         for (var line : lines) {
-            var elements = line.split(WHITE_SPACE);
-            var elementIndex = 0;
-            var type = elements[elementIndex++];
+            var type = line.substring(0, line.indexOf(' '));
             switch (type) {
                 // Vertices
                 case "v":
                     var vertex = new Vertex();
-                    vertex.x = elements[elementIndex++];
-                    vertex.y = elements[elementIndex++];
-                    vertex.z = elements[elementIndex];
+                    parseVertexLine(line, float3Result);
+                    vertex.x = float3Result[0];
+                    vertex.y = float3Result[1];
+                    vertex.z = float3Result[2];
                     verticesMap.put(verticesIndex++, vertex);
                     break;
                 // Texture vertices
                 case "vt":
                     var textureVertex = new TextureVertex();
-                    textureVertex.x = elements[elementIndex++];
-                    textureVertex.y = elements[elementIndex];
+                    parseTextureLine(line, float2Result);
+                    textureVertex.x = float2Result[0];
+                    textureVertex.y = float2Result[1];
                     textureMap.put(textureVerticesIndex++, textureVertex);
                     break;
                 // Normals
                 case "vn":
                     var vertexNormal = new VertexNormal();
-                    vertexNormal.x = elements[elementIndex++];
-                    vertexNormal.y = elements[elementIndex++];
-                    vertexNormal.z = elements[elementIndex];
+                    parseVertexLine(line, float3Result);
+                    vertexNormal.x = float3Result[0];
+                    vertexNormal.y = float3Result[1];
+                    vertexNormal.z = float3Result[2];
                     normalsMap.put(vertexNormalsIndex++, vertexNormal);
                     break;
                 // Faces
                 case "f":
-                    var vertexIndexList = extractIndexes(elements, 0);
-                    var textureIndexList = extractIndexes(elements, 1);
-                    var normalIndexList = extractIndexes(elements, 2);
-
-                    for (int i = 0; i < 3; i++) {
-                        var indexPair = new IndexTuple();
-                        indexPair.vertexIndex = vertexIndexList.get(i);
-                        indexPair.normalIndex = normalIndexList.get(i);
-                        indexPair.textureIndex = textureIndexList.get(i);
-                        indexTupleList.add(indexPair);
+                    parseFLine(line, int9Result);
+                    for (int i = 0; i < int9Result.length; i++) {
+                        var indexTuple = new IndexTuple();
+                        indexTuple.vertexIndex = int9Result[i];
+                        indexTuple.textureIndex = int9Result[++i];
+                        indexTuple.normalIndex = int9Result[++i];
+                        indexTupleList.add(indexTuple);
                     }
                     break;
                 default:
@@ -110,13 +161,13 @@ public class ObjModel implements Model {
         }
         LogUtil.logDebug("for: " + (System.currentTimeMillis() - start) + "ms");
 
-        start = System.currentTimeMillis();
         int uniqueCount = new HashSet<>(indexTupleList).size();
         vertices = new float[uniqueCount * 3];
         normals = new float[uniqueCount * 3];
         textures = new float[uniqueCount * 2];
         indexes = new int[indexTupleList.size()];
 
+        start = System.currentTimeMillis();
         var indexTuplesMap = new HashMap<IndexTuple, Integer>();
         var vi = 0;
         var ni = 0;
@@ -149,38 +200,21 @@ public class ObjModel implements Model {
         LogUtil.logDebug("vertices: " + (System.currentTimeMillis() - start) + "ms");
     }
 
-    /**
-     * @param elements : f 21/34/1 10/17/2 2/4/3
-     * @param j        0 or 1 or 2
-     * @return if 0 - 21 10 2, if 1 - 34 17 4, if 2 - 1 2 3
-     */
-    private List<Integer> extractIndexes(String[] elements, int j) {
-        var indexes = new ArrayList<Integer>();
-        for (int i = 1; i <= 3; i++) {
-            indexes.add(extractIndexes(elements[i]).get(j));
-        }
-        return indexes;
-    }
-
-    private List<Integer> extractIndexes(String element) {
-        return Arrays.stream(element.split(SLASH)).map(Integer::valueOf).collect(Collectors.toList());
-    }
-
     private void addVertex(float[] arr, Vertex v, int index) {
-        arr[index++] = Float.parseFloat(v.x);
-        arr[index++] = Float.parseFloat(v.y);
-        arr[index] = Float.parseFloat(v.z);
+        arr[index++] = v.x;
+        arr[index++] = v.y;
+        arr[index] = v.z;
     }
 
     private void addNormal(float[] arr, VertexNormal vn, int index) {
-        arr[index++] = Float.parseFloat(vn.x);
-        arr[index++] = Float.parseFloat(vn.y);
-        arr[index] = Float.parseFloat(vn.z);
+        arr[index++] = vn.x;
+        arr[index++] = vn.y;
+        arr[index] = vn.z;
     }
 
     private void addTexture(float[] arr, TextureVertex textureVertex, int index) {
-        arr[index++] = Float.parseFloat(textureVertex.x);
-        arr[index] = Float.parseFloat(textureVertex.y);
+        arr[index++] = textureVertex.x;
+        arr[index] = textureVertex.y;
     }
 
     @Override
@@ -247,20 +281,20 @@ public class ObjModel implements Model {
     }
 
     private static class Vertex {
-        private String x;
-        private String y;
-        private String z;
+        private float x;
+        private float y;
+        private float z;
     }
 
     private static class TextureVertex {
-        private String x;
-        private String y;
+        private float x;
+        private float y;
     }
 
     private static class VertexNormal {
-        private String x;
-        private String y;
-        private String z;
+        private float x;
+        private float y;
+        private float z;
     }
 
     private static class IndexTuple {

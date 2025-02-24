@@ -1,6 +1,6 @@
 package com.game.engine;
 
-import com.game.dao.GameUnitDao;
+import com.game.dao.GraphicUnitDao;
 import com.game.model.GraphicUnit;
 import com.game.utils.log.LogUtil;
 import com.game.window.Window;
@@ -15,9 +15,7 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Random;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,11 +25,11 @@ import java.util.concurrent.Executors;
 public class TestEngine implements Runnable, WindowEventListener {
 
     private static final Random RANDOM = new Random();
-    private final GameUnitDao gameUnitDao = new GameUnitDao();
+    private final GraphicUnitDao graphicUnitDao = GraphicUnitDao.INSTANCE;
     private final StaticDynamicSurface surface = StaticDynamicSurface.create();
     private final Window window;
     private final float moveStep = 0.01f;
-    private final Queue<GraphicUnit> tmpUnits = new ConcurrentLinkedQueue<>();
+//    private final Queue<GraphicUnit> tmpUnits = new ConcurrentLinkedQueue<>();
     private final ExecutorService executorService = Executors.newFixedThreadPool(4,
             runnable -> {
                 var t = Executors.defaultThreadFactory().newThread(runnable);
@@ -40,7 +38,6 @@ public class TestEngine implements Runnable, WindowEventListener {
             });
     private volatile boolean isRunning = false;
     private GraphicUnit selectedUnit;
-
 
     public TestEngine(Window window) {
         this.window = window;
@@ -54,27 +51,27 @@ public class TestEngine implements Runnable, WindowEventListener {
     public void run() {
         window.addEventChildListener(this);
         isRunning = true;
-        var mainUnit = gameUnitDao.getMainUnit();
-        var groundUnit = gameUnitDao.getGroundUnit();
-        selectedUnit = mainUnit;
-        window.addGameUnit(mainUnit);
-
-        surface.addDynamicGraphicUnit(mainUnit);
-        animate(mainUnit);
-        window.addGameUnit(groundUnit);
-        gameUnitDao.getUnits().forEach(window::addGameUnit);
-
-        addSun();
-        surface.addStaticGraphicUnit(groundUnit);
-
-        surface.buildStaticSurface();
-        surface.buildDynamicSurface();
+//        var mainUnit = graphicUnitDao.getPlayerMainUnit();
+//        var groundUnit = graphicUnitDao.getGroundUnit();
+//        selectedUnit = mainUnit;
+//        window.addGraphicUnit(mainUnit);
+//
+//        surface.addDynamicGraphicUnit(mainUnit);
+//        animate(mainUnit);
+//        window.addGraphicUnit(groundUnit);
+//        graphicUnitDao.getUnits().forEach(window::addGraphicUnit);
+//
+//        addSun();
+//        surface.addStaticGraphicUnit(groundUnit);
+//
+//        surface.buildStaticSurface();
+//        surface.buildDynamicSurface();
     }
 
     private void addSun() {
-        var sun = gameUnitDao.createSunUnit();
-        window.addGameUnit(sun);
-        animateSun(sun);
+//        var sun = graphicUnitDao.createSunUnit();
+//        window.addGraphicUnit(sun);
+//        animateSun(sun);
     }
 
     private void animate(GraphicUnit graphicUnit) {
@@ -137,53 +134,53 @@ public class TestEngine implements Runnable, WindowEventListener {
     }
 
     private void handleKeyEventForSelectedGameUnit(KeyEvent keyEvent) {
-        switch (keyEvent.getKeyActionType()) {
-            case PRESSED:
-                switch (keyEvent.getKey()) {
-                    case KEY_W:
-                        moveZ(-moveStep);
-                        break;
-                    case KEY_S:
-                        moveZ(moveStep);
-                        break;
-                    case KEY_A:
-                        moveX(-moveStep);
-                        break;
-                    case KEY_D:
-                        moveX(moveStep);
-                        break;
-                    case KEY_ESCAPE:
-                        GLFW.glfwSetWindowShouldClose(window.getWindowId(), true);
-                        LogUtil.logDebug(String.format("Close window %s", window.getWindowId()));
-                        break;
-                    default:
-//                        LogUtil.logDebug(String.format("Pressed %s", keyEvent.getKeyDeprecated()));
-                        break;
-                }
-                break;
-            case REPEAT:
-                switch (keyEvent.getKey()) {
-                    case KEY_W:
-                        moveZ(-moveStep);
-                        break;
-                    case KEY_S:
-                        moveZ(moveStep);
-                        break;
-                    case KEY_A:
-                        moveX(-moveStep);
-                        break;
-                    case KEY_D:
-                        moveX(moveStep);
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case RELEASED:
-                break;
-            default:
-                break;
-        }
+//        switch (keyEvent.getKeyActionType()) {
+//            case PRESSED:
+//                switch (keyEvent.getKey()) {
+//                    case KEY_W:
+//                        moveZ(-moveStep);
+//                        break;
+//                    case KEY_S:
+//                        moveZ(moveStep);
+//                        break;
+//                    case KEY_A:
+//                        moveX(-moveStep);
+//                        break;
+//                    case KEY_D:
+//                        moveX(moveStep);
+//                        break;
+//                    case KEY_ESCAPE:
+//                        GLFW.glfwSetWindowShouldClose(window.getWindowId(), true);
+//                        LogUtil.logDebug(String.format("Close window %s", window.getWindowId()));
+//                        break;
+//                    default:
+////                        LogUtil.logDebug(String.format("Pressed %s", keyEvent.getKeyDeprecated()));
+//                        break;
+//                }
+//                break;
+//            case REPEAT:
+//                switch (keyEvent.getKey()) {
+//                    case KEY_W:
+//                        moveZ(-moveStep);
+//                        break;
+//                    case KEY_S:
+//                        moveZ(moveStep);
+//                        break;
+//                    case KEY_A:
+//                        moveX(-moveStep);
+//                        break;
+//                    case KEY_D:
+//                        moveX(moveStep);
+//                        break;
+//                    default:
+//                        break;
+//                }
+//                break;
+//            case RELEASED:
+//                break;
+//            default:
+//                break;
+//        }
     }
 
     private void moveX(float stepX) {
@@ -208,30 +205,30 @@ public class TestEngine implements Runnable, WindowEventListener {
 
     @Override
     public void event(MouseButtonEvent mouseButtonEvent) {
-        if (MouseButtonAction.PRESSED.equals(mouseButtonEvent.getAction())
-                && MouseButton.LEFT.equals(mouseButtonEvent.getButton())) {
-            Runnable runnable = () -> {
-                try {
-                    runTask(mouseButtonEvent);
-                } catch (Exception e) {
-                    LogUtil.logError(e.getMessage(), e);
-                }
-            };
-            executorService.submit(runnable);
-        }
+//        if (MouseButtonAction.PRESSED.equals(mouseButtonEvent.getAction())
+//                && MouseButton.LEFT.equals(mouseButtonEvent.getButton())) {
+//            Runnable runnable = () -> {
+//                try {
+//                    runTask(mouseButtonEvent);
+//                } catch (Exception e) {
+//                    LogUtil.logError(e.getMessage(), e);
+//                }
+//            };
+//            executorService.submit(runnable);
+//        }
     }
 
     private void runTask(MouseButtonEvent mouseButtonEvent) {
-        var ray = window.getRay(mouseButtonEvent);
-        Optional.ofNullable(surface.findIntersection(ray))
-                .ifPresentOrElse(
-                        point -> {
-                            LogUtil.logDebug("Intersection point: " + toStr(point));
-                            var tmpGraphicUnit = GameUnitDao.createSmallCircleGraphicUnit(point);
-                            addUnit(tmpGraphicUnit);
-                        },
-                        () -> LogUtil.logDebug("No intersection")
-                );
+//        var ray = window.getRay(mouseButtonEvent);
+//        Optional.ofNullable(surface.findIntersection(ray))
+//                .ifPresentOrElse(
+//                        point -> {
+//                            LogUtil.logDebug("Intersection point: " + toStr(point));
+////                            var tmpGraphicUnit = GraphicUnitDao.createSmallCircleGraphicUnit(point);
+////                            addUnit(tmpGraphicUnit);
+//                        },
+//                        () -> LogUtil.logDebug("No intersection")
+//                );
     }
 
     private String toStr(Vector3f point) {
@@ -244,8 +241,8 @@ public class TestEngine implements Runnable, WindowEventListener {
     }
 
     private void addUnit(GraphicUnit tmpGraphicUnit) {
-        window.addGameUnit(tmpGraphicUnit);
-        tmpUnits.add(tmpGraphicUnit);
+        window.addGraphicUnit(tmpGraphicUnit);
+//        tmpUnits.add(tmpGraphicUnit);
 
         surface.addDynamicGraphicUnit(tmpGraphicUnit);
         surface.buildDynamicSurface();

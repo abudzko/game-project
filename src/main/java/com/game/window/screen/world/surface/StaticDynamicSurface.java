@@ -1,7 +1,6 @@
 package com.game.window.screen.world.surface;
 
 import com.game.model.GraphicUnit;
-import com.game.utils.log.LogUtil;
 import org.joml.Vector3f;
 
 import java.util.Optional;
@@ -29,7 +28,7 @@ public class StaticDynamicSurface {
         staticSurface.addGraphicUnit(graphicUnit);
     }
 
-    public Vector3f findIntersection(Ray ray) {
+    public Intersection findIntersection(Ray ray) {
         return Optional.ofNullable(dynamicSurface.findIntersection(ray))
                 .orElseGet(() -> staticSurface.findIntersection(ray));
     }

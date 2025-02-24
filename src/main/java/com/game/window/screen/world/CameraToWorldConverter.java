@@ -1,30 +1,34 @@
 package com.game.window.screen.world;
 
 import com.game.window.event.mouse.MouseButtonEvent;
+import lombok.Builder;
+import lombok.Getter;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+@Getter
+@Builder
 public class CameraToWorldConverter {
     private final double mouseX;
     private final double mouseY;
     private final Matrix4f projectionMatrix;
     private final Matrix4f viewMatrix;
 
-    /**
-     * @param projectionMatrix - the copy of projectionMatrix is required
-     * @param viewMatrix - the copy of viewMatrix is required
-     */
-    public CameraToWorldConverter(
-            MouseButtonEvent mouseButtonEvent,
-            Matrix4f projectionMatrix,
-            Matrix4f viewMatrix
-    ) {
-        this.mouseX = mouseButtonEvent.getX();
-        this.mouseY = mouseButtonEvent.getY();
-        this.projectionMatrix = projectionMatrix;
-        this.viewMatrix = viewMatrix;
-    }
+//    /**
+//     * @param projectionMatrix - the copy of projectionMatrix is required
+//     * @param viewMatrix       - the copy of viewMatrix is required
+//     */
+//    public CameraToWorldConverter(
+//            MouseButtonEvent mouseButtonEvent,
+//            Matrix4f projectionMatrix,
+//            Matrix4f viewMatrix
+//    ) {
+//        this.mouseX = mouseButtonEvent.getX();
+//        this.mouseY = mouseButtonEvent.getY();
+//        this.projectionMatrix = projectionMatrix;
+//        this.viewMatrix = viewMatrix;
+//    }
 
     public Vector3f directionPoint(WorldScreenState worldScreenState) {
         // Get the width and height of the window

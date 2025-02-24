@@ -1,6 +1,7 @@
 package com.game;
 
-import com.game.engine.TestEngine;
+import com.game.engine.GameEngine;
+import com.game.engine.unit.GameUnitMediator;
 import com.game.window.WindowContainer;
 
 public class Game {
@@ -17,8 +18,8 @@ public class Game {
             throw new IllegalStateException(e);
         }
         windowContainer.getWindows().forEach((id, window) -> {
-            var engine = new TestEngine(window);
-            new Thread(engine).start();
+            var gameUnitMediator = new GameUnitMediator(window, GameEngine.INSTANCE);
+            gameUnitMediator.init();
         });
     }
 }

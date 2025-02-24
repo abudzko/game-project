@@ -4,9 +4,8 @@ import com.game.lwjgl.annotation.LwjglMainThread;
 import com.game.lwjgl.event.LwjglEventManager;
 import com.game.model.GraphicUnit;
 import com.game.utils.log.LogUtil;
-import com.game.window.screen.world.surface.Ray;
+import com.game.window.event.key.KeyEvent;
 import com.game.window.event.listener.AbstractWindowEventListener;
-import com.game.window.event.mouse.MouseButtonEvent;
 import com.game.window.event.resize.ResizeWindowEvent;
 import com.game.window.screen.world.WorldScreen;
 import com.game.window.screen.world.WorldScreenState;
@@ -141,10 +140,10 @@ public class Window extends AbstractWindowEventListener {
         windowSizeChanged = true;
     }
 
-    // TODO ??
-    public Ray getRay(MouseButtonEvent mouseButtonEvent) {
-        return worldScreen.getRay(mouseButtonEvent);
-    }
+//    // TODO ??
+//    public Ray getRay(MouseButtonEvent mouseButtonEvent) {
+//        return worldScreen.getRay(mouseButtonEvent);
+//    }
 
     @Override
     public void event(ResizeWindowEvent event) {
@@ -152,11 +151,32 @@ public class Window extends AbstractWindowEventListener {
         windowSizeChanged(event);
     }
 
-    public void addGameUnit(GraphicUnit graphicUnit) {
-        worldScreen.addGameUnit(graphicUnit);
+    public void addGraphicUnit(GraphicUnit graphicUnit) {
+        worldScreen.addGraphicUnit(graphicUnit);
     }
 
-    public void deleteGameUnit(GraphicUnit graphicUnit) {
-        worldScreen.deleteGameUnit(graphicUnit);
+    public void deleteGraphicUnit(GraphicUnit graphicUnit) {
+        worldScreen.deleteGraphicUnit(graphicUnit);
+    }
+
+    @Override
+    public void event(KeyEvent keyEvent) {
+        super.event(keyEvent);
+        switch (keyEvent.getKeyActionType()) {
+            case PRESSED:
+                switch (keyEvent.getKey()) {
+                    case KEY_ESCAPE:
+                        GLFW.glfwSetWindowShouldClose(getWindowId(), true);
+                        LogUtil.logDebug(String.format("Close window %s", getWindowId()));
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case REPEAT:
+            case RELEASED:
+            default:
+                break;
+        }
     }
 }

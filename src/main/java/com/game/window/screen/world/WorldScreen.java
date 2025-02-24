@@ -1,20 +1,29 @@
 package com.game.window.screen.world;
 
+import com.game.dao.GraphicUnitDao;
+import com.game.engine.unit.GameUnitDao;
 import com.game.lwjgl.annotation.LwjglMainThread;
 import com.game.lwjgl.program.LightingProgram;
 import com.game.lwjgl.program.RenderObjects;
 import com.game.model.DrawableModel;
 import com.game.model.GraphicUnit;
+import com.game.utils.ParallelUtils;
 import com.game.utils.log.LogUtil;
-import com.game.window.camera.Camera;
-import com.game.window.screen.world.surface.Ray;
+import com.game.window.event.cursor.CursorPositionEvent;
+import com.game.window.event.key.KeyEvent;
 import com.game.window.event.listener.AbstractWindowEventListener;
+import com.game.window.event.mouse.MouseButton;
+import com.game.window.event.mouse.MouseButtonAction;
 import com.game.window.event.mouse.MouseButtonEvent;
 import com.game.window.event.resize.ResizeWindowEvent;
+import com.game.window.screen.world.camera.Camera;
+import com.game.window.screen.world.surface.Ray;
+import com.game.window.screen.world.surface.StaticDynamicSurface;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -24,6 +33,7 @@ public class WorldScreen extends AbstractWindowEventListener {
     private final Queue<GraphicUnit> deletedGraphicUnits = new ConcurrentLinkedQueue<>();
     private final Map<Long, DrawableModel> drawableModels = new ConcurrentHashMap<>();
     private final WorldScreenState worldScreenState;
+    private final StaticDynamicSurface surface = StaticDynamicSurface.create();
     private final LightingProgram program;
     private final Camera camera;
     private Matrix4f projectionMatrix;
@@ -33,6 +43,8 @@ public class WorldScreen extends AbstractWindowEventListener {
         this.worldScreenState = worldScreenState;
         this.program = new LightingProgram();
         this.camera = createCamera();
+//        this.worldScreenEventHandler = WorldScreenEventHandler.create();
+//        addEventChildListener(worldScreenEventHandler);
         updateMatrices();
     }
 
@@ -102,25 +114,36 @@ public class WorldScreen extends AbstractWindowEventListener {
         return camera;
     }
 
-    public void addGameUnit(GraphicUnit graphicUnit) {
+    public void addGraphicUnit(GraphicUnit graphicUnit) {
         var drawableModel = drawableModels.get(graphicUnit.getId());
         if (drawableModel == null) {
             graphicUnits.add(graphicUnit);
+            if (graphicUnit.isDynamic()) {
+                surface.addDynamicGraphicUnit(graphicUnit);
+                surface.buildDynamicSurface();
+            } else {
+                surface.addStaticGraphicUnit(graphicUnit);
+                surface.buildStaticSurface();
+            }
         }
     }
 
-    public void deleteGameUnit(GraphicUnit graphicUnit) {
+    public void deleteGraphicUnit(GraphicUnit graphicUnit) {
         deletedGraphicUnits.add(graphicUnit);
     }
 
-    public Ray getRay(MouseButtonEvent mouseButtonEvent) {
-        var converter = new CameraToWorldConverter(mouseButtonEvent, createProjectionMatrix(), getCamera().getCameraViewMatrixCopy());
+    private Ray getRay(double x, double y) {
+        var converter = CameraToWorldConverter.builder()
+                .mouseX(x)
+                .mouseY(y)
+                .projectionMatrix(createProjectionMatrix())
+                .viewMatrix(getCamera().getCameraViewMatrixCopy())
+                .build();
 //        LogUtil.logDebug(getCamera().getCameraViewMatrixCopy().toString());
         var directionPoint = converter.directionPoint(worldScreenState);
 //        LogUtil.logDebug(String.format("directionPoint: X = %s, Y = %s, Z = %s", directionPoint.x, directionPoint.y, directionPoint.z));
         return new Ray(getCamera().getCameraPosition(), directionPoint);
     }
-
 
     private LightingProgram getProgram() {
         if (program == null) {
@@ -139,5 +162,39 @@ public class WorldScreen extends AbstractWindowEventListener {
         worldScreenState.setWidth(event.getNewWidth());
         worldScreenState.setHeight(event.getNewHeight());
         updateMatrices();
+    }
+
+    @Override
+    public void event(CursorPositionEvent event) {
+        super.event(event);
+//        runTask(event.getX(), event.getY());
+    }
+
+    @Override
+    public void event(MouseButtonEvent mouseButtonEvent) {
+        super.event(mouseButtonEvent);
+        if (MouseButtonAction.PRESSED.equals(mouseButtonEvent.getAction())
+                && MouseButton.LEFT.equals(mouseButtonEvent.getButton())) {
+            runTask(mouseButtonEvent.getX(), mouseButtonEvent.getY());
+        }
+    }
+
+    private void runTask(double x, double y) {
+        Runnable runnable = () -> {
+            try {
+                var ray = getRay(x, y);
+                Optional.ofNullable(surface.findIntersection(ray))
+                        .ifPresentOrElse(
+                                intersection -> {
+                                    addGraphicUnit(GraphicUnitDao.INSTANCE.createGraphicUnit(GameUnitDao.createUnit(intersection.getPoint())));
+                                    LogUtil.logDebug("Intersection: id = " + intersection.getUnitId() + " point = " + LogUtil.toStr(intersection.getPoint()));
+                                },
+                                () -> LogUtil.logDebug("No intersection")
+                        );
+            } catch (Exception e) {
+                LogUtil.logError(e.getMessage(), e);
+            }
+        };
+        ParallelUtils.run(runnable);
     }
 }

@@ -1,29 +1,17 @@
 package com.game.window.screen.world.surface;
 
+import lombok.Builder;
+import lombok.Getter;
 import org.joml.Vector3f;
 
+
+@Getter
+@Builder
 public class Triangle {
+    private final long unitId;
     private final Vector3f v1;
     private final Vector3f v2;
     private final Vector3f v3;
-
-    public Triangle(Vector3f v1, Vector3f v2, Vector3f v3) {
-        this.v1 = v1;
-        this.v2 = v2;
-        this.v3 = v3;
-    }
-
-    public Vector3f getV1() {
-        return v1;
-    }
-
-    public Vector3f getV2() {
-        return v2;
-    }
-
-    public Vector3f getV3() {
-        return v3;
-    }
 
     public boolean intersects(Ray ray, Vector3f intersectionPoint) {
         var startPoint = ray.getStartPoint();

@@ -53,7 +53,7 @@ public class BVHNode {
         );
     }
 
-    public Vector3f findIntersection(Ray ray) {
+    public Intersection findIntersection(Ray ray) {
         if (!boundingBox.intersects(ray)) {
             return null;
         }
@@ -62,7 +62,7 @@ public class BVHNode {
             var intersectionPoint = new Vector3f();
             for (var triangle : triangles) {
                 if (triangle.intersects(ray, intersectionPoint)) {
-                    return intersectionPoint;
+                    return Intersection.builder().unitId(triangle.getUnitId()).point(intersectionPoint).build();
                 }
             }
             return null;
@@ -72,7 +72,7 @@ public class BVHNode {
         var rightIntersection = right.findIntersection(ray);
 
         if (leftIntersection != null && rightIntersection != null) {
-            return ray.getStartPoint().distance(leftIntersection) < ray.getStartPoint().distance(rightIntersection)
+            return ray.getStartPoint().distance(leftIntersection.getPoint()) < ray.getStartPoint().distance(rightIntersection.getPoint())
                     ? leftIntersection
                     : rightIntersection;
         } else if (leftIntersection != null) {

@@ -2,7 +2,6 @@ package com.game.window.screen.world.surface;
 
 import com.game.model.GraphicUnit;
 import com.game.utils.ParallelUtils;
-import com.game.utils.log.LogUtil;
 import com.game.window.screen.world.surface.TriangleTaskParameters.TriangleTaskParametersBuilder;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,14 +27,6 @@ public class TrianglesBuilder {
         );
     }
 
-    private static Triangle toWorldCoordinates(Triangle triangle, Matrix4f worldMatrix) {
-        return new Triangle(
-                worldMatrix.transformPosition(triangle.getV1()),
-                worldMatrix.transformPosition(triangle.getV2()),
-                worldMatrix.transformPosition(triangle.getV3())
-        );
-    }
-
     @SneakyThrows
     public List<Triangle> toTriangles(GraphicUnit graphicUnit) {
         var model = graphicUnit.getModel();
@@ -46,10 +37,18 @@ public class TrianglesBuilder {
 
         int pointPerVertex3d = model.getPointPerVertex3d();
         start = System.currentTimeMillis();
-        var parameters = new TriangleTaskParameters(indexes, vertices, 0, indexes.length, worldMatrix, pointPerVertex3d);
+        var parameters = TriangleTaskParameters.builder()
+                .unitId(graphicUnit.getId())
+                .indexes(indexes)
+                .vertices(vertices)
+                .start(0)
+                .end(indexes.length)
+                .worldMatrix(worldMatrix)
+                .pointPerVertex3d(pointPerVertex3d)
+                .build();
         var task = new TriangleTask(parameters);
         var result = ParallelUtils.run(task);
-        LogUtil.logDebug("toTriangles:" + (System.currentTimeMillis() - start) + "ms");// After thread initialization in pool - 10 ms
+//        LogUtil.logDebug("toTriangles:" + (System.currentTimeMillis() - start) + "ms");// After thread initialization in pool - 10 ms
         return result;
     }
 
@@ -69,11 +68,13 @@ public class TrianglesBuilder {
             if (parameters.getEnd() - parameters.getStart() <= THRESHOLD) {
                 var result = new ArrayList<Triangle>();
                 for (int i = parameters.getStart(); i < parameters.getEnd(); i++) {
-                    var triangle = new Triangle(
-                            readVertex(vertices, indexOfFirstVertex(indexes, i, pointPerVertex3d)),
-                            readVertex(vertices, indexOfFirstVertex(indexes, ++i, pointPerVertex3d)),
-                            readVertex(vertices, indexOfFirstVertex(indexes, ++i, pointPerVertex3d)));
-                    triangle = toWorldCoordinates(triangle, parameters.getWorldMatrix());
+                    var worldMatrix = parameters.getWorldMatrix();
+                    var triangle = Triangle.builder()
+                            .unitId(parameters.getUnitId())
+                            .v1(worldMatrix.transformPosition(readVertex(vertices, indexOfFirstVertex(indexes, i, pointPerVertex3d))))
+                            .v2(worldMatrix.transformPosition(readVertex(vertices, indexOfFirstVertex(indexes, ++i, pointPerVertex3d))))
+                            .v3(worldMatrix.transformPosition(readVertex(vertices, indexOfFirstVertex(indexes, ++i, pointPerVertex3d))))
+                            .build();
                     result.add(triangle);
                 }
                 return result;
@@ -124,6 +125,7 @@ public class TrianglesBuilder {
 @Builder
 @Getter
 class TriangleTaskParameters {
+    private final long unitId;
     private final int[] indexes;
     private final float[] vertices;
     private final int start;

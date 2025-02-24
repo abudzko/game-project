@@ -9,7 +9,6 @@ import com.game.window.event.mouse.MouseButtonAction;
 import com.game.window.event.mouse.MouseButtonEvent;
 import com.game.window.event.resize.ResizeWindowEvent;
 import com.game.window.event.scroll.ScrollEvent;
-import com.game.utils.log.LogUtil;
 import org.lwjgl.glfw.GLFW;
 
 public class EventFactory {

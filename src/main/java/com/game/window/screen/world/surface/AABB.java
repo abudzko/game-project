@@ -41,10 +41,6 @@ public class AABB {
         var texit = Math.min(Math.min(tmax.x, tmax.y), tmax.z);
 
         // Проверяем пересечение
-        if (texit < 0 || tenter > texit) {
-            return false;
-        }
-
-        return true;
+        return !(texit < 0) && !(tenter > texit);
     }
 }
