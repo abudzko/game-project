@@ -1,22 +1,3 @@
-unit selection on world screen
-sky, sky box https://lwjglgamedev.gitbooks.io/3d-game-development-with-lwjgl/content/chapter13/chapter13.html
-how to draw several screens(3d world and info page(2d), pop up window, for example) together
-update java and use virtual threads
-
-
-mouse moves
-+ground(x y z ) - in blender
-+reuse textures
-+use indexes
-+lighting, Phong shading algorithm
-+multiple lights
-+sun
-
-
-npc
-"patrol the area," "sell items," "attack the player"
-chasing, fleeing
-
 **Role**: You are an experienced game designer with a deep understanding of game mechanics, narrative development, and player engagement.
 
 **Context**: The game is a fantasy RPG set in a mystical world filled with magical creatures and ancient ruins. The target audience is teenagers and young adults.

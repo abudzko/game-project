@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class WorldScreenState {
-    private float width;
-    private float height;
+    private int width;
+    private int height;
 }

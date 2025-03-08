@@ -1,6 +1,9 @@
 package com.game.window.screen.world.camera;
 
 import com.game.window.event.listener.AbstractWindowEventListener;
+import com.game.window.event.resize.ResizeWindowEvent;
+import com.game.window.screen.world.surface.Intersection;
+import com.game.window.screen.world.surface.StaticDynamicSurface;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -8,15 +11,27 @@ import java.util.Optional;
 
 public class Camera extends AbstractWindowEventListener {
     private final CameraState cameraState;
+    private final SurfaceIntersectionFinder surfaceIntersectionFinder;
 
-    Camera(CameraState cameraState, CameraEventHandler cameraEventHandler) {
+    private Camera(CameraState cameraState, SurfaceIntersectionFinder surfaceIntersectionFinder, CameraEventHandler cameraEventHandler) {
         this.cameraState = cameraState;
+        this.surfaceIntersectionFinder = surfaceIntersectionFinder;
         addEventChildListener(cameraEventHandler);
     }
 
-    public static Camera createCamera() {
+    public static Camera createCamera(StaticDynamicSurface surface, int width, int height) {
         var cameraState = new CameraState();
-        return new Camera(cameraState, new CameraEventHandler(cameraState));
+        cameraState.setCameraWidth(width);
+        cameraState.setCameraHeight(height);
+        var surfaceIntersectionFinder = SurfaceIntersectionFinder.builder()
+                .staticDynamicSurface(surface)
+                .cameraState(cameraState)
+                .build();
+        return new Camera(
+                cameraState,
+                surfaceIntersectionFinder,
+                new CameraEventHandler(cameraState, surfaceIntersectionFinder)
+        );
     }
 
     public void setCameraViewMatrixChanged(boolean changed) {
@@ -24,7 +39,7 @@ public class Camera extends AbstractWindowEventListener {
     }
 
     public Matrix4f getCameraViewMatrixCopy() {
-        return new Matrix4f(getCameraState().getCameraViewMatrixCopy());
+        return getCameraState().getCameraViewMatrixCopy();
     }
 
     public Optional<Matrix4f> getCameraViewMatrixCopyIfChanged() {
@@ -35,21 +50,25 @@ public class Camera extends AbstractWindowEventListener {
     }
 
     public Vector3f getCameraPosition() {
-        return new Vector3f(getCameraState().eyeX, getCameraState().eyeY, getCameraState().eyeZ);
+        return cameraState.getCameraPosition();
     }
 
-    public Matrix4f createProjectionMatrix(float aspectRatio) {
-        var projectionMatrix = new Matrix4f();
-        projectionMatrix.perspective(
-                getCameraState().getFov(),
-                aspectRatio,
-                getCameraState().getzNear(),
-                getCameraState().getzFar()
-        );
-        return projectionMatrix;
+    public Matrix4f createProjectionMatrix() {
+        return cameraState.createProjectionMatrix();
+    }
+
+    public Intersection findIntersection(double x, double y) {
+        return surfaceIntersectionFinder.findIntersection(x, y);
     }
 
     private CameraState getCameraState() {
         return cameraState;
+    }
+
+    @Override
+    public void event(ResizeWindowEvent event) {
+        super.event(event);
+        getCameraState().setCameraWidth(event.getNewWidth());
+        getCameraState().setCameraHeight(event.getNewHeight());
     }
 }

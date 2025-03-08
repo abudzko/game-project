@@ -1,7 +1,6 @@
 package com.game.window.screen.world.surface;
 
 import com.game.model.GraphicUnit;
-import org.joml.Vector3f;
 
 import java.util.Optional;
 

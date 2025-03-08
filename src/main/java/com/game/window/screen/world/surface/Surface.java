@@ -2,7 +2,6 @@ package com.game.window.screen.world.surface;
 
 import com.game.model.GraphicUnit;
 import com.game.utils.log.LogUtil;
-import org.joml.Vector3f;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +37,7 @@ public class Surface {
             return null;
         }
         var intersection = bvhRoot.findIntersection(ray);
-        LogUtil.logDebug("findIntersection: " + (System.currentTimeMillis() - start) + "ms");
+//        LogUtil.logDebug("findIntersection: " + (System.currentTimeMillis() - start) + "ms");
         return intersection;
     }
 }

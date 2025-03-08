@@ -10,14 +10,12 @@ import com.game.model.GraphicUnit;
 import com.game.utils.ParallelUtils;
 import com.game.utils.log.LogUtil;
 import com.game.window.event.cursor.CursorPositionEvent;
-import com.game.window.event.key.KeyEvent;
 import com.game.window.event.listener.AbstractWindowEventListener;
 import com.game.window.event.mouse.MouseButton;
 import com.game.window.event.mouse.MouseButtonAction;
 import com.game.window.event.mouse.MouseButtonEvent;
 import com.game.window.event.resize.ResizeWindowEvent;
 import com.game.window.screen.world.camera.Camera;
-import com.game.window.screen.world.surface.Ray;
 import com.game.window.screen.world.surface.StaticDynamicSurface;
 import org.joml.Matrix4f;
 
@@ -43,8 +41,6 @@ public class WorldScreen extends AbstractWindowEventListener {
         this.worldScreenState = worldScreenState;
         this.program = new LightingProgram();
         this.camera = createCamera();
-//        this.worldScreenEventHandler = WorldScreenEventHandler.create();
-//        addEventChildListener(worldScreenEventHandler);
         updateMatrices();
     }
 
@@ -92,7 +88,7 @@ public class WorldScreen extends AbstractWindowEventListener {
     }
 
     private Camera createCamera() {
-        var camera = Camera.createCamera();
+        var camera = Camera.createCamera(surface, worldScreenState.getWidth(), worldScreenState.getHeight());
         addEventChildListener(camera);
         return camera;
     }
@@ -103,8 +99,7 @@ public class WorldScreen extends AbstractWindowEventListener {
     }
 
     private Matrix4f createProjectionMatrix() {
-        var aspectRatio = worldScreenState.getWidth() / worldScreenState.getHeight();
-        return getCamera().createProjectionMatrix(aspectRatio);
+        return getCamera().createProjectionMatrix();
     }
 
     public Camera getCamera() {
@@ -130,19 +125,6 @@ public class WorldScreen extends AbstractWindowEventListener {
 
     public void deleteGraphicUnit(GraphicUnit graphicUnit) {
         deletedGraphicUnits.add(graphicUnit);
-    }
-
-    private Ray getRay(double x, double y) {
-        var converter = CameraToWorldConverter.builder()
-                .mouseX(x)
-                .mouseY(y)
-                .projectionMatrix(createProjectionMatrix())
-                .viewMatrix(getCamera().getCameraViewMatrixCopy())
-                .build();
-//        LogUtil.logDebug(getCamera().getCameraViewMatrixCopy().toString());
-        var directionPoint = converter.directionPoint(worldScreenState);
-//        LogUtil.logDebug(String.format("directionPoint: X = %s, Y = %s, Z = %s", directionPoint.x, directionPoint.y, directionPoint.z));
-        return new Ray(getCamera().getCameraPosition(), directionPoint);
     }
 
     private LightingProgram getProgram() {
@@ -182,8 +164,7 @@ public class WorldScreen extends AbstractWindowEventListener {
     private void runTask(double x, double y) {
         Runnable runnable = () -> {
             try {
-                var ray = getRay(x, y);
-                Optional.ofNullable(surface.findIntersection(ray))
+                Optional.ofNullable(getCamera().findIntersection(x, y))
                         .ifPresentOrElse(
                                 intersection -> {
                                     addGraphicUnit(GraphicUnitDao.INSTANCE.createGraphicUnit(GameUnitDao.createUnit(intersection.getPoint())));
