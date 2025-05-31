@@ -12,6 +12,7 @@ public class GameUnitDao {
     private static final AtomicLong idGenerator = new AtomicLong();
     public static final GameUnitDao INSTANCE = new GameUnitDao();
     private final GameUnit player;
+    private final GameUnit skydome;
     private final GameUnit ground;
     private final GameUnit sun;
     private final Map<Long, GameUnit> units = new ConcurrentHashMap<>();
@@ -20,6 +21,7 @@ public class GameUnitDao {
         ground = createGround();
         sun = createSun();
         player = createPlayer();
+        skydome = createSkydome();
     }
 
     public static GameUnit createUnit(Vector3f position) {
@@ -35,6 +37,10 @@ public class GameUnitDao {
     }
 
     private GameUnit createSun() {
+        return GameUnit.builder().id(idGenerator.incrementAndGet()).position(new Vector3f(0, 0, 0)).build();
+    }
+
+    private GameUnit createSkydome() {
         return GameUnit.builder().id(idGenerator.incrementAndGet()).position(new Vector3f(0, 0, 0)).build();
     }
 

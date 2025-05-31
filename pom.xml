@@ -193,7 +193,7 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.game.GameLauncher</mainClass>
+                                    <mainClass>com.game.app.Launcher</mainClass>
                                 </transformer>
                             </transformers>
                             <finalName>lwjgl3-game</finalName>

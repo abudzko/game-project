@@ -8,7 +8,7 @@ uniform sampler2D textureSampler;
 uniform vec3 lightPosition[3];
 uniform vec3 lightColor[3];
 uniform int lightCount;
-uniform int isLight;
+uniform int useShading;
 uniform vec3 cameraPosition;
 
 vec3 phongShadingLighting(vec4 textureColor) {
@@ -36,7 +36,7 @@ vec3 phongShadingLighting(vec4 textureColor) {
 
 void main() {
     vec4 textureColor = texture(textureSampler, fragmentTextureAttribute);
-    if (isLight == 1) {
+    if (useShading == 0) {
         gl_FragColor = textureColor;
     } else {
         vec4 textureColor = texture(textureSampler, fragmentTextureAttribute);

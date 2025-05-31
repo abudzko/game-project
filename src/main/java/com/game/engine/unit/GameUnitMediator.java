@@ -1,8 +1,8 @@
 package com.game.engine.unit;
 
-import com.game.dao.GraphicUnitDao;
+import com.game.app.window.Window;
+import com.game.app.window.dao.GraphicUnitDao;
 import com.game.engine.GameEngine;
-import com.game.window.Window;
 
 import java.util.Map;
 
@@ -28,6 +28,7 @@ public class GameUnitMediator {
     private void addWorld() {
         window.addGraphicUnit(GRAPHIC_UNIT_DAO.createSunUnit(GAME_UNIT_DAO.getSun()));
         window.addGraphicUnit(GRAPHIC_UNIT_DAO.createGroundUnit(GAME_UNIT_DAO.getGround()));
+        window.addGraphicUnit(GRAPHIC_UNIT_DAO.createSkydome(GAME_UNIT_DAO.getSkydome()));
     }
 
     private void addUnits(Map<Long, GameUnit> units) {

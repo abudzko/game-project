@@ -1,20 +1,16 @@
 package com.game.engine;
 
-import com.game.dao.GraphicUnitDao;
-import com.game.model.GraphicUnit;
+import com.game.app.window.Window;
+import com.game.app.window.dao.GraphicUnitDao;
+import com.game.app.window.event.key.KeyEvent;
+import com.game.app.window.event.listener.WindowEventListener;
+import com.game.app.window.event.mouse.MouseButtonEvent;
+import com.game.app.window.model.GraphicUnit;
+import com.game.app.window.screen.world.surface.StaticDynamicSurface;
 import com.game.utils.log.LogUtil;
-import com.game.window.Window;
-import com.game.window.event.key.KeyEvent;
-import com.game.window.event.listener.WindowEventListener;
-import com.game.window.event.mouse.MouseButton;
-import com.game.window.event.mouse.MouseButtonAction;
-import com.game.window.event.mouse.MouseButtonEvent;
-import com.game.window.screen.world.surface.StaticDynamicSurface;
 import org.apache.commons.math3.util.Precision;
 import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFW;
 
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
