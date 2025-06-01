@@ -1,14 +1,13 @@
 package com.game.app.window.model.obj;
 
-import com.game.app.window.lwjgl.texture.TextureProperties;
-import com.game.app.window.model.Light;
-import com.game.app.window.model.texture.ObjTexture;
+import com.game.app.window.lwjgl.texture.PngTexture;
 import com.game.app.window.model.texture.Texture;
 import com.game.utils.BufferUtils;
 import com.game.utils.log.LogUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,26 +20,22 @@ import java.util.Objects;
  */
 public class ObjModel implements Model {
     private static final String LF = "\n";
-    private final String objectSource;
-    private final Light light;
-    private final boolean useShading;
-    private final TextureProperties textureProperties;
+    private final byte[] objectSource;
+    private final ObjModelParameters objModelParameters;
     private float[] vertices;
     private float[] normals;
     private float[] textures;
     private int[] indexes;
     private Texture texture;
 
-    private ObjModel(ObjModelProperties properties) {
-        this.objectSource = properties.getObjectSource();
-        this.textureProperties = properties.getTextureProperties();
-        this.light = properties.getLight();
-        this.useShading = properties.isUseShading();
+    private ObjModel(ObjModelParameters objModelParameters) {
+        this.objectSource = objModelParameters.getObjectSource();
+        this.objModelParameters = objModelParameters;
         parseObj();
         modelTexture();
     }
 
-    public static ObjModel createObjectModel(ObjModelProperties properties) {
+    public static ObjModel createObjectModel(ObjModelParameters properties) {
         return new ObjModel(properties);
     }
 
@@ -110,7 +105,7 @@ public class ObjModel implements Model {
         int textureVerticesIndex = 1;
 
         var start = System.currentTimeMillis();
-        var lines = objectSource.split(LF);
+        var lines = new String(objectSource, StandardCharsets.UTF_8).split(LF);
         LogUtil.logDebug("objectSource split: " + (System.currentTimeMillis() - start) + "ms");
 
         start = System.currentTimeMillis();
@@ -272,19 +267,17 @@ public class ObjModel implements Model {
             parseObj();
         }
         if (texture == null) {
-            texture = ObjTexture.createObjTexture(textureProperties.setTextureVertices(vertices));
+            texture = PngTexture.createPngTexture(objModelParameters);
         }
         return texture;
     }
 
     @Override
-    public Light getLight() {
-        return light;
-    }
-
-    @Override
-    public boolean useShading() {
-        return useShading;
+    public FloatBuffer textureVertices() {
+        if (textures == null) {
+            parseObj();
+        }
+        return BufferUtils.createFloatBuffer4f(textures);
     }
 
     private static class Vertex {

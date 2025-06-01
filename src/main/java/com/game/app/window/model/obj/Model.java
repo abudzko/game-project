@@ -1,6 +1,5 @@
 package com.game.app.window.model.obj;
 
-import com.game.app.window.model.Light;
 import com.game.app.window.model.texture.Texture;
 
 import java.nio.FloatBuffer;
@@ -41,22 +40,9 @@ public interface Model {
 
     Texture modelTexture();
 
-    default boolean isLight() {
-        return getLight() != null;
-    }
-
-    /**
-     * Shading will be applied to model
-     */
-    default boolean useShading() {
-        return true;
-    }
-
-    default Light getLight() {
-        return null;
-    }
-
     default int getPointPerVertex3d() {
         return POINT_PER_VERTEX_3D;
     }
+
+    FloatBuffer textureVertices();
 }

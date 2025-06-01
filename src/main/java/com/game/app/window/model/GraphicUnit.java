@@ -32,9 +32,14 @@ public class GraphicUnit {
      * Units which can be selected
      */
     private boolean isSurface;
+    private Light light;
+    /**
+     * Some units should not have shadows, for ex. the sky
+     */
+    private boolean useShading;
 
     public void updateWorldMatrix() {
-        Matrix4f matrix4f = new Matrix4f();
+        var matrix4f = new Matrix4f();
         matrix4f.translate(getPosition())
                 .rotateX((float) Math.toRadians(getRotation().x))
                 .rotateY((float) Math.toRadians(getRotation().y))
@@ -45,9 +50,10 @@ public class GraphicUnit {
 
     public static class GraphicUnitBuilder {
         private boolean isSurface = true;
+        private boolean useShading = true;
 
         public GraphicUnit build() {
-            var graphicUnit = new GraphicUnit(id, position, rotation, scale, null, model, dynamic, isSurface);
+            var graphicUnit = new GraphicUnit(id, position, rotation, scale, null, model, dynamic, isSurface, light, useShading);
             graphicUnit.updateWorldMatrix();
             return graphicUnit;
         }

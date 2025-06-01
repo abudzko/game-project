@@ -91,7 +91,7 @@ public class LightingProgram {
         enable();
 
         var lights = new ArrayList<LwjglUnit>();
-        for (var drawableModel : renderObjects.getModels()) {
+        for (var drawableModel : renderObjects.getLwjglUnits()) {
             setUniformMatrix4f(WORLD_MATRIX_NAME, drawableModel.getWorldMatrix());
             if (drawableModel.useShading()) {
                 setUniformInt(USE_SHADING, 1);
@@ -124,11 +124,11 @@ public class LightingProgram {
             glBindVertexArray(0);
         }
 
-        if (renderObjects.getDeletedModels() != null) {
-            for (var deletedModel : renderObjects.getDeletedModels()) {
+        if (renderObjects.getDeletedLwjglUnits() != null) {
+            for (var lwjglUnit : renderObjects.getLwjglUnits()) {
                 //TODO delete vbo or we can reuse them for the similar units?
                 //TODO delete texture id or we can reuse them for the similar units?
-                GL30.glDeleteVertexArrays(deletedModel.getVaoId());
+                GL30.glDeleteVertexArrays(lwjglUnit.getVaoId());
             }
         }
         if (renderObjects.getCameraViewMatrix() != null) {
@@ -181,7 +181,7 @@ public class LightingProgram {
 
         // Textures
         int textureVboId = glGenBuffers();
-        var textureVertices = model.modelTexture().textureVertices();
+        var textureVertices = model.textureVertices();
         glBindBuffer(GL_ARRAY_BUFFER, textureVboId);
         glBufferData(GL_ARRAY_BUFFER, textureVertices, GL_STATIC_DRAW);
         glVertexAttribPointer(getTextureAttribute(), 2, GL_FLOAT, false, 0, 0);

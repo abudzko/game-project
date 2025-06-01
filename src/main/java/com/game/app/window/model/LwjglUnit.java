@@ -26,19 +26,19 @@ public class LwjglUnit {
     }
 
     public int getTextureId() {
-        return getGraphicUnit().getModel().modelTexture().textureId();
+        return getGraphicUnit().getModel().modelTexture().getTextureId();
     }
 
     public boolean isLight() {
-        return getGraphicUnit().getModel().isLight();
+        return getGraphicUnit().getLight() != null;
     }
 
     public boolean useShading() {
-        return getGraphicUnit().getModel().useShading();
+        return graphicUnit.isUseShading() && !isLight();
     }
 
     public Light getLight() {
-        return getGraphicUnit().getModel().getLight();
+        return getGraphicUnit().getLight();
     }
 
     private GraphicUnit getGraphicUnit() {

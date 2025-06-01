@@ -1,7 +1,7 @@
 package com.game.engine.unit;
 
 import com.game.app.window.Window;
-import com.game.app.window.dao.GraphicUnitDao;
+import com.game.app.window.model.GraphicUnitFactory;
 import com.game.engine.GameEngine;
 
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Map;
 public class GameUnitMediator {
 
     private static final GameUnitDao GAME_UNIT_DAO = GameUnitDao.INSTANCE;
-    private static final GraphicUnitDao GRAPHIC_UNIT_DAO = GraphicUnitDao.INSTANCE;
+    private static final GraphicUnitFactory GRAPHIC_UNIT_DAO = GraphicUnitFactory.INSTANCE;
     private final Window window;
     private final GameEngine gameEngine;
 

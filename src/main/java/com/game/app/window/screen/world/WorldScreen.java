@@ -1,6 +1,5 @@
 package com.game.app.window.screen.world;
 
-import com.game.app.window.dao.GraphicUnitDao;
 import com.game.app.window.event.cursor.CursorPositionEvent;
 import com.game.app.window.event.listener.AbstractWindowEventListener;
 import com.game.app.window.event.mouse.MouseButton;
@@ -11,6 +10,7 @@ import com.game.app.window.lwjgl.annotation.LwjglMainThread;
 import com.game.app.window.lwjgl.program.LightingProgram;
 import com.game.app.window.lwjgl.program.RenderObjects;
 import com.game.app.window.model.GraphicUnit;
+import com.game.app.window.model.GraphicUnitFactory;
 import com.game.app.window.model.LwjglUnit;
 import com.game.app.window.screen.world.camera.Camera;
 import com.game.app.window.screen.world.surface.StaticDynamicSurface;
@@ -61,18 +61,18 @@ public class WorldScreen extends AbstractWindowEventListener {
         }
 
         if (!deletedGraphicUnits.isEmpty()) {
-            var deletedModels = new ArrayList<LwjglUnit>();
+            var deletedLwjglUnits = new ArrayList<LwjglUnit>();
             while (!deletedGraphicUnits.isEmpty()) {
                 var gameUnit = deletedGraphicUnits.poll();
                 var drawableModel = drawableModels.remove(gameUnit.getId());
                 if (drawableModel != null) {
-                    deletedModels.add(drawableModel);
+                    deletedLwjglUnits.add(drawableModel);
                 }
-                renderObjects.setDeletedModels(deletedModels);
+                renderObjects.setDeletedLwjglUnits(deletedLwjglUnits);
             }
         }
 
-        renderObjects.setModels(drawableModels.values());
+        renderObjects.setLwjglUnits(drawableModels.values());
         getCamera().getCameraViewMatrixCopyIfChanged().ifPresent(matrix4f -> {
             getCamera().setCameraViewMatrixChanged(false);
             renderObjects.setCameraViewMatrix(matrix4f);
@@ -169,7 +169,7 @@ public class WorldScreen extends AbstractWindowEventListener {
                 Optional.ofNullable(getCamera().findIntersection(x, y))
                         .ifPresentOrElse(
                                 intersection -> {
-                                    addGraphicUnit(GraphicUnitDao.INSTANCE.createGraphicUnit(GameUnitDao.createUnit(intersection.getPoint())));
+                                    addGraphicUnit(GraphicUnitFactory.INSTANCE.createGraphicUnit(GameUnitDao.createUnit(intersection.getPoint())));
                                     LogUtil.logDebug("Intersection: id = " + intersection.getUnitId() + " point = " + LogUtil.toStr(intersection.getPoint()));
                                 },
                                 () -> LogUtil.logDebug("No intersection")

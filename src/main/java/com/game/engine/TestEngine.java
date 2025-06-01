@@ -1,11 +1,11 @@
 package com.game.engine;
 
 import com.game.app.window.Window;
-import com.game.app.window.dao.GraphicUnitDao;
 import com.game.app.window.event.key.KeyEvent;
 import com.game.app.window.event.listener.WindowEventListener;
 import com.game.app.window.event.mouse.MouseButtonEvent;
 import com.game.app.window.model.GraphicUnit;
+import com.game.app.window.model.GraphicUnitFactory;
 import com.game.app.window.screen.world.surface.StaticDynamicSurface;
 import com.game.utils.log.LogUtil;
 import org.apache.commons.math3.util.Precision;
@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
 public class TestEngine implements Runnable, WindowEventListener {
 
     private static final Random RANDOM = new Random();
-    private final GraphicUnitDao graphicUnitDao = GraphicUnitDao.INSTANCE;
+    private final GraphicUnitFactory graphicUnitFactory = GraphicUnitFactory.INSTANCE;
     private final StaticDynamicSurface surface = StaticDynamicSurface.create();
     private final Window window;
     private final float moveStep = 0.01f;
