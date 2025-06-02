@@ -1,5 +1,7 @@
 package com.game.app.window.model;
 
+import com.game.app.window.lwjgl.program.Light;
+import com.game.app.window.model.obj.ObjectModels;
 import com.game.engine.unit.GameUnit;
 import com.game.utils.log.LogUtil;
 import org.joml.Vector3f;
@@ -48,7 +50,10 @@ public class GraphicUnitFactory {
     }
 
     public GraphicUnit createSunUnit(GameUnit gameUnit) {
-        var light = new Light();
+        var light = Light.builder()
+                .lightPosition(new Vector3f(0.0f, 100.0f, 0.0f))
+                .lightColor(new Vector3f(1.0f, 1.0f, 1.0f))
+                .build();
         return GraphicUnit.builder()
                 .id(gameUnit.getId())
                 .dynamic(gameUnit.isDynamic())
@@ -60,7 +65,6 @@ public class GraphicUnitFactory {
                 .model(objectModels.getModel("units.sun"))
                 .build();
     }
-
 
     public GraphicUnit createPlayerGraphicUnit(GameUnit gameUnit) {
         return GraphicUnit.builder()

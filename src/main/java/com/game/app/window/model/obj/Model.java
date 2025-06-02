@@ -1,6 +1,6 @@
 package com.game.app.window.model.obj;
 
-import com.game.app.window.model.texture.Texture;
+import com.game.app.window.model.obj.texture.Texture;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;

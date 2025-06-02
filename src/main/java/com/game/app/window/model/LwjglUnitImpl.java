@@ -1,15 +1,17 @@
 package com.game.app.window.model;
 
+import com.game.app.window.lwjgl.program.Light;
+import com.game.app.window.lwjgl.program.LwjglUnit;
 import lombok.Getter;
 import org.joml.Matrix4f;
 
 @Getter
-public class LwjglUnit {
+public class LwjglUnitImpl implements LwjglUnit {
     private final int vaoId;
     private final int textureId;
     private final GraphicUnit graphicUnit;
 
-    public LwjglUnit(
+    public LwjglUnitImpl(
             int vaoId,
             int textureId,
             GraphicUnit graphicUnit
@@ -17,25 +19,19 @@ public class LwjglUnit {
         this.vaoId = vaoId;
         this.textureId = textureId;
         this.graphicUnit = graphicUnit;
-        updateWorldMatrix();
     }
 
-    public void updateWorldMatrix() {
-        getGraphicUnit().updateWorldMatrix();
-    }
-
+    @Override
     public int getIndexCount() {
         return getGraphicUnit().getModel().indexesCount();
     }
 
-    public boolean isLight() {
-        return getGraphicUnit().getLight() != null;
-    }
-
+    @Override
     public boolean useShading() {
         return graphicUnit.isUseShading() && !isLight();
     }
 
+    @Override
     public Light getLight() {
         return getGraphicUnit().getLight();
     }
@@ -44,6 +40,7 @@ public class LwjglUnit {
         return graphicUnit;
     }
 
+    @Override
     public Matrix4f getWorldMatrix() {
         return getGraphicUnit().getWorldMatrix();
     }

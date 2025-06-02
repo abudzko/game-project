@@ -1,7 +1,7 @@
 package com.game.app.window.model.obj;
 
-import com.game.app.window.model.texture.PngTexture;
-import com.game.app.window.model.texture.Texture;
+import com.game.app.window.model.obj.texture.PngTexture;
+import com.game.app.window.model.obj.texture.Texture;
 import com.game.utils.BufferUtils;
 import com.game.utils.log.LogUtil;
 

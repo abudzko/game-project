@@ -1,4 +1,4 @@
-package com.game.app.window.model.texture;
+package com.game.app.window.model.obj.texture;
 
 public interface Texture {
 

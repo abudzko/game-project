@@ -1,6 +1,5 @@
 package com.game.app.window.lwjgl.program;
 
-import com.game.app.window.model.LwjglUnit;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Matrix4f;

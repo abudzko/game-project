@@ -1,5 +1,6 @@
 package com.game.app.window.model;
 
+import com.game.app.window.lwjgl.program.Light;
 import com.game.app.window.model.obj.Model;
 import lombok.Builder;
 import lombok.Getter;

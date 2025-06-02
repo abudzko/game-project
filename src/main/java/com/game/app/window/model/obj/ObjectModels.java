@@ -1,10 +1,7 @@
-package com.game.app.window.model;
+package com.game.app.window.model.obj;
 
-import com.game.app.window.model.obj.Model;
-import com.game.app.window.model.obj.ObjModel;
-import com.game.app.window.model.obj.ObjModelParameters;
-import com.game.app.window.resources.ObjectResources;
-import com.game.app.window.resources.TextureResources;
+import com.game.app.window.model.obj.resources.ObjectResources;
+import com.game.app.window.model.obj.resources.TextureResources;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,4 +1,4 @@
-package com.game.app.window.model.texture;
+package com.game.app.window.model.obj.texture;
 
 import com.game.app.window.model.obj.ObjModelParameters;
 import de.matthiasmann.twl.utils.PNGDecoder;

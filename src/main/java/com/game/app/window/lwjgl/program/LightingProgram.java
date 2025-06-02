@@ -2,9 +2,9 @@ package com.game.app.window.lwjgl.program;
 
 import com.game.app.window.lwjgl.program.shader.Shader;
 import com.game.app.window.model.GraphicUnit;
-import com.game.app.window.model.LwjglUnit;
+import com.game.app.window.model.LwjglUnitImpl;
 import com.game.app.window.model.obj.Model;
-import com.game.app.window.model.texture.Texture;
+import com.game.app.window.model.obj.texture.Texture;
 import com.game.utils.BufferUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -128,29 +128,29 @@ public class LightingProgram {
         enable();
 
         var lights = new ArrayList<LwjglUnit>();
-        for (var drawableModel : renderObjects.getLwjglUnits()) {
-            setUniformMatrix4f(WORLD_MATRIX_NAME, drawableModel.getWorldMatrix());
-            if (drawableModel.useShading()) {
+        for (var lwjglUnit : renderObjects.getLwjglUnits()) {
+            setUniformMatrix4f(WORLD_MATRIX_NAME, lwjglUnit.getWorldMatrix());
+            if (lwjglUnit.useShading()) {
                 setUniformInt(USE_SHADING, 1);
             } else {
                 setUniformInt(USE_SHADING, 0);
-                if (drawableModel.isLight()) {
-                    lights.add(drawableModel);
+                if (lwjglUnit.isLight()) {
+                    lights.add(lwjglUnit);
                 }
             }
             // Bind to the VAO
-            glBindVertexArray(drawableModel.getVaoId());
+            glBindVertexArray(lwjglUnit.getVaoId());
 
             // Textures
             glEnableVertexAttribArray(getTextureAttribute());
-            glBindTexture(GL_TEXTURE_2D, drawableModel.getTextureId());
+            glBindTexture(GL_TEXTURE_2D, lwjglUnit.getTextureId());
 
             // Normals
             glEnableVertexAttribArray(getNormalAttribute());
 
             // Vertices
             glEnableVertexAttribArray(getPositionAttribute());
-            glDrawElements(GL_TRIANGLES, drawableModel.getIndexCount(), GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, lwjglUnit.getIndexCount(), GL_UNSIGNED_INT, 0);
 
 
             // Clean resources
@@ -195,7 +195,7 @@ public class LightingProgram {
     public LwjglUnit createLwjglUnit(GraphicUnit graphicUnit) {
         var model = graphicUnit.getModel();
         int vaoId = vaoIdCache.computeIfAbsent(model.modelKey(), key -> loadModel(model));
-        return new LwjglUnit(vaoId, loadTexture(model), graphicUnit);
+        return new LwjglUnitImpl(vaoId, loadTexture(model), graphicUnit);
     }
 
     private int loadModel(Model model) {

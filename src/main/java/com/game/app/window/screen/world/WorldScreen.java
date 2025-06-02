@@ -8,10 +8,10 @@ import com.game.app.window.event.mouse.MouseButtonEvent;
 import com.game.app.window.event.resize.ResizeWindowEvent;
 import com.game.app.window.lwjgl.annotation.LwjglMainThread;
 import com.game.app.window.lwjgl.program.LightingProgram;
+import com.game.app.window.lwjgl.program.LwjglUnit;
 import com.game.app.window.lwjgl.program.RenderObjects;
 import com.game.app.window.model.GraphicUnit;
 import com.game.app.window.model.GraphicUnitFactory;
-import com.game.app.window.model.LwjglUnit;
 import com.game.app.window.screen.world.camera.Camera;
 import com.game.app.window.screen.world.surface.StaticDynamicSurface;
 import com.game.engine.unit.GameUnitDao;
@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class WorldScreen extends AbstractWindowEventListener {
     private final Queue<GraphicUnit> graphicUnits = new ConcurrentLinkedQueue<>();
     private final Queue<GraphicUnit> deletedGraphicUnits = new ConcurrentLinkedQueue<>();
-    private final Map<Long, LwjglUnit> drawableModels = new ConcurrentHashMap<>();
+    private final Map<Long, LwjglUnit> lwjglUnits = new ConcurrentHashMap<>();
     private final WorldScreenState worldScreenState;
     private final StaticDynamicSurface surface = StaticDynamicSurface.create();
     private final LightingProgram program;
@@ -53,20 +53,20 @@ public class WorldScreen extends AbstractWindowEventListener {
         var renderObjects = new RenderObjects();
         while (!graphicUnits.isEmpty()) {
             var gameUnit = graphicUnits.poll();
-            var drawableModel = drawableModels.get(gameUnit.getId());
+            var drawableModel = lwjglUnits.get(gameUnit.getId());
             if (drawableModel == null) {
-                drawableModels.put(gameUnit.getId(), getProgram().createLwjglUnit(gameUnit));
+                lwjglUnits.put(gameUnit.getId(), getProgram().createLwjglUnit(gameUnit));
             }
         }
 
         if (!deletedGraphicUnits.isEmpty()) {
             while (!deletedGraphicUnits.isEmpty()) {
                 var gameUnit = deletedGraphicUnits.poll();
-                drawableModels.remove(gameUnit.getId());
+                lwjglUnits.remove(gameUnit.getId());
             }
         }
 
-        renderObjects.setLwjglUnits(drawableModels.values());
+        renderObjects.setLwjglUnits(lwjglUnits.values());
         getCamera().getCameraViewMatrixCopyIfChanged().ifPresent(matrix4f -> {
             getCamera().setCameraViewMatrixChanged(false);
             renderObjects.setCameraViewMatrix(matrix4f);
@@ -104,7 +104,7 @@ public class WorldScreen extends AbstractWindowEventListener {
     }
 
     public void addGraphicUnit(GraphicUnit graphicUnit) {
-        var drawableModel = drawableModels.get(graphicUnit.getId());
+        var drawableModel = lwjglUnits.get(graphicUnit.getId());
         if (drawableModel == null) {
             graphicUnits.add(graphicUnit);
             if (graphicUnit.isSurface()) {

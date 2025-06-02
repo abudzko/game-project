@@ -1,4 +1,4 @@
-package com.game.app.window.resources;
+package com.game.app.window.model.obj.resources;
 
 import com.game.utils.log.LogUtil;
 import org.apache.commons.io.IOUtils;
