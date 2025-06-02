@@ -7,7 +7,7 @@ import org.joml.Vector3f;
 public class GraphicUnitFactory {
 
     public static final GraphicUnitFactory INSTANCE = new GraphicUnitFactory();
-    private final ModelFactory modelFactory = new ModelFactory();
+    private final ObjectModels objectModels = new ObjectModels();
 
     public GraphicUnit createGraphicUnit(GameUnit gameUnit) {
         return GraphicUnit.builder()
@@ -16,7 +16,7 @@ public class GraphicUnitFactory {
                 .position(gameUnit.getPosition())
                 .rotation(new Vector3f(0f, 0f, 0f))
                 .scale(1f)
-                .model(modelFactory.createModel("units.small_sphere"))
+                .model(objectModels.getModel("units.small_sphere"))
                 .build();
     }
 
@@ -28,7 +28,7 @@ public class GraphicUnitFactory {
                 .position(gameUnit.getPosition())
                 .rotation(new Vector3f(0f, 0f, 0f))
                 .scale(1f)
-                .model(modelFactory.createModel("units.ground"))
+                .model(objectModels.getModel("units.ground"))
                 .build();
         LogUtil.logDebug("createGroundUnit: " + (System.currentTimeMillis() - start) + "ms");
         return groundUnit;
@@ -43,7 +43,7 @@ public class GraphicUnitFactory {
                 .rotation(new Vector3f(0f, 0f, 0f))
                 .scale(1f)
                 .useShading(false)
-                .model(modelFactory.createModel("units.skydome"))
+                .model(objectModels.getModel("units.skydome"))
                 .build();
     }
 
@@ -57,7 +57,7 @@ public class GraphicUnitFactory {
                 .rotation(new Vector3f(0f, 0f, 0f))
                 .scale(1f)
                 .light(light)
-                .model(modelFactory.createModel("units.sun"))
+                .model(objectModels.getModel("units.sun"))
                 .build();
     }
 
@@ -69,7 +69,7 @@ public class GraphicUnitFactory {
                 .position(gameUnit.getPosition())
                 .rotation(new Vector3f(0f, 0f, 0f))
                 .scale(1f)
-                .model(modelFactory.createModel("units.small_sphere"))
+                .model(objectModels.getModel("units.small_sphere"))
                 .build();
     }
 }

@@ -1,6 +1,6 @@
 package com.game.app.window.model.obj;
 
-import com.game.app.window.lwjgl.texture.PngTexture;
+import com.game.app.window.model.texture.PngTexture;
 import com.game.app.window.model.texture.Texture;
 import com.game.utils.BufferUtils;
 import com.game.utils.log.LogUtil;
@@ -212,6 +212,11 @@ public class ObjModel implements Model {
     private void addTexture(float[] arr, TextureVertex textureVertex, int index) {
         arr[index++] = textureVertex.x;
         arr[index] = textureVertex.y;
+    }
+
+    @Override
+    public String modelKey() {
+        return objModelParameters.getModelKey();
     }
 
     @Override

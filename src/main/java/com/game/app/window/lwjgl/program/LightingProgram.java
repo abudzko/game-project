@@ -3,6 +3,8 @@ package com.game.app.window.lwjgl.program;
 import com.game.app.window.lwjgl.program.shader.Shader;
 import com.game.app.window.model.GraphicUnit;
 import com.game.app.window.model.LwjglUnit;
+import com.game.app.window.model.obj.Model;
+import com.game.app.window.model.texture.Texture;
 import com.game.utils.BufferUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -52,7 +54,7 @@ public class LightingProgram {
     protected static final String NORMAL_ATTRIBUTE_NAME = "normalAttribute";
     protected static final String TEXTURE_ATTRIBUTE_NAME = "textureAttribute";
     protected static final String CAMERA_POSITION_NAME = "cameraPosition";
-    protected static final String SHADER_PATH = "src/main/resources/shaders/light/";
+    protected static final String SHADER_PATH = "/shaders/light/";
 
     protected static final String LIGHT_COLOR_NAME = "lightColor";
     protected static final String LIGHT_POSITION_NAME = "lightPosition";
@@ -61,6 +63,10 @@ public class LightingProgram {
     private final Shader vertexShader;
     private final Shader fragmentShader;
     private final ConcurrentHashMap<String, Integer> uniformCache = new ConcurrentHashMap<>();
+    // For the same models we can reuse vaoId
+    private final ConcurrentHashMap<String, Integer> vaoIdCache = new ConcurrentHashMap<>();
+    // For the same models we can reuse texture id
+    private final ConcurrentHashMap<String, Integer> lwjglTexturesCache = new ConcurrentHashMap<>();
     private int programId;
     private Integer positionAttributeId;
     private Integer textureAttributeId;
@@ -70,6 +76,37 @@ public class LightingProgram {
         this.vertexShader = new Shader(SHADER_PATH + "vl.vert", GL_VERTEX_SHADER);
         this.fragmentShader = new Shader(SHADER_PATH + "fl.frag", GL_FRAGMENT_SHADER);
         linkProgram();
+    }
+
+    private static int loadTexture(Texture texture) {
+        // Create a texture
+        var id = GL30.glGenTextures();
+
+        // Bind the texture
+        GL30.glBindTexture(GL30.GL_TEXTURE_2D, id);
+
+        // Tell opengl how to unpack bytes
+        GL30.glPixelStorei(GL30.GL_UNPACK_ALIGNMENT, 1);
+
+        // Set the texture parameters, can be GL_LINEAR or GL_NEAREST
+        GL30.glTexParameterf(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_LINEAR);
+        GL30.glTexParameterf(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_LINEAR);
+
+        // Upload texture
+        var buffer = BufferUtils.createByteBuffer(texture.getDecodedPng());
+        GL30.glTexImage2D(
+                GL30.GL_TEXTURE_2D,
+                0,
+                GL30.GL_RGBA,
+                texture.getTextureWidth(),
+                texture.getTextureHeight(),
+                0, GL30.GL_RGBA,
+                GL30.GL_UNSIGNED_BYTE,
+                buffer
+        );
+        // Free
+        BufferUtils.memFree(buffer);
+        return id;
     }
 
     private void linkProgram() {
@@ -124,13 +161,6 @@ public class LightingProgram {
             glBindVertexArray(0);
         }
 
-        if (renderObjects.getDeletedLwjglUnits() != null) {
-            for (var lwjglUnit : renderObjects.getLwjglUnits()) {
-                //TODO delete vbo or we can reuse them for the similar units?
-                //TODO delete texture id or we can reuse them for the similar units?
-                GL30.glDeleteVertexArrays(lwjglUnit.getVaoId());
-            }
-        }
         if (renderObjects.getCameraViewMatrix() != null) {
             setUniformMatrix4f(CAMERA_VIEW_MATRIX_NAME, renderObjects.getCameraViewMatrix());
         }
@@ -162,8 +192,13 @@ public class LightingProgram {
         disable();
     }
 
-    public LwjglUnit createDrawableModel(GraphicUnit graphicUnit) {
+    public LwjglUnit createLwjglUnit(GraphicUnit graphicUnit) {
         var model = graphicUnit.getModel();
+        int vaoId = vaoIdCache.computeIfAbsent(model.modelKey(), key -> loadModel(model));
+        return new LwjglUnit(vaoId, loadTexture(model), graphicUnit);
+    }
+
+    private int loadModel(Model model) {
         // Load in GPU Memory our model
         // Create VAO per model
         int vaoId = glGenVertexArrays();
@@ -212,7 +247,11 @@ public class LightingProgram {
 
         // Unbind the VAO
         glBindVertexArray(0);
-        return new LwjglUnit(vaoId, graphicUnit);
+        return vaoId;
+    }
+
+    private int loadTexture(Model model) {
+        return lwjglTexturesCache.computeIfAbsent(model.modelKey(), key -> loadTexture(model.modelTexture()));
     }
 
     private int getPositionAttribute() {

@@ -11,7 +11,6 @@ import org.joml.Vector3f;
 public class RenderObjects {
     private Iterable<LwjglUnit> lwjglUnits;
     private Vector3f cameraPosition;
-    private Iterable<LwjglUnit> deletedLwjglUnits;
     private Matrix4f cameraViewMatrix;
     private Matrix4f projectionMatrix;
 }

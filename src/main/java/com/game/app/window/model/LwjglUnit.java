@@ -3,16 +3,19 @@ package com.game.app.window.model;
 import lombok.Getter;
 import org.joml.Matrix4f;
 
+@Getter
 public class LwjglUnit {
-    @Getter
     private final int vaoId;
+    private final int textureId;
     private final GraphicUnit graphicUnit;
 
     public LwjglUnit(
             int vaoId,
+            int textureId,
             GraphicUnit graphicUnit
     ) {
         this.vaoId = vaoId;
+        this.textureId = textureId;
         this.graphicUnit = graphicUnit;
         updateWorldMatrix();
     }
@@ -23,10 +26,6 @@ public class LwjglUnit {
 
     public int getIndexCount() {
         return getGraphicUnit().getModel().indexesCount();
-    }
-
-    public int getTextureId() {
-        return getGraphicUnit().getModel().modelTexture().getTextureId();
     }
 
     public boolean isLight() {

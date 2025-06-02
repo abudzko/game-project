@@ -19,7 +19,6 @@ import com.game.utils.ParallelUtils;
 import com.game.utils.log.LogUtil;
 import org.joml.Matrix4f;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
@@ -56,19 +55,14 @@ public class WorldScreen extends AbstractWindowEventListener {
             var gameUnit = graphicUnits.poll();
             var drawableModel = drawableModels.get(gameUnit.getId());
             if (drawableModel == null) {
-                drawableModels.put(gameUnit.getId(), getProgram().createDrawableModel(gameUnit));
+                drawableModels.put(gameUnit.getId(), getProgram().createLwjglUnit(gameUnit));
             }
         }
 
         if (!deletedGraphicUnits.isEmpty()) {
-            var deletedLwjglUnits = new ArrayList<LwjglUnit>();
             while (!deletedGraphicUnits.isEmpty()) {
                 var gameUnit = deletedGraphicUnits.poll();
-                var drawableModel = drawableModels.remove(gameUnit.getId());
-                if (drawableModel != null) {
-                    deletedLwjglUnits.add(drawableModel);
-                }
-                renderObjects.setDeletedLwjglUnits(deletedLwjglUnits);
+                drawableModels.remove(gameUnit.getId());
             }
         }
 

@@ -1,11 +1,11 @@
 package com.game.app.window.lwjgl.program.shader;
 
 import com.game.utils.log.LogUtil;
+import org.apache.commons.io.IOUtils;
 import org.lwjgl.opengl.GL30;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 
 import static org.lwjgl.opengl.GL11.GL_FALSE;
 import static org.lwjgl.opengl.GL20.GL_COMPILE_STATUS;
@@ -33,9 +33,9 @@ public class Shader {
 
     private String resource(String path) {
         try {
-            return Files.readString(Path.of(path));
+            return IOUtils.resourceToString(path, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Failed to load resource %s", path), e);
+            throw new IllegalArgumentException(String.format("Failed to load shader: %s", path), e);
         }
     }
 

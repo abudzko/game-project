@@ -9,6 +9,8 @@ public interface Model {
 
     int POINT_PER_VERTEX_3D = 3;
 
+    String modelKey();
+
     /**
      * Vertices of 3D model [x0, y0, z0, x1, y1, z1, ...]<br>
      * Where x0, y0, z0 is single vertex
