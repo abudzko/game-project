@@ -46,7 +46,7 @@ public class BVHNode {
     }
 
     private List<List<Triangle>> splitTriangles(List<Triangle> triangles) {
-        // Разделение треугольников на две группы: lest/right
+        // Разделение треугольников на две группы: left/right
         return List.of(
                 triangles.subList(0, triangles.size() / 2),
                 triangles.subList(triangles.size() / 2, triangles.size())
@@ -69,16 +69,17 @@ public class BVHNode {
         }
 
         var leftIntersection = left == null ? null : left.findIntersection(ray);
-        var rightIntersection = right.findIntersection(ray);
-
-        if (leftIntersection != null && rightIntersection != null) {
-            return ray.getStartPoint().distance(leftIntersection.getPoint()) < ray.getStartPoint().distance(rightIntersection.getPoint())
-                    ? leftIntersection
-                    : rightIntersection;
-        } else if (leftIntersection != null) {
-            return leftIntersection;
-        } else {
-            return rightIntersection;
-        }
+           if (leftIntersection == null) {
+               return right.findIntersection(ray);
+           } else {
+               var rightIntersection = right.findIntersection(ray);
+               if (rightIntersection == null) {
+                   return leftIntersection;
+               } else {
+                   return ray.getStartPoint().distance(leftIntersection.getPoint()) < ray.getStartPoint().distance(rightIntersection.getPoint())
+                           ? leftIntersection
+                           : rightIntersection;
+               }
+           }
     }
 }

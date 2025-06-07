@@ -18,7 +18,7 @@ public class Surface {
                 .flatMap(graphicUnit -> triangleBuilder.toTriangles(graphicUnit).stream())
                 .collect(Collectors.toList());
 
-        LogUtil.logDebug("toTriangles: " + (System.currentTimeMillis() - start) + "ms");
+        LogUtil.logDebug("toTriangles: count " + triangles.size() + " " + (System.currentTimeMillis() - start) + "ms");
         start = System.currentTimeMillis();
         bvhRoot = new BVHNode(triangles);
         LogUtil.logDebug("new BVHNode: " + (System.currentTimeMillis() - start) + "ms");

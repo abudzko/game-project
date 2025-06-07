@@ -26,7 +26,7 @@ public class CameraState {
     private float cursorPositionY;
     private float previousCursorPositionX;
     private float previousCursorPositionY;
-    private float zNear = 0.05f;
+    private float zNear = 0.01f;
     private float zFar = 1000.f;
     private float moveStep = 0.1f;
     private Matrix4f cameraViewMatrix;

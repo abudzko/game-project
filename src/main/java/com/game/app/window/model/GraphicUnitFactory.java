@@ -12,13 +12,23 @@ public class GraphicUnitFactory {
     private final ObjectModels objectModels = new ObjectModels();
 
     public GraphicUnit createGraphicUnit(GameUnit gameUnit) {
+        var modelKey = "units.small_sphere";
+        return createGraphicUnit(gameUnit, modelKey);
+    }
+
+    public GraphicUnit createGraphicUnit2(GameUnit gameUnit) {
+        var modelKey = "units.small_sphere_yellow";
+        return createGraphicUnit(gameUnit, modelKey);
+    }
+
+    private GraphicUnit createGraphicUnit(GameUnit gameUnit, String modelKey) {
         return GraphicUnit.builder()
                 .id(gameUnit.getId())
                 .dynamic(gameUnit.isDynamic())
                 .position(gameUnit.getPosition())
                 .rotation(new Vector3f(0f, 0f, 0f))
                 .scale(1f)
-                .model(objectModels.getModel("units.small_sphere"))
+                .model(objectModels.getModel(modelKey))
                 .build();
     }
 
@@ -67,13 +77,6 @@ public class GraphicUnitFactory {
     }
 
     public GraphicUnit createPlayerGraphicUnit(GameUnit gameUnit) {
-        return GraphicUnit.builder()
-                .id(gameUnit.getId())
-                .dynamic(gameUnit.isDynamic())
-                .position(gameUnit.getPosition())
-                .rotation(new Vector3f(0f, 0f, 0f))
-                .scale(1f)
-                .model(objectModels.getModel("units.small_sphere"))
-                .build();
+        return createGraphicUnit(gameUnit, "units.small_sphere");
     }
 }

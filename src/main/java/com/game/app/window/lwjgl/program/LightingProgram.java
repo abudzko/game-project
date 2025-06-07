@@ -6,6 +6,7 @@ import com.game.app.window.model.LwjglUnitImpl;
 import com.game.app.window.model.obj.Model;
 import com.game.app.window.model.obj.texture.Texture;
 import com.game.utils.BufferUtils;
+import com.game.utils.log.LogUtil;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
@@ -122,6 +123,7 @@ public class LightingProgram {
     }
 
     public void render(RenderObjects renderObjects) {
+        var start = System.currentTimeMillis();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
@@ -151,18 +153,20 @@ public class LightingProgram {
             // Vertices
             glEnableVertexAttribArray(getPositionAttribute());
             glDrawElements(GL_TRIANGLES, lwjglUnit.getIndexCount(), GL_UNSIGNED_INT, 0);
-
-
-            // Clean resources
-            glBindTexture(GL_TEXTURE_2D, 0);
-            glDisableVertexAttribArray(getNormalAttribute());
-            glDisableVertexAttribArray(getTextureAttribute());
-            glDisableVertexAttribArray(getPositionAttribute());
-            glBindVertexArray(0);
         }
+        // Clean resources
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisableVertexAttribArray(getNormalAttribute());
+        glDisableVertexAttribArray(getTextureAttribute());
+        glDisableVertexAttribArray(getPositionAttribute());
+        glBindVertexArray(0);
+
 
         if (renderObjects.getCameraViewMatrix() != null) {
             setUniformMatrix4f(CAMERA_VIEW_MATRIX_NAME, renderObjects.getCameraViewMatrix());
+//            var end = System.currentTimeMillis();
+//            var diff = end - start;
+//            LogUtil.logDebug("Diff " + diff + " ms");
         }
         if (renderObjects.getProjectionMatrix() != null) {
             setUniformMatrix4f(PROJECTION_MATRIX_NAME, renderObjects.getProjectionMatrix());

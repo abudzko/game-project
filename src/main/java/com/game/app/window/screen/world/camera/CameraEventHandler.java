@@ -30,9 +30,6 @@ class CameraEventHandler implements WindowEventListener {
         return Math.atan2(dx, dz);
     }
 
-    /**
-     * TODO fix case when camera is under surface
-     */
     private void stepX(float delta) {
         var angleXZRadians = getAngleXZ();
         var deltaZ = -delta * (float) Math.sin(angleXZRadians);
@@ -57,7 +54,7 @@ class CameraEventHandler implements WindowEventListener {
     private void stepY(float delta) {
         var cameraPosition = new Vector3f();
         cameraPosition.x = getState().getEyeX();
-        cameraPosition.y = getState().getEyeY()+ delta;
+        cameraPosition.y = getState().getEyeY() + delta;
         cameraPosition.z = getState().getEyeZ();
         cameraPosition = resolveCameraPosition(cameraPosition);
         getState().setEyeX(cameraPosition.x());
@@ -192,9 +189,10 @@ class CameraEventHandler implements WindowEventListener {
                 rotationResult = Optional.of(rotateAroundCustomAxis((float) Math.toRadians(rotationDirection * 1)))
                         /* prevent undesired behavior of camera when exceeding of 90 degrees */
                         .filter(p -> {
-                            var diff = p.z() - getState().getCenterZ();
-                            LogUtil.logDebug(String.format("Diff %s %s", diff, down));
-                            return down || Math.abs(diff) > .1f;
+                            var diffZ = p.z() - getState().getCenterZ();
+                            var diffY = p.y() - getState().getCenterY();
+//                            LogUtil.logDebug(String.format("Diff %s %s", diffY, diffZ));
+                            return Math.abs(diffY) > 0.1f && Math.abs(diffZ) > .1f;
                         });
             }
             if (getState().getPreviousCursorPositionX() != getState().getCursorPositionX()) {
@@ -222,7 +220,7 @@ class CameraEventHandler implements WindowEventListener {
         getState().setEyeY(point.y());
         getState().setEyeZ(point.z());
 
-        LogUtil.logDebug(String.format("x = %s y = %s z = %s", point.x(), point.y(), point.z()));
+//        LogUtil.logDebug(String.format("x = %s y = %s z = %s", point.x(), point.y(), point.z()));
         look();
     }
 
@@ -231,7 +229,7 @@ class CameraEventHandler implements WindowEventListener {
         return Optional.ofNullable(surfaceIntersectionFinder.findIntersection(position))
                 .map(intersection -> {
                     var intersectionPoint = intersection.getPoint();
-                    LogUtil.logDebug(String.format("resolveCameraPosition intersectionPoint %s, position %s", intersectionPoint, position));
+//                    LogUtil.logDebug(String.format("resolveCameraPosition intersectionPoint %s, position %s", intersectionPoint, position));
                     intersectionPoint.y = intersectionPoint.y + delta;
                     return intersectionPoint;
                 })

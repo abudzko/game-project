@@ -9,7 +9,7 @@ import java.util.Map;
 public class GameUnitMediator {
 
     private static final GameUnitDao GAME_UNIT_DAO = GameUnitDao.INSTANCE;
-    private static final GraphicUnitFactory GRAPHIC_UNIT_DAO = GraphicUnitFactory.INSTANCE;
+    private static final GraphicUnitFactory GRAPHIC_UNIT_FACTORY = GraphicUnitFactory.INSTANCE;
     private final Window window;
     private final GameEngine gameEngine;
 
@@ -26,16 +26,16 @@ public class GameUnitMediator {
     }
 
     private void addWorld() {
-        window.addGraphicUnit(GRAPHIC_UNIT_DAO.createSunUnit(GAME_UNIT_DAO.getSun()));
-        window.addGraphicUnit(GRAPHIC_UNIT_DAO.createGroundUnit(GAME_UNIT_DAO.getGround()));
-        window.addGraphicUnit(GRAPHIC_UNIT_DAO.createSkydome(GAME_UNIT_DAO.getSkydome()));
+        window.addGraphicUnit(GRAPHIC_UNIT_FACTORY.createSunUnit(GAME_UNIT_DAO.getSun()));
+        window.addGraphicUnit(GRAPHIC_UNIT_FACTORY.createGroundUnit(GAME_UNIT_DAO.getGround()));
+        window.addGraphicUnit(GRAPHIC_UNIT_FACTORY.createSkydome(GAME_UNIT_DAO.getSkydome()));
     }
 
     private void addUnits(Map<Long, GameUnit> units) {
-        units.forEach((id, unit) -> window.addGraphicUnit(GRAPHIC_UNIT_DAO.createGraphicUnit(unit)));
+        units.forEach((id, unit) -> window.addGraphicUnit(GRAPHIC_UNIT_FACTORY.createGraphicUnit(unit)));
     }
 
     private void addPlayer(GameUnit player) {
-        window.addGraphicUnit(GRAPHIC_UNIT_DAO.createPlayerGraphicUnit(player));
+        window.addGraphicUnit(GRAPHIC_UNIT_FACTORY.createPlayerGraphicUnit(player));
     }
 }

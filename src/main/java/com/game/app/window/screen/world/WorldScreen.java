@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class WorldScreen extends AbstractWindowEventListener {
     private final Queue<GraphicUnit> graphicUnits = new ConcurrentLinkedQueue<>();
     private final Queue<GraphicUnit> deletedGraphicUnits = new ConcurrentLinkedQueue<>();
+    private final Map<Long, GraphicUnit> graphicUnitMap = new ConcurrentHashMap<>();
     private final Map<Long, LwjglUnit> lwjglUnits = new ConcurrentHashMap<>();
     private final WorldScreenState worldScreenState;
     private final StaticDynamicSurface surface = StaticDynamicSurface.create();
@@ -35,6 +36,7 @@ public class WorldScreen extends AbstractWindowEventListener {
     private final Camera camera;
     private Matrix4f projectionMatrix;
     private boolean isProjectionMatrixChanged = false;
+    private volatile boolean pressed = false;
 
     public WorldScreen(WorldScreenState worldScreenState) {
         this.worldScreenState = worldScreenState;
@@ -55,6 +57,7 @@ public class WorldScreen extends AbstractWindowEventListener {
             var gameUnit = graphicUnits.poll();
             var drawableModel = lwjglUnits.get(gameUnit.getId());
             if (drawableModel == null) {
+                graphicUnitMap.put(gameUnit.getId(), gameUnit);
                 lwjglUnits.put(gameUnit.getId(), getProgram().createLwjglUnit(gameUnit));
             }
         }
@@ -63,6 +66,7 @@ public class WorldScreen extends AbstractWindowEventListener {
             while (!deletedGraphicUnits.isEmpty()) {
                 var gameUnit = deletedGraphicUnits.poll();
                 lwjglUnits.remove(gameUnit.getId());
+                graphicUnitMap.remove(gameUnit.getId());
             }
         }
 
@@ -104,13 +108,13 @@ public class WorldScreen extends AbstractWindowEventListener {
     }
 
     public void addGraphicUnit(GraphicUnit graphicUnit) {
-        var drawableModel = lwjglUnits.get(graphicUnit.getId());
-        if (drawableModel == null) {
+        var lwjglUnit = lwjglUnits.get(graphicUnit.getId());
+        if (lwjglUnit == null) {
             graphicUnits.add(graphicUnit);
             if (graphicUnit.isSurface()) {
                 if (graphicUnit.isDynamic()) {
                     surface.addDynamicGraphicUnit(graphicUnit);
-                    surface.buildDynamicSurface();
+//                    surface.buildDynamicSurface();
                 } else {
                     surface.addStaticGraphicUnit(graphicUnit);
                     surface.buildStaticSurface();
@@ -145,19 +149,31 @@ public class WorldScreen extends AbstractWindowEventListener {
     @Override
     public void event(CursorPositionEvent event) {
         super.event(event);
-//        runTask(event.getX(), event.getY());
+        if (pressed) {
+            addGraphicUnit(event.getX(), event.getY());
+        }
     }
 
     @Override
     public void event(MouseButtonEvent mouseButtonEvent) {
         super.event(mouseButtonEvent);
-        if (MouseButtonAction.PRESSED.equals(mouseButtonEvent.getAction())
-                && MouseButton.LEFT.equals(mouseButtonEvent.getButton())) {
-            runTask(mouseButtonEvent.getX(), mouseButtonEvent.getY());
+        if (MouseButton.LEFT.equals(mouseButtonEvent.getButton())) {
+            if (MouseButtonAction.PRESSED.equals(mouseButtonEvent.getAction())) {
+                addGraphicUnit(mouseButtonEvent.getX(), mouseButtonEvent.getY());
+                pressed = true;
+            } else if (MouseButtonAction.RELEASED.equals(mouseButtonEvent.getAction())) {
+                pressed = false;
+                rebuildSurface();
+            }
+        }
+        if (MouseButton.WHEEL.equals(mouseButtonEvent.getButton())) {
+            if (MouseButtonAction.PRESSED.equals(mouseButtonEvent.getAction())) {
+                changeGraphicUnit(mouseButtonEvent.getX(), mouseButtonEvent.getY());
+            }
         }
     }
 
-    private void runTask(double x, double y) {
+    private void addGraphicUnit(double x, double y) {
         Runnable runnable = () -> {
             try {
                 Optional.ofNullable(getCamera().findIntersection(x, y))
@@ -168,6 +184,38 @@ public class WorldScreen extends AbstractWindowEventListener {
                                 },
                                 () -> LogUtil.logDebug("No intersection")
                         );
+            } catch (Exception e) {
+                LogUtil.logError(e.getMessage(), e);
+            }
+        };
+        ParallelUtils.run(runnable);
+    }
+
+    private void changeGraphicUnit(double x, double y) {
+        Runnable runnable = () -> {
+            try {
+                Optional.ofNullable(getCamera().findIntersection(x, y))
+                        .ifPresentOrElse(
+                                intersection -> {
+                                    var graphicUnit = graphicUnitMap.get(intersection.getUnitId());
+                                    if (graphicUnit != null) {
+                                        addGraphicUnit(GraphicUnitFactory.INSTANCE.createGraphicUnit2(GameUnitDao.createUnit(graphicUnit.getPosition())));
+                                        deleteGraphicUnit(graphicUnit);
+                                    }
+                                },
+                                () -> LogUtil.logDebug("No intersection")
+                        );
+            } catch (Exception e) {
+                LogUtil.logError(e.getMessage(), e);
+            }
+        };
+        ParallelUtils.run(runnable);
+    }
+
+    private void rebuildSurface() {
+        Runnable runnable = () -> {
+            try {
+                surface.buildDynamicSurface();
             } catch (Exception e) {
                 LogUtil.logError(e.getMessage(), e);
             }
