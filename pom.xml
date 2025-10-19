@@ -179,6 +179,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <dependencyReducedPomLocation>${project.basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
                             <filters>
                                 <filter>
                                     <!-- exclude files that sign a jar -->

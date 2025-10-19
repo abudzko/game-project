@@ -164,10 +164,10 @@ public class LightingProgram {
 
         if (renderObjects.getCameraViewMatrix() != null) {
             setUniformMatrix4f(CAMERA_VIEW_MATRIX_NAME, renderObjects.getCameraViewMatrix());
-//            var end = System.currentTimeMillis();
-//            var diff = end - start;
-//            LogUtil.logDebug("Diff " + diff + " ms");
         }
+//        var end = System.currentTimeMillis();
+//        var diff = end - start;
+//        LogUtil.logDebug("Diff " + diff + " ms");
         if (renderObjects.getProjectionMatrix() != null) {
             setUniformMatrix4f(PROJECTION_MATRIX_NAME, renderObjects.getProjectionMatrix());
         }

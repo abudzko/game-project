@@ -13,6 +13,7 @@ import org.joml.Vector3f;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@Deprecated
 public class WorldScreenEventHandler extends AbstractWindowEventListener {
 
     private final float moveStep = 0.01f;

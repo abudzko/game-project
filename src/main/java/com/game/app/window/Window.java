@@ -140,11 +140,6 @@ public class Window extends AbstractWindowEventListener {
         windowSizeChanged = true;
     }
 
-//    // TODO ??
-//    public Ray getRay(MouseButtonEvent mouseButtonEvent) {
-//        return worldScreen.getRay(mouseButtonEvent);
-//    }
-
     @Override
     public void event(ResizeWindowEvent event) {
         super.event(event);

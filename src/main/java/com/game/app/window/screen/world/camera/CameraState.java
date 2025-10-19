@@ -20,19 +20,12 @@ public class CameraState {
     private float upX = 0;
     private float upY = 1f;
     private float upZ = 0f;
-    private boolean isRightMousePressed = false;
-    private boolean isRightMouseReleased = true;
-    private float cursorPositionX;
-    private float cursorPositionY;
-    private float previousCursorPositionX;
-    private float previousCursorPositionY;
     private float zNear = 0.01f;
     private float zFar = 1000.f;
     private float moveStep = 0.1f;
     private Matrix4f cameraViewMatrix;
     private Matrix4f projectionMatrix;
     private boolean cameraViewMatrixChanged = false;
-    private Vector3f groundPosition;
 
     private int cameraWidth;
     private int cameraHeight;
@@ -76,5 +69,23 @@ public class CameraState {
 
     public Vector3f getCenterPosition() {
         return new Vector3f(getCenterX(), getCenterY(), getCenterZ());
+    }
+
+    public void look() {
+        var m = new Matrix4f();
+        m.lookAt(eye(), center(), up());
+        setCameraViewMatrix(m);
+    }
+
+    private Vector3f eye() {
+        return new Vector3f(getEyeX(), getEyeY(), getEyeZ());
+    }
+
+    private Vector3f center() {
+        return new Vector3f(getCenterX(), getCenterY(), getCenterZ());
+    }
+
+    private Vector3f up() {
+        return new Vector3f(getUpX(), getUpY(), getUpZ());
     }
 }

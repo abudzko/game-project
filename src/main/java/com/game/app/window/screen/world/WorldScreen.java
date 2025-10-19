@@ -26,10 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class WorldScreen extends AbstractWindowEventListener {
-    private final Queue<GraphicUnit> graphicUnits = new ConcurrentLinkedQueue<>();
-    private final Queue<GraphicUnit> deletedGraphicUnits = new ConcurrentLinkedQueue<>();
+    private final Queue<GraphicUnit> graphicUnitsQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<GraphicUnit> deletedGraphicUnitsQueue = new ConcurrentLinkedQueue<>();
     private final Map<Long, GraphicUnit> graphicUnitMap = new ConcurrentHashMap<>();
-    private final Map<Long, LwjglUnit> lwjglUnits = new ConcurrentHashMap<>();
+    private final Map<Long, LwjglUnit> renderedLwjglUnits = new ConcurrentHashMap<>();
     private final WorldScreenState worldScreenState;
     private final StaticDynamicSurface surface = StaticDynamicSurface.create();
     private final LightingProgram program;
@@ -53,24 +53,24 @@ public class WorldScreen extends AbstractWindowEventListener {
     @LwjglMainThread
     private RenderObjects createRenderObjects() {
         var renderObjects = new RenderObjects();
-        while (!graphicUnits.isEmpty()) {
-            var gameUnit = graphicUnits.poll();
-            var drawableModel = lwjglUnits.get(gameUnit.getId());
+        while (!graphicUnitsQueue.isEmpty()) {
+            var graphicUnit = graphicUnitsQueue.poll();
+            var drawableModel = renderedLwjglUnits.get(graphicUnit.getId());
             if (drawableModel == null) {
-                graphicUnitMap.put(gameUnit.getId(), gameUnit);
-                lwjglUnits.put(gameUnit.getId(), getProgram().createLwjglUnit(gameUnit));
+                graphicUnitMap.put(graphicUnit.getId(), graphicUnit);
+                renderedLwjglUnits.put(graphicUnit.getId(), getProgram().createLwjglUnit(graphicUnit));
             }
         }
 
-        if (!deletedGraphicUnits.isEmpty()) {
-            while (!deletedGraphicUnits.isEmpty()) {
-                var gameUnit = deletedGraphicUnits.poll();
-                lwjglUnits.remove(gameUnit.getId());
-                graphicUnitMap.remove(gameUnit.getId());
+        if (!deletedGraphicUnitsQueue.isEmpty()) {
+            while (!deletedGraphicUnitsQueue.isEmpty()) {
+                var graphicUnit = deletedGraphicUnitsQueue.poll();
+                renderedLwjglUnits.remove(graphicUnit.getId());
+                graphicUnitMap.remove(graphicUnit.getId());
             }
         }
 
-        renderObjects.setLwjglUnits(lwjglUnits.values());
+        renderObjects.setLwjglUnits(renderedLwjglUnits.values());
         getCamera().getCameraViewMatrixCopyIfChanged().ifPresent(matrix4f -> {
             getCamera().setCameraViewMatrixChanged(false);
             renderObjects.setCameraViewMatrix(matrix4f);
@@ -108,9 +108,9 @@ public class WorldScreen extends AbstractWindowEventListener {
     }
 
     public void addGraphicUnit(GraphicUnit graphicUnit) {
-        var lwjglUnit = lwjglUnits.get(graphicUnit.getId());
+        var lwjglUnit = renderedLwjglUnits.get(graphicUnit.getId());
         if (lwjglUnit == null) {
-            graphicUnits.add(graphicUnit);
+            graphicUnitsQueue.add(graphicUnit);
             if (graphicUnit.isSurface()) {
                 if (graphicUnit.isDynamic()) {
                     surface.addDynamicGraphicUnit(graphicUnit);
@@ -124,7 +124,7 @@ public class WorldScreen extends AbstractWindowEventListener {
     }
 
     public void deleteGraphicUnit(GraphicUnit graphicUnit) {
-        deletedGraphicUnits.add(graphicUnit);
+        deletedGraphicUnitsQueue.add(graphicUnit);
     }
 
     private LightingProgram getProgram() {

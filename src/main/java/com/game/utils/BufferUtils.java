@@ -21,6 +21,11 @@ public class BufferUtils {
         return getAllocatedBuffers().get();
     }
 
+    public static ByteBuffer createByteBuffer(int size) {
+        counter();
+        return MemoryUtil.memAlloc(size);
+    }
+
     public static ByteBuffer createByteBuffer(byte[] array) {
         counter();
         return MemoryUtil.memAlloc(array.length).put(array).flip();
