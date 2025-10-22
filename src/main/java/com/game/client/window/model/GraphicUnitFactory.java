@@ -1,10 +1,8 @@
 package com.game.client.window.model;
 
 import com.game.client.utils.log.LogUtil;
-import com.game.client.window.lwjgl.program.Light;
 import com.game.client.window.model.obj.ObjectModels;
 import com.game.client.window.screen.world.engine.unit.GameUnit;
-import org.joml.Vector3f;
 
 public class GraphicUnitFactory {
 
@@ -14,57 +12,36 @@ public class GraphicUnitFactory {
         return createGraphicUnit(gameUnit, "units.small_sphere");
     }
 
-    public static GraphicUnit createGroundUnit(GameUnit gameUnit) {
+    public static GraphicUnit createGroundGraphicUnit(GameUnit gameUnit) {
         var start = System.currentTimeMillis();
         var groundUnit = GraphicUnit.builder()
-                .gameUnitId(gameUnit.getId())
-                .dynamic(gameUnit.isDynamic())
-                .position(gameUnit.getPosition())
-                .rotation(new Vector3f(0f, 0f, 0f))
-                .scale(1f)
+                .sharedUnitState(gameUnit.getSharedUnitState())
                 .model(objectModels.getModel("units.ground"))
                 .build();
         LogUtil.logDebug("createGroundUnit: " + (System.currentTimeMillis() - start) + "ms");
         return groundUnit;
     }
 
-    public static GraphicUnit createSkydome(GameUnit gameUnit) {
+    public static GraphicUnit createSkydomeGraphicUnit(GameUnit gameUnit) {
         return GraphicUnit.builder()
-                .gameUnitId(gameUnit.getId())
-                .dynamic(gameUnit.isDynamic())
+                .sharedUnitState(gameUnit.getSharedUnitState())
                 .isSurface(false)
-                .position(gameUnit.getPosition())
-                .rotation(new Vector3f(0f, 0f, 0f))
-                .scale(1f)
                 .useShading(false)
                 .model(objectModels.getModel("units.skydome"))
                 .build();
     }
 
-    public static GraphicUnit createSunUnit(GameUnit gameUnit) {
-        var light = Light.builder()
-                .lightPosition(new Vector3f(10.0f, 100.0f, 0.0f))
-                .lightColor(new Vector3f(1.0f, 1.0f, 1.0f))
-                .build();
+    public static GraphicUnit createSunGraphicUnit(GameUnit gameUnit) {
         return GraphicUnit.builder()
-                .gameUnitId(gameUnit.getId())
-                .dynamic(gameUnit.isDynamic())
+                .sharedUnitState(gameUnit.getSharedUnitState())
                 .isSurface(false)
-                .position(light.getLightPosition())
-                .rotation(new Vector3f(0f, 0f, 0f))
-                .scale(1f)
-                .light(light)
                 .model(objectModels.getModel("units.sun"))
                 .build();
     }
 
     private static GraphicUnit createGraphicUnit(GameUnit gameUnit, String modelKey) {
         return GraphicUnit.builder()
-                .gameUnitId(gameUnit.getId())
-                .dynamic(gameUnit.isDynamic())
-                .position(gameUnit.getPosition())
-                .rotation(new Vector3f(0f, 0f, 0f))
-                .scale(1f)
+                .sharedUnitState(gameUnit.getSharedUnitState())
                 .model(objectModels.getModel(modelKey))
                 .build();
     }

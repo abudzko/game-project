@@ -15,7 +15,7 @@ import java.util.Optional;
 public class MoveAction implements GameUnitAction {
     private final long gameUnitId;
     private final Vector3f targetPosition;
-    private final float speed = 0.1f;
+    private final float speed = 0.01f;
     private final Camera camera;
     @Builder.Default
     private boolean move = true;
@@ -23,13 +23,10 @@ public class MoveAction implements GameUnitAction {
     @Override
     public boolean act(GameUnit gameUnit) {
         if (move) {
-            calculateNextPosition(gameUnit.getPosition(), targetPosition).ifPresentOrElse(intersection -> {
+            calculateNextPosition(gameUnit.getSharedUnitState().getPosition(), targetPosition).ifPresentOrElse(intersection -> {
                 var position = intersection.getPoint();
-                var unitPosition = gameUnit.getPosition();
-                unitPosition.x = position.x;
-                unitPosition.y = position.y;
-                unitPosition.z = position.z;
-                gameUnit.addChange(ChangeType.POSITION);
+                gameUnit.getSharedUnitState().setPosition(position);
+                gameUnit.getSharedUnitState().addChange(ChangeType.POSITION);
             }, () -> move = false);
         }
         return move;

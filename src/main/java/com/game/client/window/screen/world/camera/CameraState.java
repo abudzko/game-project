@@ -22,7 +22,7 @@ public class CameraState {
     private float upZ = 0f;
     private float zNear = 0.01f;
     private float zFar = 1000.f;
-    private float moveStep = 0.1f;
+    private float moveStep = 0.01f;
     private Matrix4f cameraViewMatrix;
     private Matrix4f projectionMatrix;
     private boolean cameraViewMatrixChanged = false;

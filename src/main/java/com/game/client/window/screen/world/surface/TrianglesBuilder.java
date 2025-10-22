@@ -30,7 +30,7 @@ public class TrianglesBuilder {
     @SneakyThrows
     public List<Triangle> toTriangles(GraphicUnit graphicUnit) {
         var model = graphicUnit.getModel();
-        var worldMatrix = graphicUnit.getWorldMatrix();
+        var worldMatrix = graphicUnit.getSharedUnitState().getWorldMatrix();
         var start = System.currentTimeMillis();
         var vertices = model.getVertices();
         var indexes = model.getIndexes();
@@ -38,7 +38,7 @@ public class TrianglesBuilder {
         int pointPerVertex3d = model.getPointPerVertex3d();
         start = System.currentTimeMillis();
         var parameters = TriangleTaskParameters.builder()
-                .gameUnitId(graphicUnit.getGameUnitId())
+                .gameUnitId(graphicUnit.getSharedUnitState().getGameUnitId())
                 .indexes(indexes)
                 .vertices(vertices)
                 .start(0)

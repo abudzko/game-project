@@ -33,9 +33,9 @@ public class WorldScreen extends AbstractWindowEventListener implements OnGameUn
     private final LightingProgram program;
     private final Camera camera;
     private final GameEngine gameEngine;
+    private final boolean pressed = false;
     private Matrix4f projectionMatrix;
     private boolean isProjectionMatrixChanged = false;
-    private volatile boolean pressed = false;
 
     public WorldScreen(WorldScreenState worldScreenState) {
         this.worldScreenState = worldScreenState;
@@ -44,15 +44,21 @@ public class WorldScreen extends AbstractWindowEventListener implements OnGameUn
         this.gameEngine = new GameEngine(this);
         var gameWorld = gameEngine.getGameWorld();
         gameEngine.start();
+        var player = gameWorld.getPlayer();
         Stream.of(
-                GraphicUnitFactory.createPlayerGraphicUnit(gameWorld.getPlayer()),
-                GraphicUnitFactory.createGroundUnit(gameWorld.getGround()),
-                GraphicUnitFactory.createSunUnit(gameWorld.getSun()),
-                GraphicUnitFactory.createSkydome(gameWorld.getSkydome())
+                GraphicUnitFactory.createPlayerGraphicUnit(player),
+                GraphicUnitFactory.createGroundGraphicUnit(gameWorld.getGround()),
+                GraphicUnitFactory.createSunGraphicUnit(gameWorld.getSun()),
+                GraphicUnitFactory.createSkydomeGraphicUnit(gameWorld.getSkydome())
         ).forEach(graphicUnit -> {
-            graphicUnit.updateWorldMatrix();
+            graphicUnit.getSharedUnitState().updateWorldMatrix();
             addGraphicUnit(graphicUnit);
         });
+        Optional.ofNullable(camera.findIntersection(player.getSharedUnitState().getPosition()))
+                .ifPresent(intersection -> {
+                    player.getSharedUnitState().setPosition(intersection.getPoint());
+                    player.getSharedUnitState().updateWorldMatrix();
+                });
         updateMatrices();
         var windowEventListener = WorldScreenEventHandler.create(getCamera(), gameEngine);
         addEventChildListener(windowEventListener);
@@ -68,18 +74,20 @@ public class WorldScreen extends AbstractWindowEventListener implements OnGameUn
         var renderObjects = new RenderObjects();
         while (!graphicUnitsQueue.isEmpty()) {
             var graphicUnit = graphicUnitsQueue.poll();
-            var drawableModel = renderedLwjglUnits.get(graphicUnit.getGameUnitId());
+            long gameUnitId = graphicUnit.getSharedUnitState().getGameUnitId();
+            var drawableModel = renderedLwjglUnits.get(gameUnitId);
             if (drawableModel == null) {
-                graphicUnitMap.put(graphicUnit.getGameUnitId(), graphicUnit);
-                renderedLwjglUnits.put(graphicUnit.getGameUnitId(), getProgram().createLwjglUnit(graphicUnit));
+                graphicUnitMap.put(gameUnitId, graphicUnit);
+                renderedLwjglUnits.put(gameUnitId, getProgram().createLwjglUnit(graphicUnit));
             }
         }
 
         if (!deletedGraphicUnitsQueue.isEmpty()) {
             while (!deletedGraphicUnitsQueue.isEmpty()) {
                 var graphicUnit = deletedGraphicUnitsQueue.poll();
-                renderedLwjglUnits.remove(graphicUnit.getGameUnitId());
-                graphicUnitMap.remove(graphicUnit.getGameUnitId());
+                long gameUnitId = graphicUnit.getSharedUnitState().getGameUnitId();
+                renderedLwjglUnits.remove(gameUnitId);
+                graphicUnitMap.remove(gameUnitId);
             }
         }
 
@@ -121,11 +129,11 @@ public class WorldScreen extends AbstractWindowEventListener implements OnGameUn
     }
 
     private void addGraphicUnit(GraphicUnit graphicUnit) {
-        var lwjglUnit = renderedLwjglUnits.get(graphicUnit.getGameUnitId());
+        var lwjglUnit = renderedLwjglUnits.get(graphicUnit.getSharedUnitState().getGameUnitId());
         if (lwjglUnit == null) {
             graphicUnitsQueue.add(graphicUnit);
             if (graphicUnit.isSurface()) {
-                if (graphicUnit.isDynamic()) {
+                if (graphicUnit.getSharedUnitState().isDynamic()) {
                     surface.addDynamicGraphicUnit(graphicUnit);
 //                    surface.buildDynamicSurface();
                 } else {
@@ -153,14 +161,14 @@ public class WorldScreen extends AbstractWindowEventListener implements OnGameUn
 
     @Override
     public void processChanges(GameUnit gameUnit) {
-        Optional.ofNullable(gameUnit.getChangeQueue())
+        Optional.ofNullable(gameUnit.getSharedUnitState().getChangeQueue())
                 .filter(q -> !q.isEmpty())
                 .ifPresent(changes -> {
-                    var graphicUnit = graphicUnitMap.get(gameUnit.getId());
+                    var graphicUnit = graphicUnitMap.get(gameUnit.getSharedUnitState().getGameUnitId());
                     while (!changes.isEmpty()) {
                         switch (changes.poll()) {
                             case POSITION:
-                                graphicUnit.updateWorldMatrix();
+                                graphicUnit.getSharedUnitState().updateWorldMatrix();
                                 break;
                         }
                     }

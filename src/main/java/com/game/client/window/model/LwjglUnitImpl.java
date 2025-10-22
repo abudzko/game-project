@@ -33,7 +33,7 @@ public class LwjglUnitImpl implements LwjglUnit {
 
     @Override
     public Light getLight() {
-        return getGraphicUnit().getLight();
+        return getGraphicUnit().getSharedUnitState().getLight();
     }
 
     private GraphicUnit getGraphicUnit() {
@@ -42,6 +42,6 @@ public class LwjglUnitImpl implements LwjglUnit {
 
     @Override
     public Matrix4f getWorldMatrix() {
-        return getGraphicUnit().getWorldMatrix();
+        return getGraphicUnit().getSharedUnitState().getWorldMatrix();
     }
 }

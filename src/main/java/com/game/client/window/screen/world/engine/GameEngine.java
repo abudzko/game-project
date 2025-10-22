@@ -54,9 +54,9 @@ public class GameEngine {
     }
 
     public void handleMoveAction(MoveAction moveAction) {
-        var player = gameWorld.findById(gameWorld.getPlayer().getId());
+        var player = gameWorld.findById(gameWorld.getPlayer().getSharedUnitState().getGameUnitId());
         if (player != null) {
-            player.setAction(moveAction);
+            player.getSharedUnitState().setGameUnitAction(moveAction);
         }
         LogUtil.logDebug(String.format("Move %s to %s", moveAction.getGameUnitId(), moveAction.getTargetPosition()));
     }

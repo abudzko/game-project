@@ -25,9 +25,9 @@ public class Surface {
     }
 
     public void addGraphicUnit(GraphicUnit graphicUnit) {
-        var unit = this.graphicUnitMap.get(graphicUnit.getGameUnitId());
+        var unit = this.graphicUnitMap.get(graphicUnit.getSharedUnitState().getGameUnitId());
         if (unit == null) {
-            graphicUnitMap.put(graphicUnit.getGameUnitId(), graphicUnit);
+            graphicUnitMap.put(graphicUnit.getSharedUnitState().getGameUnitId(), graphicUnit);
         }
     }
 

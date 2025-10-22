@@ -23,7 +23,11 @@ public class GameWorld {
         ground = GameUnitFactory.INSTANCE.createGround();
         skydome = GameUnitFactory.INSTANCE.createSkydome();
         player = GameUnitFactory.INSTANCE.createPlayer();
-        var gameUnits = Stream.of(sun, ground, skydome, player).collect(Collectors.toMap(GameUnit::getId, Function.identity()));
+        var gameUnits = Stream.of(sun, ground, skydome, player)
+                .collect(Collectors.toMap(
+                        gameUnit -> gameUnit.getSharedUnitState().getGameUnitId(),
+                        Function.identity()
+                ));
         gameUnitMap.putAll(gameUnits);
     }
 
