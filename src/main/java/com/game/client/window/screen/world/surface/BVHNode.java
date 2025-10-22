@@ -62,7 +62,7 @@ public class BVHNode {
             var intersectionPoint = new Vector3f();
             for (var triangle : triangles) {
                 if (triangle.intersects(ray, intersectionPoint)) {
-                    return Intersection.builder().unitId(triangle.getUnitId()).point(intersectionPoint).build();
+                    return Intersection.builder().gameUnitId(triangle.getGameUnitId()).point(intersectionPoint).build();
                 }
             }
             return null;

@@ -1,34 +1,23 @@
 package com.game.client.window.model;
 
-import com.game.client.engine.unit.GameUnit;
 import com.game.client.utils.log.LogUtil;
 import com.game.client.window.lwjgl.program.Light;
 import com.game.client.window.model.obj.ObjectModels;
+import com.game.client.window.screen.world.engine.unit.GameUnit;
 import org.joml.Vector3f;
 
 public class GraphicUnitFactory {
 
-    public static final GraphicUnitFactory INSTANCE = new GraphicUnitFactory();
-    private final ObjectModels objectModels = new ObjectModels();
+    private static final ObjectModels objectModels = new ObjectModels();
 
-    public GraphicUnit createPlayerGraphicUnit(GameUnit gameUnit) {
+    public static GraphicUnit createPlayerGraphicUnit(GameUnit gameUnit) {
         return createGraphicUnit(gameUnit, "units.small_sphere");
     }
 
-    public GraphicUnit createGraphicUnit(GameUnit gameUnit) {
-        var modelKey = "units.small_sphere";
-        return createGraphicUnit(gameUnit, modelKey);
-    }
-
-    public GraphicUnit createGraphicUnit2(GameUnit gameUnit) {
-        var modelKey = "units.small_sphere_yellow";
-        return createGraphicUnit(gameUnit, modelKey);
-    }
-
-    public GraphicUnit createGroundUnit(GameUnit gameUnit) {
+    public static GraphicUnit createGroundUnit(GameUnit gameUnit) {
         var start = System.currentTimeMillis();
         var groundUnit = GraphicUnit.builder()
-                .id(gameUnit.getId())
+                .gameUnitId(gameUnit.getId())
                 .dynamic(gameUnit.isDynamic())
                 .position(gameUnit.getPosition())
                 .rotation(new Vector3f(0f, 0f, 0f))
@@ -39,9 +28,9 @@ public class GraphicUnitFactory {
         return groundUnit;
     }
 
-    public GraphicUnit createSkydome(GameUnit gameUnit) {
+    public static GraphicUnit createSkydome(GameUnit gameUnit) {
         return GraphicUnit.builder()
-                .id(gameUnit.getId())
+                .gameUnitId(gameUnit.getId())
                 .dynamic(gameUnit.isDynamic())
                 .isSurface(false)
                 .position(gameUnit.getPosition())
@@ -52,13 +41,13 @@ public class GraphicUnitFactory {
                 .build();
     }
 
-    public GraphicUnit createSunUnit(GameUnit gameUnit) {
+    public static GraphicUnit createSunUnit(GameUnit gameUnit) {
         var light = Light.builder()
-                .lightPosition(new Vector3f(0.0f, 100.0f, 0.0f))
+                .lightPosition(new Vector3f(10.0f, 100.0f, 0.0f))
                 .lightColor(new Vector3f(1.0f, 1.0f, 1.0f))
                 .build();
         return GraphicUnit.builder()
-                .id(gameUnit.getId())
+                .gameUnitId(gameUnit.getId())
                 .dynamic(gameUnit.isDynamic())
                 .isSurface(false)
                 .position(light.getLightPosition())
@@ -69,14 +58,24 @@ public class GraphicUnitFactory {
                 .build();
     }
 
-    private GraphicUnit createGraphicUnit(GameUnit gameUnit, String modelKey) {
+    private static GraphicUnit createGraphicUnit(GameUnit gameUnit, String modelKey) {
         return GraphicUnit.builder()
-                .id(gameUnit.getId())
+                .gameUnitId(gameUnit.getId())
                 .dynamic(gameUnit.isDynamic())
                 .position(gameUnit.getPosition())
                 .rotation(new Vector3f(0f, 0f, 0f))
                 .scale(1f)
                 .model(objectModels.getModel(modelKey))
                 .build();
+    }
+
+    public static GraphicUnit createGraphicUnit(GameUnit gameUnit) {
+        var modelKey = "units.small_sphere";
+        return createGraphicUnit(gameUnit, modelKey);
+    }
+
+    public static GraphicUnit createGraphicUnit2(GameUnit gameUnit) {
+        var modelKey = "units.small_sphere_yellow";
+        return createGraphicUnit(gameUnit, modelKey);
     }
 }

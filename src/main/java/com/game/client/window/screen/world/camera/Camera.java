@@ -3,6 +3,7 @@ package com.game.client.window.screen.world.camera;
 import com.game.client.window.event.listener.AbstractWindowEventListener;
 import com.game.client.window.event.resize.ResizeWindowEvent;
 import com.game.client.window.screen.world.surface.Intersection;
+import com.game.client.window.screen.world.surface.Ray;
 import com.game.client.window.screen.world.surface.StaticDynamicSurface;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -59,6 +60,10 @@ public class Camera extends AbstractWindowEventListener {
 
     public Intersection findIntersection(double x, double y) {
         return surfaceIntersectionFinder.findIntersection(x, y);
+    }
+
+    public Intersection findIntersection(Vector3f position) {
+        return surfaceIntersectionFinder.findIntersection(position);
     }
 
     private CameraState getCameraState() {

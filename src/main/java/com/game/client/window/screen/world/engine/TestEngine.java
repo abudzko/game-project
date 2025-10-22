@@ -1,4 +1,4 @@
-package com.game.client.engine;
+package com.game.client.window.screen.world.engine;
 
 import com.game.client.utils.log.LogUtil;
 import com.game.client.window.Window;
@@ -6,7 +6,6 @@ import com.game.client.window.event.key.KeyEvent;
 import com.game.client.window.event.listener.WindowEventListener;
 import com.game.client.window.event.mouse.MouseButtonEvent;
 import com.game.client.window.model.GraphicUnit;
-import com.game.client.window.model.GraphicUnitFactory;
 import com.game.client.window.screen.world.surface.StaticDynamicSurface;
 import org.apache.commons.math3.util.Precision;
 import org.joml.Vector3f;
@@ -21,11 +20,10 @@ import java.util.concurrent.Executors;
 public class TestEngine implements Runnable, WindowEventListener {
 
     private static final Random RANDOM = new Random();
-    private final GraphicUnitFactory graphicUnitFactory = GraphicUnitFactory.INSTANCE;
     private final StaticDynamicSurface surface = StaticDynamicSurface.create();
     private final Window window;
     private final float moveStep = 0.01f;
-//    private final Queue<GraphicUnit> tmpUnits = new ConcurrentLinkedQueue<>();
+
     private final ExecutorService executorService = Executors.newFixedThreadPool(4,
             runnable -> {
                 var t = Executors.defaultThreadFactory().newThread(runnable);
@@ -234,17 +232,5 @@ public class TestEngine implements Runnable, WindowEventListener {
                 Precision.round(point.y, scale),
                 Precision.round(point.z, scale)
         );
-    }
-
-    private void addUnit(GraphicUnit tmpGraphicUnit) {
-        window.addGraphicUnit(tmpGraphicUnit);
-//        tmpUnits.add(tmpGraphicUnit);
-
-        surface.addDynamicGraphicUnit(tmpGraphicUnit);
-        surface.buildDynamicSurface();
-//        if (tmpUnits.size() > 10) {
-//            var last = tmpUnits.remove();
-//            window.deleteGameUnit(last);
-//        }
     }
 }

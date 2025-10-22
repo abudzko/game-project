@@ -16,7 +16,7 @@ import org.joml.Vector3f;
 @Getter
 @Builder
 public class GraphicUnit {
-    private long id;
+    private long gameUnitId;
     private Vector3f position;
     /**
      * Angles are measured in degrees
@@ -32,12 +32,14 @@ public class GraphicUnit {
     /**
      * Units which can be selected
      */
-    private boolean isSurface;
+    @Builder.Default
+    private boolean isSurface = true;
     private Light light;
     /**
      * Some units should not have shadows, for ex. the sky
      */
-    private boolean useShading;
+    @Builder.Default
+    private boolean useShading = true;
 
     public void updateWorldMatrix() {
         var matrix4f = new Matrix4f();
@@ -47,16 +49,5 @@ public class GraphicUnit {
                 .rotateZ((float) Math.toRadians(getRotation().z))
                 .scale(getScale());
         this.worldMatrix = matrix4f;
-    }
-
-    public static class GraphicUnitBuilder {
-        private boolean isSurface = true;
-        private boolean useShading = true;
-
-        public GraphicUnit build() {
-            var graphicUnit = new GraphicUnit(id, position, rotation, scale, null, model, dynamic, isSurface, light, useShading);
-            graphicUnit.updateWorldMatrix();
-            return graphicUnit;
-        }
     }
 }

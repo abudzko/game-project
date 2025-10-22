@@ -7,6 +7,6 @@ import org.joml.Vector3f;
 @Getter
 @Builder
 public class Intersection {
-    private final long unitId;
+    private final long gameUnitId;
     private final Vector3f point;
 }

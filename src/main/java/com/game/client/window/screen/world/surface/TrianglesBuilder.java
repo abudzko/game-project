@@ -38,7 +38,7 @@ public class TrianglesBuilder {
         int pointPerVertex3d = model.getPointPerVertex3d();
         start = System.currentTimeMillis();
         var parameters = TriangleTaskParameters.builder()
-                .unitId(graphicUnit.getId())
+                .gameUnitId(graphicUnit.getGameUnitId())
                 .indexes(indexes)
                 .vertices(vertices)
                 .start(0)
@@ -70,7 +70,7 @@ public class TrianglesBuilder {
                 for (int i = parameters.getStart(); i < parameters.getEnd(); i++) {
                     var worldMatrix = parameters.getWorldMatrix();
                     var triangle = Triangle.builder()
-                            .unitId(parameters.getUnitId())
+                            .gameUnitId(parameters.getGameUnitId())
                             .v1(worldMatrix.transformPosition(readVertex(vertices, indexOfFirstVertex(indexes, i, pointPerVertex3d))))
                             .v2(worldMatrix.transformPosition(readVertex(vertices, indexOfFirstVertex(indexes, ++i, pointPerVertex3d))))
                             .v3(worldMatrix.transformPosition(readVertex(vertices, indexOfFirstVertex(indexes, ++i, pointPerVertex3d))))
@@ -125,7 +125,7 @@ public class TrianglesBuilder {
 @Builder
 @Getter
 class TriangleTaskParameters {
-    private final long unitId;
+    private final long gameUnitId;
     private final int[] indexes;
     private final float[] vertices;
     private final int start;

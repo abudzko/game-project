@@ -7,25 +7,36 @@ import com.game.client.window.event.mouse.MouseButton;
 import com.game.client.window.event.mouse.MouseButtonAction;
 import com.game.client.window.event.mouse.MouseButtonEvent;
 import com.game.client.window.model.GraphicUnit;
+import com.game.client.window.screen.world.camera.Camera;
+import com.game.client.window.screen.world.engine.GameEngine;
+import com.game.client.window.screen.world.engine.action.MoveAction;
 import org.apache.commons.math3.util.Precision;
 import org.joml.Vector3f;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Deprecated
 public class WorldScreenEventHandler extends AbstractWindowEventListener {
 
     private final float moveStep = 0.01f;
+    private final Camera camera;
+
     private final ExecutorService executorService = Executors.newFixedThreadPool(4,
             runnable -> {
                 var t = Executors.defaultThreadFactory().newThread(runnable);
                 t.setDaemon(true);
                 return t;
             });
+    private final GameEngine gameEngine;
 
-    public static WorldScreenEventHandler create() {
-        return new WorldScreenEventHandler();
+    public WorldScreenEventHandler(Camera camera, GameEngine gameEngine) {
+        this.camera = camera;
+        this.gameEngine = gameEngine;
+    }
+
+    public static WorldScreenEventHandler create(Camera camera, GameEngine gameEngine) {
+        return new WorldScreenEventHandler(camera, gameEngine);
     }
 
     @Override
@@ -46,16 +57,16 @@ public class WorldScreenEventHandler extends AbstractWindowEventListener {
             case REPEAT:
                 switch (keyEvent.getKey()) {
                     case KEY_W:
-                        moveZ(-moveStep);
+//                        moveZ(-moveStep);
                         break;
                     case KEY_S:
-                        moveZ(moveStep);
+//                        moveZ(moveStep);
                         break;
                     case KEY_A:
-                        moveX(-moveStep);
+//                        moveX(-moveStep);
                         break;
                     case KEY_D:
-                        moveX(moveStep);
+//                        moveX(moveStep);
                         break;
                     default:
                         break;
@@ -93,7 +104,7 @@ public class WorldScreenEventHandler extends AbstractWindowEventListener {
                 && MouseButton.LEFT.equals(mouseButtonEvent.getButton())) {
             Runnable runnable = () -> {
                 try {
-                    runTask(mouseButtonEvent);
+                    moveAction(mouseButtonEvent);
                 } catch (Exception e) {
                     LogUtil.logError(e.getMessage(), e);
                 }
@@ -102,17 +113,20 @@ public class WorldScreenEventHandler extends AbstractWindowEventListener {
         }
     }
 
-    private void runTask(MouseButtonEvent mouseButtonEvent) {
-//        var ray = window.getRay(mouseButtonEvent);
-//        Optional.ofNullable(surface.findIntersection(ray))
-//                .ifPresentOrElse(
-//                        point -> {
-//                            LogUtil.logDebug("Intersection point: " + toStr(point));
-//                            var tmpGraphicUnit = GraphicUnitDao.createSmallCircleGraphicUnit(point);
-//                            addUnit(tmpGraphicUnit);
-//                        },
-//                        () -> LogUtil.logDebug("No intersection")
-//                );
+    private void moveAction(MouseButtonEvent mouseButtonEvent) {
+        Optional.ofNullable(camera.findIntersection(mouseButtonEvent.getX(), mouseButtonEvent.getY()))
+                .ifPresentOrElse(
+                        intersection -> {
+                            LogUtil.logDebug("Intersection intersection: " + toStr(intersection.getPoint()));
+                            var moveAction = MoveAction.builder()
+                                    .targetPosition(intersection.getPoint())
+                                    .gameUnitId(intersection.getGameUnitId())
+                                    .camera(camera)
+                                    .build();
+                            gameEngine.handleMoveAction(moveAction);
+                        },
+                        () -> LogUtil.logDebug("No intersection")
+                );
     }
 
     private String toStr(Vector3f point) {

@@ -15,7 +15,7 @@ vec3 phongShadingLighting(vec4 textureColor) {
     vec3 result = vec3(0.0);
     for (int i = 0; i < lightCount; i++) {
 
-        float ambientStrength = 0.2;
+        float ambientStrength = 0.5;
         vec3 color = lightColor[i];
         vec3 ambient = ambientStrength * color;
 

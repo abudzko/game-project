@@ -8,7 +8,7 @@ import org.joml.Vector3f;
 @Getter
 @Builder
 public class Triangle {
-    private final long unitId;
+    private final long gameUnitId;
     private final Vector3f v1;
     private final Vector3f v2;
     private final Vector3f v3;
