@@ -1,21 +1,18 @@
 package com.game.client.window.screen.world.engine;
 
 import com.game.client.utils.log.LogUtil;
-import com.game.client.window.screen.world.OnGameUnitChangedListener;
 import com.game.client.window.screen.world.engine.action.MoveAction;
 import com.game.client.window.screen.world.engine.unit.GameUnit;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
 public class GameEngine {
-    private final long stepMs = 100;
+    private final long stepMs =50;
     @Getter
     private final GameWorld gameWorld;
-    private final OnGameUnitChangedListener onGameUnitChangedListener;
 
-    public GameEngine(OnGameUnitChangedListener onGameUnitChangedListener) {
+    public GameEngine() {
         this.gameWorld = new GameWorld();
-        this.onGameUnitChangedListener = onGameUnitChangedListener;
     }
 
     public void start() {
@@ -40,6 +37,7 @@ public class GameEngine {
             });
             var end = System.currentTimeMillis();
             var diff = end - start;
+            LogUtil.logDebug("engine loop " + diff + " ms");
             if (diff < stepMs) {
                 Thread.sleep(stepMs - diff);
             } else {
@@ -50,7 +48,6 @@ public class GameEngine {
 
     private void step(GameUnit unit) {
         unit.step();
-        onGameUnitChangedListener.processChanges(unit);
     }
 
     public void handleMoveAction(MoveAction moveAction) {

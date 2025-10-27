@@ -1,4 +1,4 @@
-#version 330
+#version 430 core
 precision mediump float;
 in vec2 fragmentTextureAttribute;
 in vec3 fragmentPositionAttribute;
@@ -8,8 +8,10 @@ uniform sampler2D textureSampler;
 uniform vec3 lightPosition[3];
 uniform vec3 lightColor[3];
 uniform int lightCount;
-uniform int useShading;
 uniform vec3 cameraPosition;
+uniform int useShading;
+
+out vec4 FragColor;
 
 vec3 phongShadingLighting(vec4 textureColor) {
     vec3 result = vec3(0.0);
@@ -36,11 +38,10 @@ vec3 phongShadingLighting(vec4 textureColor) {
 
 void main() {
     vec4 textureColor = texture(textureSampler, fragmentTextureAttribute);
-    if (useShading == 0) {
-        gl_FragColor = textureColor;
+    if (useShading < 1) {
+        FragColor = textureColor;
     } else {
-        vec4 textureColor = texture(textureSampler, fragmentTextureAttribute);
         vec3 result = phongShadingLighting(textureColor);
-        gl_FragColor = vec4(result, textureColor.a);
+        FragColor = vec4(result, textureColor.a);
     }
 }

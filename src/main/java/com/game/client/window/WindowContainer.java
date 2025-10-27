@@ -65,7 +65,7 @@ public class WindowContainer {
         Collection<Window> windowList = windows.values();
         while (run) {
             windowList.forEach(Window::processPendingEvents);
-            Thread.sleep(10);
+            Thread.sleep(50);
             if (windowList.stream().allMatch(Window::shouldBeClosed)) {
                 run = false;
             }

@@ -5,6 +5,7 @@ import com.game.client.utils.log.LogUtil;
 import com.game.client.window.event.listener.AbstractWindowEventListener;
 import com.game.client.window.event.resize.ResizeWindowEvent;
 import com.game.client.window.lwjgl.annotation.LwjglMainThread;
+import com.game.client.window.lwjgl.program.BatchDrawProgram;
 import com.game.client.window.lwjgl.program.LightingProgram;
 import com.game.client.window.lwjgl.program.LwjglUnit;
 import com.game.client.window.lwjgl.program.RenderObjects;
@@ -12,7 +13,6 @@ import com.game.client.window.model.GraphicUnit;
 import com.game.client.window.model.GraphicUnitFactory;
 import com.game.client.window.screen.world.camera.Camera;
 import com.game.client.window.screen.world.engine.GameEngine;
-import com.game.client.window.screen.world.engine.unit.GameUnit;
 import com.game.client.window.screen.world.surface.StaticDynamicSurface;
 import org.joml.Matrix4f;
 
@@ -21,9 +21,9 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
-public class WorldScreen extends AbstractWindowEventListener implements OnGameUnitChangedListener {
+public class WorldScreen extends AbstractWindowEventListener {
     private final Queue<GraphicUnit> graphicUnitsQueue = new ConcurrentLinkedQueue<>();
     private final Queue<GraphicUnit> deletedGraphicUnitsQueue = new ConcurrentLinkedQueue<>();
     private final Map<Long, GraphicUnit> graphicUnitMap = new ConcurrentHashMap<>();
@@ -34,26 +34,23 @@ public class WorldScreen extends AbstractWindowEventListener implements OnGameUn
     private final Camera camera;
     private final GameEngine gameEngine;
     private final boolean pressed = false;
+    private BatchDrawProgram batchDrawProgram;
     private Matrix4f projectionMatrix;
     private boolean isProjectionMatrixChanged = false;
 
     public WorldScreen(WorldScreenState worldScreenState) {
         this.worldScreenState = worldScreenState;
         this.program = new LightingProgram();
+        this.batchDrawProgram = new BatchDrawProgram();
         this.camera = createCamera();
-        this.gameEngine = new GameEngine(this);
+        this.gameEngine = new GameEngine();
         var gameWorld = gameEngine.getGameWorld();
         gameEngine.start();
-        var player = gameWorld.getPlayer();
-        Stream.of(
-                GraphicUnitFactory.createPlayerGraphicUnit(player),
-                GraphicUnitFactory.createGroundGraphicUnit(gameWorld.getGround()),
-                GraphicUnitFactory.createSunGraphicUnit(gameWorld.getSun()),
-                GraphicUnitFactory.createSkydomeGraphicUnit(gameWorld.getSkydome())
-        ).forEach(graphicUnit -> {
-            graphicUnit.getSharedUnitState().updateWorldMatrix();
-            addGraphicUnit(graphicUnit);
+        gameWorld.getGameUnitMap().forEach((key, gameUnit) -> {
+            gameUnit.getSharedUnitState().updateWorldMatrix();
+            addGraphicUnit(GraphicUnitFactory.createGraphicUnit(gameUnit));
         });
+        var player = gameWorld.getPlayer();
         Optional.ofNullable(camera.findIntersection(player.getSharedUnitState().getPosition()))
                 .ifPresent(intersection -> {
                     player.getSharedUnitState().setPosition(intersection.getPoint());
@@ -65,8 +62,12 @@ public class WorldScreen extends AbstractWindowEventListener implements OnGameUn
     }
 
     public void render() {
+        var start = System.currentTimeMillis();
         var renderObjects = createRenderObjects();
         getProgram().render(renderObjects);
+        var end = System.currentTimeMillis();
+        var diff = end - start;
+//        LogUtil.logDebug("world screen render " + diff + " ms");
     }
 
     @LwjglMainThread
@@ -75,8 +76,8 @@ public class WorldScreen extends AbstractWindowEventListener implements OnGameUn
         while (!graphicUnitsQueue.isEmpty()) {
             var graphicUnit = graphicUnitsQueue.poll();
             long gameUnitId = graphicUnit.getSharedUnitState().getGameUnitId();
-            var drawableModel = renderedLwjglUnits.get(gameUnitId);
-            if (drawableModel == null) {
+            var lwjglUnit = renderedLwjglUnits.get(gameUnitId);
+            if (lwjglUnit == null) {
                 graphicUnitMap.put(gameUnitId, graphicUnit);
                 renderedLwjglUnits.put(gameUnitId, getProgram().createLwjglUnit(graphicUnit));
             }
@@ -92,6 +93,10 @@ public class WorldScreen extends AbstractWindowEventListener implements OnGameUn
         }
 
         renderObjects.setLwjglUnits(renderedLwjglUnits.values());
+        var vaoIdLwjglUnitMap = renderedLwjglUnits.values()
+                .stream()
+                .collect(Collectors.groupingBy(LwjglUnit::getVaoId));
+        renderObjects.setVaoIdLwjglUnitMap(vaoIdLwjglUnitMap);
         getCamera().getCameraViewMatrixCopyIfChanged().ifPresent(matrix4f -> {
             getCamera().setCameraViewMatrixChanged(false);
             renderObjects.setCameraViewMatrix(matrix4f);
@@ -148,31 +153,22 @@ public class WorldScreen extends AbstractWindowEventListener implements OnGameUn
         deletedGraphicUnitsQueue.add(graphicUnit);
     }
 
-    private LightingProgram getProgram() {
-        if (program == null) {
+//    private LightingProgram getProgram() {
+//        if (program == null) {
+//            throw new IllegalStateException("Program is not created");
+//        }
+//        return program;
+//    }
+
+    private BatchDrawProgram getProgram() {
+        if (batchDrawProgram == null) {
             throw new IllegalStateException("Program is not created");
         }
-        return program;
+        return batchDrawProgram;
     }
 
     private void updateMatrices() {
         updateProjectionMatrix();
-    }
-
-    @Override
-    public void processChanges(GameUnit gameUnit) {
-        Optional.ofNullable(gameUnit.getSharedUnitState().getChangeQueue())
-                .filter(q -> !q.isEmpty())
-                .ifPresent(changes -> {
-                    var graphicUnit = graphicUnitMap.get(gameUnit.getSharedUnitState().getGameUnitId());
-                    while (!changes.isEmpty()) {
-                        switch (changes.poll()) {
-                            case POSITION:
-                                graphicUnit.getSharedUnitState().updateWorldMatrix();
-                                break;
-                        }
-                    }
-                });
     }
 
     @Override

@@ -12,11 +12,16 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.game.client.window.lwjgl.program.ProgramDebugger.checkIndividualShaders;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11.glDrawElements;
+import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL15.GL_DYNAMIC_DRAW;
 import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15.glBufferSubData;
 import static org.lwjgl.opengl.GL30.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL30.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL30.GL_DEPTH_BUFFER_BIT;
@@ -24,12 +29,11 @@ import static org.lwjgl.opengl.GL30.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL30.GL_FLOAT;
 import static org.lwjgl.opengl.GL30.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL30.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL30.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL30.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL30.glAttachShader;
 import static org.lwjgl.opengl.GL30.glBindBuffer;
-import static org.lwjgl.opengl.GL30.glBindTexture;
+import static org.lwjgl.opengl.GL30.glBindBufferBase;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glBufferData;
 import static org.lwjgl.opengl.GL30.glClear;
@@ -45,21 +49,23 @@ import static org.lwjgl.opengl.GL30.glUniformMatrix4fv;
 import static org.lwjgl.opengl.GL30.glUseProgram;
 import static org.lwjgl.opengl.GL30.glValidateProgram;
 import static org.lwjgl.opengl.GL30.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL31.glDrawElementsInstanced;
+import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
 
-public class LightingProgram {
+public class BatchDrawProgram {
     protected static final String PROJECTION_MATRIX_NAME = "projectionMatrix";
     protected static final String CAMERA_VIEW_MATRIX_NAME = "cameraViewMatrix";
-    protected static final String WORLD_MATRIX_NAME = "worldMatrix";
+    protected static final String BASE_INSTANCE_NAME = "baseInstance";
+    protected static final String USE_SHADING_NAME = "useShading";
     protected static final String POSITION_ATTRIBUTE_NAME = "positionAttribute";
     protected static final String NORMAL_ATTRIBUTE_NAME = "normalAttribute";
     protected static final String TEXTURE_ATTRIBUTE_NAME = "textureAttribute";
     protected static final String CAMERA_POSITION_NAME = "cameraPosition";
-    protected static final String SHADER_PATH = "/shaders/light";
+    protected static final String SHADER_PATH = "/shaders/batch";
 
     protected static final String LIGHT_COLOR_NAME = "lightColor";
     protected static final String LIGHT_POSITION_NAME = "lightPosition";
     protected static final String LIGHT_COUNT_NAME = "lightCount";
-    protected static final String USE_SHADING = "useShading";
     private final Shader vertexShader;
     private final Shader fragmentShader;
     private final ConcurrentHashMap<String, Integer> uniformCache = new ConcurrentHashMap<>();
@@ -71,11 +77,13 @@ public class LightingProgram {
     private Integer positionAttributeId;
     private Integer textureAttributeId;
     private Integer normalAttributeId;
+    private int ssboMatricesId;
 
-    public LightingProgram() {
-        this.vertexShader = new Shader(SHADER_PATH + "/vl.vert", GL_VERTEX_SHADER);
-        this.fragmentShader = new Shader(SHADER_PATH + "/fl.frag", GL_FRAGMENT_SHADER);
+    public BatchDrawProgram() {
+        this.vertexShader = new Shader(SHADER_PATH + "/vb.vert", GL_VERTEX_SHADER);
+        this.fragmentShader = new Shader(SHADER_PATH + "/fb.frag", GL_FRAGMENT_SHADER);
         linkProgram();
+        createShaderBuffer();
     }
 
     private static int loadTexture(Texture texture) {
@@ -83,19 +91,19 @@ public class LightingProgram {
         var id = GL30.glGenTextures();
 
         // Bind the texture
-        GL30.glBindTexture(GL30.GL_TEXTURE_2D, id);
+        glBindTexture(GL_TEXTURE_2D, id);
 
         // Tell opengl how to unpack bytes
         GL30.glPixelStorei(GL30.GL_UNPACK_ALIGNMENT, 1);
 
         // Set the texture parameters, can be GL_LINEAR or GL_NEAREST
-        GL30.glTexParameterf(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_LINEAR);
-        GL30.glTexParameterf(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_LINEAR);
+        GL30.glTexParameterf(GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_LINEAR);
+        GL30.glTexParameterf(GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_LINEAR);
 
         // Upload texture
         var buffer = BufferUtils.createByteBuffer(texture.getDecodedPng());
         GL30.glTexImage2D(
-                GL30.GL_TEXTURE_2D,
+                GL_TEXTURE_2D,
                 0,
                 GL30.GL_RGBA,
                 texture.getTextureWidth(),
@@ -119,6 +127,8 @@ public class LightingProgram {
         glValidateProgram(programId);
 
         releaseResources();
+
+        checkIndividualShaders(programId);
     }
 
     public void render(RenderObjects renderObjects) {
@@ -127,37 +137,61 @@ public class LightingProgram {
         glEnable(GL_DEPTH_TEST);
 
         enable();
-
+        int matrixSize = 16;
+        var matrices16fBuffer = BufferUtils.createFloatBuffer(renderObjects.getLwjglUnits().size() * matrixSize);
         var lights = new ArrayList<LwjglUnit>();
-        for (var lwjglUnit : renderObjects.getLwjglUnits()) {
-            setUniformMatrix4f(WORLD_MATRIX_NAME, lwjglUnit.getWorldMatrix());
-            if (lwjglUnit.useShading()) {
-                setUniformInt(USE_SHADING, 1);
-            } else {
-                setUniformInt(USE_SHADING, 0);
-                if (lwjglUnit.isLight()) {
-                    lights.add(lwjglUnit);
-                }
-            }
-            // Bind to the VAO
-            glBindVertexArray(lwjglUnit.getVaoId());
-            // Textures
-            glBindTexture(GL_TEXTURE_2D, lwjglUnit.getTextureId());
 
-            glDrawElements(GL_TRIANGLES, lwjglUnit.getIndexCount(), GL_UNSIGNED_INT, 0);
-        }
-        // Clean resources
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glBindVertexArray(0);
-
-
+        // Call before draw method otherwise old data will be used in draw calls
         if (renderObjects.getCameraViewMatrix() != null) {
             setUniformMatrix4f(CAMERA_VIEW_MATRIX_NAME, renderObjects.getCameraViewMatrix());
         }
-
         if (renderObjects.getProjectionMatrix() != null) {
             setUniformMatrix4f(PROJECTION_MATRIX_NAME, renderObjects.getProjectionMatrix());
         }
+        if (renderObjects.getCameraPosition() != null) {
+            setUniformVec3(CAMERA_POSITION_NAME, renderObjects.getCameraPosition());
+        }
+
+        int position = 0;
+        int baseInstance = 0;
+        var vaoIdBaseInstanceMap = new HashMap<Integer, Integer>();
+        for (var entry : renderObjects.getVaoIdLwjglUnitMap().entrySet()) {
+            var vaoId = entry.getKey();
+            var lwjglUnits = entry.getValue();
+            vaoIdBaseInstanceMap.put(vaoId, baseInstance);
+            baseInstance += lwjglUnits.size();
+            for (LwjglUnit lwjglUnit : lwjglUnits) {
+                lwjglUnit.getWorldMatrix().get(matrices16fBuffer);
+                position += matrixSize;
+                matrices16fBuffer.position(position);
+                if (!lwjglUnit.useShading() && lwjglUnit.isLight()) {
+                    lights.add(lwjglUnit);
+                }
+            }
+        }
+
+        matrices16fBuffer.flip();
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboMatricesId);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, matrices16fBuffer);
+
+        BufferUtils.memFree(matrices16fBuffer);
+
+        renderObjects.getVaoIdLwjglUnitMap().forEach((vaoId, lwjglUnits) -> {
+            var lwjglUnit = lwjglUnits.get(0);
+            int indexCount = lwjglUnit.getIndexCount();
+
+            var textureId = lwjglUnit.getTextureId();
+            setUniformInt(USE_SHADING_NAME, lwjglUnit.useShading() ? 1 : 0);
+            setUniformInt(BASE_INSTANCE_NAME, vaoIdBaseInstanceMap.get(vaoId));
+
+            // Bind to the VAO
+            glBindVertexArray(vaoId);
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0, lwjglUnits.size());
+
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glBindVertexArray(0);
+        });
 
         if (!lights.isEmpty()) {
             for (int i = 0; i < lights.size(); i++) {
@@ -176,13 +210,9 @@ public class LightingProgram {
             setUniformInt(LIGHT_COUNT_NAME, lights.size());
         }
 
-        if (renderObjects.getCameraPosition() != null) {
-            setUniformVec3(CAMERA_POSITION_NAME, renderObjects.getCameraPosition());
-        }
         var end = System.currentTimeMillis();
         var diff = end - start;
         LogUtil.logDebug("render " + diff + " ms");
-
         disable();
     }
 
@@ -195,7 +225,7 @@ public class LightingProgram {
     private int loadModel(Model model) {
         // Load in GPU Memory our model
         // Create VAO per model
-        var vaoId = glGenVertexArrays();
+        int vaoId = glGenVertexArrays();
         glBindVertexArray(vaoId);
 
         // Vertices
@@ -246,6 +276,13 @@ public class LightingProgram {
         // Unbind the VAO
         glBindVertexArray(0);
         return vaoId;
+    }
+
+    private void createShaderBuffer() {
+        ssboMatricesId = glGenBuffers();
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboMatricesId);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, 1200000 * 16 * Float.BYTES, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboMatricesId);
     }
 
     private int loadTexture(Model model) {

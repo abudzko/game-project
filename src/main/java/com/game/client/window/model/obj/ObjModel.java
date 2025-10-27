@@ -224,7 +224,7 @@ public class ObjModel implements Model {
         if (vertices == null) {
             parseObj();
         }
-        return BufferUtils.createFloatBuffer4f(vertices);
+        return BufferUtils.createFloatBuffer4x4f(vertices);
     }
 
     public float[] getVertices() {
@@ -239,7 +239,7 @@ public class ObjModel implements Model {
         if (normals == null) {
             parseObj();
         }
-        return BufferUtils.createFloatBuffer4f(normals);
+        return BufferUtils.createFloatBuffer4x4f(normals);
     }
 
     @Override
@@ -282,7 +282,7 @@ public class ObjModel implements Model {
         if (textures == null) {
             parseObj();
         }
-        return BufferUtils.createFloatBuffer4f(textures);
+        return BufferUtils.createFloatBuffer4x4f(textures);
     }
 
     private static class Vertex {

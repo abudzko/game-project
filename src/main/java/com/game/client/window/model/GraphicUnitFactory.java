@@ -47,8 +47,25 @@ public class GraphicUnitFactory {
     }
 
     public static GraphicUnit createGraphicUnit(GameUnit gameUnit) {
-        var modelKey = "units.small_sphere";
-        return createGraphicUnit(gameUnit, modelKey);
+        GraphicUnit graphicUnit = null;
+        switch (gameUnit.getSharedUnitState().getGameUnitType()) {
+            case PLAYER:
+                graphicUnit = createPlayerGraphicUnit(gameUnit);
+                break;
+            case SUN:
+                graphicUnit = createSunGraphicUnit(gameUnit);
+                break;
+            case SKYDOME:
+                graphicUnit = createSkydomeGraphicUnit(gameUnit);
+                break;
+            case GROUND:
+                graphicUnit = createGroundGraphicUnit(gameUnit);
+                break;
+            case OTHER:
+                graphicUnit = createGraphicUnit(gameUnit, "units.small_sphere_yellow");
+                break;
+        }
+        return graphicUnit;
     }
 
     public static GraphicUnit createGraphicUnit2(GameUnit gameUnit) {

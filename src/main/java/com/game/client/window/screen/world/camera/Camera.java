@@ -3,7 +3,6 @@ package com.game.client.window.screen.world.camera;
 import com.game.client.window.event.listener.AbstractWindowEventListener;
 import com.game.client.window.event.resize.ResizeWindowEvent;
 import com.game.client.window.screen.world.surface.Intersection;
-import com.game.client.window.screen.world.surface.Ray;
 import com.game.client.window.screen.world.surface.StaticDynamicSurface;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -52,6 +51,42 @@ public class Camera extends AbstractWindowEventListener {
 
     public Vector3f getCameraPosition() {
         return cameraState.getCameraPosition();
+    }
+
+    public void follow(Vector3f position) {
+        var dx = position.x - cameraState.getCenterX();
+        var dy = position.y - cameraState.getCenterY();
+        var dz = position.z - cameraState.getCenterZ();
+
+        float eyeX = cameraState.getEyeX() + dx;
+        float eyeY = cameraState.getEyeY() + dy;
+        float eyeZ = cameraState.getEyeZ() + dz;
+        resolvePositionAboveSurface(new Vector3f(eyeX, eyeY, eyeZ))
+                .ifPresent(eyePosition -> {
+                    cameraState.setCenterX(position.x);
+                    cameraState.setCenterY(position.y);
+                    cameraState.setCenterZ(position.z);
+
+                    cameraState.setEyeX(eyePosition.x);
+                    cameraState.setEyeY(eyePosition.y);
+                    cameraState.setEyeZ(eyePosition.z);
+
+                    cameraState.look();
+                });
+    }
+
+    private Optional<Vector3f> resolvePositionAboveSurface(Vector3f position) {
+        return Optional.ofNullable(surfaceIntersectionFinder.findIntersection(position))
+                .map(Intersection::getPoint)
+                .map(intersectionPoint -> {
+                    float minPosition = intersectionPoint.y() + 0.1f;
+                    if(position.y() > minPosition) {
+                        return position;
+                    } else {
+                        position.y = minPosition;
+                        return position;
+                    }
+                });
     }
 
     public Matrix4f createProjectionMatrix() {

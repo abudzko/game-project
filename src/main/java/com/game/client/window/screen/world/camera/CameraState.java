@@ -20,7 +20,8 @@ public class CameraState {
     private float upX = 0;
     private float upY = 1f;
     private float upZ = 0f;
-    private float zNear = 0.01f;
+    // zNear should be less than moveStep to correctly handle camera intersection with surface
+    private float zNear = 0.005f;
     private float zFar = 1000.f;
     private float moveStep = 0.01f;
     private Matrix4f cameraViewMatrix;

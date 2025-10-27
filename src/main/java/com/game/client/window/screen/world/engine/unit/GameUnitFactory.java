@@ -18,6 +18,7 @@ public class GameUnitFactory {
 
     public GameUnit createPlayer() {
         var sharedUnitState = sharedUnitState();
+        sharedUnitState.setGameUnitType(GameUnitType.PLAYER);
         sharedUnitState.setDynamic(true);
         sharedUnitState.setScale(0.1f);
         return GameUnit.builder()
@@ -27,6 +28,7 @@ public class GameUnitFactory {
 
     public GameUnit createSun() {
         var sharedUnitState = sharedUnitState();
+        sharedUnitState.setGameUnitType(GameUnitType.SUN);
         sharedUnitState.setPosition(new Vector3f(10.0f, 100.0f, 0.0f));
         var light = Light.builder()
                 .lightColor(new Vector3f(1.0f, 1.0f, 1.0f))
@@ -37,10 +39,24 @@ public class GameUnitFactory {
     }
 
     public GameUnit createSkydome() {
-        return GameUnit.builder().sharedUnitState(sharedUnitState()).build();
+        var sharedUnitState = sharedUnitState();
+        sharedUnitState.setGameUnitType(GameUnitType.SKYDOME);
+        return GameUnit.builder().sharedUnitState(sharedUnitState).build();
     }
 
     public GameUnit createGround() {
-        return GameUnit.builder().sharedUnitState(sharedUnitState()).build();
+        var sharedUnitState = sharedUnitState();
+        sharedUnitState.setScale(1);
+        sharedUnitState.setGameUnitType(GameUnitType.GROUND);
+        return GameUnit.builder().sharedUnitState(sharedUnitState).build();
+    }
+
+    public GameUnit createGameUnit() {
+        var sharedUnitState = sharedUnitState();
+        sharedUnitState.setScale(0.05f);
+        sharedUnitState.setDynamic(true);
+        return GameUnit.builder()
+                .sharedUnitState(sharedUnitState)
+                .build();
     }
 }

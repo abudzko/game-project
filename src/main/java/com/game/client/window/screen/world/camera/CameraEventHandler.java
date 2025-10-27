@@ -211,7 +211,7 @@ class CameraEventHandler implements WindowEventListener {
         getState().setEyeY(position.y());
         getState().setEyeZ(position.z());
 
-        LogUtil.logDebug(String.format("x = %s y = %s z = %s", position.x(), position.y(), position.z()));
+//        LogUtil.logDebug(String.format("setCameraPosition x = %s y = %s z = %s", position.x(), position.y(), position.z()));
         look();
     }
 

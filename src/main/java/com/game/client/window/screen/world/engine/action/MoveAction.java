@@ -1,7 +1,6 @@
 package com.game.client.window.screen.world.engine.action;
 
 import com.game.client.window.screen.world.camera.Camera;
-import com.game.client.window.screen.world.engine.unit.ChangeType;
 import com.game.client.window.screen.world.engine.unit.GameUnit;
 import com.game.client.window.screen.world.surface.Intersection;
 import lombok.Builder;
@@ -15,7 +14,7 @@ import java.util.Optional;
 public class MoveAction implements GameUnitAction {
     private final long gameUnitId;
     private final Vector3f targetPosition;
-    private final float speed = 0.01f;
+    private final float speed = 0.05f;
     private final Camera camera;
     @Builder.Default
     private boolean move = true;
@@ -23,16 +22,17 @@ public class MoveAction implements GameUnitAction {
     @Override
     public boolean act(GameUnit gameUnit) {
         if (move) {
-            calculateNextPosition(gameUnit.getSharedUnitState().getPosition(), targetPosition).ifPresentOrElse(intersection -> {
-                var position = intersection.getPoint();
-                gameUnit.getSharedUnitState().setPosition(position);
-                gameUnit.getSharedUnitState().addChange(ChangeType.POSITION);
-            }, () -> move = false);
+            calculateNextPosition(gameUnit.getSharedUnitState().getPosition(), targetPosition)
+                    .ifPresentOrElse(position -> {
+                        gameUnit.getSharedUnitState().setPosition(position);
+                        gameUnit.getSharedUnitState().updateWorldMatrix();
+                        camera.follow(position);
+                    }, () -> move = false);
         }
         return move;
     }
 
-    public Optional<Intersection> calculateNextPosition(Vector3f currentPosition, Vector3f targetPosition) {
+    public Optional<Vector3f> calculateNextPosition(Vector3f currentPosition, Vector3f targetPosition) {
         float dx = targetPosition.x - currentPosition.x;
         float dz = targetPosition.z - currentPosition.z;
         float distance = (float) Math.sqrt(dx * dx + dz * dz);
@@ -49,6 +49,7 @@ public class MoveAction implements GameUnitAction {
                 currentPosition.z + dz * ratio
         );
 
-        return Optional.ofNullable(camera.findIntersection(tmpPosition));
+        return Optional.ofNullable(camera.findIntersection(tmpPosition))
+                .map(Intersection::getPoint);
     }
 }

@@ -3,6 +3,7 @@ package com.game.client.window.model;
 import com.game.client.window.lwjgl.program.Light;
 import com.game.client.window.screen.world.engine.action.GameUnitAction;
 import com.game.client.window.screen.world.engine.unit.ChangeType;
+import com.game.client.window.screen.world.engine.unit.GameUnitType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +23,8 @@ import java.util.Queue;
 @Builder
 public class SharedUnitState {
     private long gameUnitId;
+    @Builder.Default
+    private GameUnitType gameUnitType = GameUnitType.OTHER;
     @Builder.Default
     private Vector3f position = new Vector3f(0, 0, 0);
     /**
@@ -51,12 +54,5 @@ public class SharedUnitState {
                 .rotateZ((float) Math.toRadians(getRotation().z))
                 .scale(getScale());
         this.worldMatrix = matrix4f;
-    }
-
-    public void addChange(ChangeType changeType) {
-        if (changeQueue == null) {
-            changeQueue = new LinkedList<>();
-        }
-        changeQueue.add(changeType);
     }
 }

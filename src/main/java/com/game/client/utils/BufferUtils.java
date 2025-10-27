@@ -31,7 +31,7 @@ public class BufferUtils {
         return MemoryUtil.memAlloc(array.length).put(array).flip();
     }
 
-    public static FloatBuffer createFloatBuffer4f(float[] array) {
+    public static FloatBuffer createFloatBuffer4x4f(float[] array) {
         counter();
         return MemoryUtil.memAllocFloat(array.length).put(array).flip();
     }
@@ -42,7 +42,7 @@ public class BufferUtils {
     }
 
     public static FloatBuffer toFloatBuffer(Matrix4f matrix4f) {
-        var floatBuffer = createFloatBuffer4f();
+        var floatBuffer = createFloatBuffer4x4f();
         floatBuffer.clear();
 
         floatBuffer.put(matrix4f.m00());
@@ -65,15 +65,25 @@ public class BufferUtils {
         return floatBuffer;
     }
 
-    private static FloatBuffer createFloatBuffer4f() {
+    private static FloatBuffer createFloatBuffer4x4f() {
         counter();
-        return MemoryUtil.memAllocFloat(4 * 4 * Float.BYTES);
+        return MemoryUtil.memAllocFloat(4 * 4);
+    }
+
+    public static FloatBuffer createFloatBuffer(int size) {
+        counter();
+        return MemoryUtil.memAllocFloat(size);
+    }
+
+    public static IntBuffer createIntBuffer(int size) {
+        counter();
+        return MemoryUtil.memAllocInt(size);
     }
 
     private static void counter() {
         getAllocatedBuffers().incrementAndGet();
         if (openBuffersCount() > 100) {
-            LogUtil.logWarn(String.format("Looks like memory leak, allocated buffers count:  %s", openBuffersCount()));
+            LogUtil.logWarn(String.format("Looks like memory leak, allocated buffers count: %s", openBuffersCount()));
         }
     }
 
