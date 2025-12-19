@@ -18,45 +18,55 @@ public class GameUnitFactory {
 
     public GameUnit createPlayer() {
         var sharedUnitState = sharedUnitState();
-        sharedUnitState.setGameUnitType(GameUnitType.PLAYER);
         sharedUnitState.setDynamic(true);
         sharedUnitState.setScale(0.1f);
         return GameUnit.builder()
                 .sharedUnitState(sharedUnitState)
+                .modelKey(GameUnitType.PLAYER)
                 .build();
     }
 
     public GameUnit createSun() {
         var sharedUnitState = sharedUnitState();
-        sharedUnitState.setGameUnitType(GameUnitType.SUN);
         sharedUnitState.setPosition(new Vector3f(10.0f, 100.0f, 0.0f));
         var light = Light.builder()
                 .lightColor(new Vector3f(1.0f, 1.0f, 1.0f))
                 .lightPosition(sharedUnitState.getPosition())
                 .build();
         sharedUnitState.setLight(light);
-        return GameUnit.builder().sharedUnitState(sharedUnitState).build();
+        return GameUnit.builder()
+                .sharedUnitState(sharedUnitState)
+                .modelKey(GameUnitType.SUN)
+                .build();
     }
 
     public GameUnit createSkydome() {
         var sharedUnitState = sharedUnitState();
-        sharedUnitState.setGameUnitType(GameUnitType.SKYDOME);
-        return GameUnit.builder().sharedUnitState(sharedUnitState).build();
+        return GameUnit.builder()
+                .sharedUnitState(sharedUnitState)
+                .modelKey(GameUnitType.SKYDOME)
+                .isSurface(false)
+                .useShading(false)
+                .build();
     }
 
     public GameUnit createGround() {
         var sharedUnitState = sharedUnitState();
         sharedUnitState.setScale(1);
-        sharedUnitState.setGameUnitType(GameUnitType.GROUND);
-        return GameUnit.builder().sharedUnitState(sharedUnitState).build();
-    }
-
-    public GameUnit createGameUnit() {
-        var sharedUnitState = sharedUnitState();
-        sharedUnitState.setScale(0.05f);
-        sharedUnitState.setDynamic(true);
         return GameUnit.builder()
                 .sharedUnitState(sharedUnitState)
+                .modelKey(GameUnitType.GROUND)
+                .build();
+    }
+
+    public GameUnit createGameUnit(String modelKey) {
+        var sharedUnitState = sharedUnitState();
+        sharedUnitState.setScale(0.05f);
+        return GameUnit.builder()
+                .sharedUnitState(sharedUnitState)
+                .modelKey(modelKey)
+                .isSurface(false)
+                .useShading(true)
                 .build();
     }
 }

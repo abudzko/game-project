@@ -13,10 +13,13 @@ public class Camera extends AbstractWindowEventListener {
     private final CameraState cameraState;
     private final SurfaceIntersectionFinder surfaceIntersectionFinder;
 
-    private Camera(CameraState cameraState, SurfaceIntersectionFinder surfaceIntersectionFinder, CameraEventHandler cameraEventHandler) {
+    private Camera(
+            CameraState cameraState,
+            SurfaceIntersectionFinder surfaceIntersectionFinder,
+            PlayerEventHandler playerEventHandler) {
         this.cameraState = cameraState;
         this.surfaceIntersectionFinder = surfaceIntersectionFinder;
-        addEventChildListener(cameraEventHandler);
+        addEventChildListener(playerEventHandler);
     }
 
     public static Camera createCamera(StaticDynamicSurface surface, int width, int height) {
@@ -30,7 +33,7 @@ public class Camera extends AbstractWindowEventListener {
         return new Camera(
                 cameraState,
                 surfaceIntersectionFinder,
-                new CameraEventHandler(cameraState, surfaceIntersectionFinder)
+                new PlayerEventHandler(cameraState, surfaceIntersectionFinder)
         );
     }
 
@@ -58,35 +61,24 @@ public class Camera extends AbstractWindowEventListener {
         var dy = position.y - cameraState.getCenterY();
         var dz = position.z - cameraState.getCenterZ();
 
+        cameraState.setMoveDirectionX(dx);
+        cameraState.setMoveDirectionY(dy);
+        cameraState.setMoveDirectionZ(dz);
+
         float eyeX = cameraState.getEyeX() + dx;
         float eyeY = cameraState.getEyeY() + dy;
         float eyeZ = cameraState.getEyeZ() + dz;
-        resolvePositionAboveSurface(new Vector3f(eyeX, eyeY, eyeZ))
-                .ifPresent(eyePosition -> {
-                    cameraState.setCenterX(position.x);
-                    cameraState.setCenterY(position.y);
-                    cameraState.setCenterZ(position.z);
+        var cameraPosition = new Vector3f(eyeX, eyeY, eyeZ);
+        cameraPosition = CameraUtils.resolveCameraPositionIfUnderSurface(cameraPosition, surfaceIntersectionFinder, cameraState);
+        cameraState.setCenterX(position.x);
+        cameraState.setCenterY(position.y);
+        cameraState.setCenterZ(position.z);
 
-                    cameraState.setEyeX(eyePosition.x);
-                    cameraState.setEyeY(eyePosition.y);
-                    cameraState.setEyeZ(eyePosition.z);
+        cameraState.setEyeX(cameraPosition.x);
+        cameraState.setEyeY(cameraPosition.y);
+        cameraState.setEyeZ(cameraPosition.z);
 
-                    cameraState.look();
-                });
-    }
-
-    private Optional<Vector3f> resolvePositionAboveSurface(Vector3f position) {
-        return Optional.ofNullable(surfaceIntersectionFinder.findIntersection(position))
-                .map(Intersection::getPoint)
-                .map(intersectionPoint -> {
-                    float minPosition = intersectionPoint.y() + 0.1f;
-                    if(position.y() > minPosition) {
-                        return position;
-                    } else {
-                        position.y = minPosition;
-                        return position;
-                    }
-                });
+        cameraState.look();
     }
 
     public Matrix4f createProjectionMatrix() {

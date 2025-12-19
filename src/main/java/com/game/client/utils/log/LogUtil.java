@@ -29,6 +29,15 @@ public class LogUtil {
         }
     }
 
+    /**
+     * Allows to disable logging without commenting line of code
+     */
+    public static void logDebug(boolean log, String message) {
+        if (log && debug) {
+            System.out.println("DEBUG: " + message);
+        }
+    }
+
     public static String toStr(Vector3f point) {
         int scale = 3;
         return String.format("%s %s %s",

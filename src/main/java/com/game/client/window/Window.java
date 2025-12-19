@@ -7,7 +7,7 @@ import com.game.client.window.event.resize.ResizeWindowEvent;
 import com.game.client.window.lwjgl.annotation.LwjglMainThread;
 import com.game.client.window.lwjgl.event.LwjglEventManager;
 import com.game.client.window.screen.world.WorldScreen;
-import com.game.client.window.screen.world.WorldScreenState;
+import com.game.client.window.screen.world.WorldScreenConfig;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
@@ -90,7 +90,7 @@ public class Window extends AbstractWindowEventListener {
     }
 
     private void createWorldScreen() {
-        var worldScreenState = new WorldScreenState();
+        var worldScreenState = new WorldScreenConfig();
         worldScreenState.setWidth(windowState.getWidth());
         worldScreenState.setHeight(windowState.getHeight());
         worldScreen = new WorldScreen(worldScreenState);

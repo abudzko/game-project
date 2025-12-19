@@ -13,14 +13,14 @@ import org.joml.Vector3f;
 
 import java.util.Optional;
 
-class CameraEventHandler implements WindowEventListener {
+class PlayerEventHandler implements WindowEventListener {
     private final CameraState state;
     private final SurfaceIntersectionFinder surfaceIntersectionFinder;
     private boolean isRightMousePressed = false;
     private float cursorPositionX;
     private float cursorPositionY;
 
-    CameraEventHandler(CameraState cameraState, SurfaceIntersectionFinder surfaceIntersectionFinder) {
+    PlayerEventHandler(CameraState cameraState, SurfaceIntersectionFinder surfaceIntersectionFinder) {
         this.state = cameraState;
         this.surfaceIntersectionFinder = surfaceIntersectionFinder;
         look();
@@ -33,66 +33,34 @@ class CameraEventHandler implements WindowEventListener {
         return Math.atan2(dx, dz);
     }
 
-    private void stepX(float delta) {
-        var angleXZRadians = getAngleXZ();
-        var deltaZ = -delta * (float) Math.sin(angleXZRadians);
-        getState().setCenterZ(getState().getCenterZ() + deltaZ);
+    /**
+     * Calculates a point on the line segment [eyeCameraPosition to centerCameraPosition],
+     * located at a distance l from point eyeCameraPosition
+     */
+    private static Vector3f findPosition(
+            Vector3f eyeCameraPosition,
+            Vector3f centerCameraPosition,
+            float step
+    ) {
+        float vectorX = centerCameraPosition.x - eyeCameraPosition.x;
+        float vectorY = centerCameraPosition.y - eyeCameraPosition.y;
+        float vectorZ = centerCameraPosition.z - eyeCameraPosition.z;
 
-        var deltaX = delta * (float) Math.cos(angleXZRadians);
-        getState().setCenterX(getState().getCenterX() + deltaX);
+        float segmentLength = (float) Math.sqrt(vectorX * vectorX + vectorY * vectorY + vectorZ * vectorZ);
 
-        var cameraPosition = new Vector3f();
-        cameraPosition.x = getState().getEyeX() + deltaX;
-        cameraPosition.y = getState().getEyeY();
-        cameraPosition.z = getState().getEyeZ() + deltaZ;
-        cameraPosition = resolveCameraPositionIfUnderSurface(cameraPosition);
-        getState().setEyeX(cameraPosition.x());
-        getState().setEyeY(cameraPosition.y());
-        getState().setEyeZ(cameraPosition.z());
+        float unitVectorX = vectorX / segmentLength;
+        float unitVectorY = vectorY / segmentLength;
+        float unitVectorZ = vectorZ / segmentLength;
 
-        LogUtil.logDebug(String.format("Move camera to %s", cameraPosition));
-        look();
-    }
+        float resultX = eyeCameraPosition.x + unitVectorX * step;
+        float resultY = eyeCameraPosition.y + unitVectorY * step;
+        float resultZ = eyeCameraPosition.z + unitVectorZ * step;
 
-    private void stepY(float delta) {
-        var cameraPosition = new Vector3f();
-        cameraPosition.x = getState().getEyeX();
-        cameraPosition.y = getState().getEyeY() + delta;
-        cameraPosition.z = getState().getEyeZ();
-        cameraPosition = resolveCameraPositionIfUnderSurface(cameraPosition);
-        getState().setEyeX(cameraPosition.x());
-        getState().setEyeY(cameraPosition.y());
-        getState().setEyeZ(cameraPosition.z());
-        look();
-    }
-
-    private void stepZ(float delta) {
-        var angleXZRadians = getAngleXZ();
-        float deltaZ = delta * (float) Math.cos(angleXZRadians);
-        getState().setCenterZ(getState().getCenterZ() + deltaZ);
-
-        float deltaX = delta * (float) Math.sin(angleXZRadians);
-        getState().setCenterX(getState().getCenterX() + deltaX);
-
-        var cameraPosition = new Vector3f();
-        cameraPosition.x = getState().getEyeX() + deltaX;
-        cameraPosition.y = getState().getEyeY();
-        cameraPosition.z = getState().getEyeZ() + deltaZ;
-        cameraPosition = resolveCameraPositionIfUnderSurface(cameraPosition);
-        getState().setEyeX(cameraPosition.x());
-        getState().setEyeY(cameraPosition.y());
-        getState().setEyeZ(cameraPosition.z());
-
-        LogUtil.logDebug(String.format("Move camera to %s", getState().getCameraPosition()));
-        look();
+        return new Vector3f(resultX, resultY, resultZ);
     }
 
     private void look() {
         state.look();
-    }
-
-    private float getAngleXZ() {
-        return (float) angleBetweenLineAndZAxis(getState().getCenterPosition(), getState().getCameraPosition());
     }
 
     @Override
@@ -102,32 +70,24 @@ class CameraEventHandler implements WindowEventListener {
             case PRESSED:
                 switch (keyEvent.getKey()) {
                     case KEY_UP:
-                        stepZ(-step);
                         break;
                     case KEY_DOWN:
-                        stepZ(step);
                         break;
                     case KEY_LEFT:
-                        stepX(-step);
                         break;
                     case KEY_RIGHT:
-                        stepX(step);
                         break;
                 }
                 break;
             case REPEAT:
                 switch (keyEvent.getKey()) {
                     case KEY_UP:
-                        stepZ(-step);
                         break;
                     case KEY_DOWN:
-                        stepZ(step);
                         break;
                     case KEY_RIGHT:
-                        stepX(step);
                         break;
                     case KEY_LEFT:
-                        stepX(-step);
                         break;
                 }
                 break;
@@ -138,7 +98,20 @@ class CameraEventHandler implements WindowEventListener {
 
     @Override
     public void event(ScrollEvent scrollEvent) {
-        stepY((int) scrollEvent.getOffsetY() * (-getState().getMoveStep()));
+        zoom(scrollEvent);
+    }
+
+    private void zoom(ScrollEvent scrollEvent) {
+        var step = getState().getMoveStep();
+        if (scrollEvent.getOffsetY() < 0) {
+            step = -step;
+        }
+        var cameraPosition = findPosition(getState().getCameraPosition(), getState().getCenterPosition(), step);
+        cameraPosition = CameraUtils.resolveCameraPositionIfUnderSurface(cameraPosition, surfaceIntersectionFinder, getState());
+        getState().setEyeX(cameraPosition.x());
+        getState().setEyeY(cameraPosition.y());
+        getState().setEyeZ(cameraPosition.z());
+        look();
     }
 
     @Override
@@ -152,10 +125,26 @@ class CameraEventHandler implements WindowEventListener {
                     isRightMousePressed = false;
                     break;
             }
+        } else if (mouseButtonEvent.getButton() == MouseButton.WHEEL) {
+            defaultCameraPosition();
         }
-//        LogUtil.log(String.format("%s, X: %s, Y: %s", MouseButtonEvent.class.getSimpleName(), mouseButtonEvent.getX(), mouseButtonEvent.getY()));
+        LogUtil.logDebug(false, String.format("%s, X: %s, Y: %s", MouseButtonEvent.class.getSimpleName(), mouseButtonEvent.getX(), mouseButtonEvent.getY()));
     }
 
+    private void defaultCameraPosition() {
+        var position = getState().getCenterPosition();
+        float dx = getState().getMoveDirectionX();
+        float dz = getState().getMoveDirectionZ();
+        var a = Math.atan2(dz, dx);
+        position.x -= .2f * (float) Math.cos(a);
+        position.y = position.y + .1f;
+        position.z -= .2f * (float) Math.sin(a);
+        setCameraPosition(position);
+    }
+
+    /**
+     * Rotation camera around player position
+     */
     @Override
     public void event(CursorPositionEvent event) {
         var previousCursorPositionX = cursorPositionX;
@@ -165,12 +154,15 @@ class CameraEventHandler implements WindowEventListener {
         if (isRightMousePressed) {
             var start = System.currentTimeMillis();
             var rotationResult = Optional.<Vector3f>empty();
+
+            // Calculate new Y camera position
             if (cursorPositionY != previousCursorPositionY) {
                 var rotationDirection = -1f;
                 if (previousCursorPositionY > cursorPositionY) {
                     rotationDirection = 1f;
                 }
-                rotationResult = Optional.of(rotateAroundCustomAxis((float) Math.toRadians(rotationDirection)))
+                var rotationAngle = getState().getRotationStepDegree() * rotationDirection;
+                rotationResult = Optional.of(rotateAroundCustomAxis((float) Math.toRadians(rotationAngle)))
                         /* prevent undesired behavior of camera when exceeding of 90 degrees */
                         .filter(p -> {
                             var centerX = getState().getCenterX();
@@ -184,14 +176,17 @@ class CameraEventHandler implements WindowEventListener {
                             return false;
                         });
             }
+
+            // Calculate new X and Z camera position
             if (previousCursorPositionX != cursorPositionX) {
                 var rotationDirection = -1f;
                 if (previousCursorPositionX > cursorPositionX) {
                     rotationDirection = 1f;
                 }
+                var rotationAngle = getState().getRotationStepDegree() * rotationDirection;
                 rotationResult = Optional.of(
                         rotateDeltaOy(
-                                (float) Math.toRadians(rotationDirection),
+                                (float) Math.toRadians(rotationAngle),
                                 rotationResult.orElse(getState().getCameraPosition())
                         )
                 );
@@ -211,20 +206,8 @@ class CameraEventHandler implements WindowEventListener {
         getState().setEyeY(position.y());
         getState().setEyeZ(position.z());
 
-//        LogUtil.logDebug(String.format("setCameraPosition x = %s y = %s z = %s", position.x(), position.y(), position.z()));
+        LogUtil.logDebug(false, String.format("setCameraPosition x = %s y = %s z = %s", position.x(), position.y(), position.z()));
         look();
-    }
-
-    private Vector3f resolveCameraPositionIfUnderSurface(Vector3f position) {
-        return Optional.ofNullable(surfaceIntersectionFinder.findIntersection(position))
-                .map(intersection -> {
-                    var intersectionPoint = intersection.getPoint();
-//                    LogUtil.logDebug(String.format("resolveCameraPosition intersectionPoint %s, position %s", intersectionPoint, position));
-                    intersectionPoint.y = intersectionPoint.y + getState().getMoveStep();
-                    return intersectionPoint;
-                })
-                .filter(intersectionPoint -> intersectionPoint.y() > position.y())
-                .orElse(position);
     }
 
     private Vector3f rotateAroundCustomAxis(float angleDeltaRadians) {

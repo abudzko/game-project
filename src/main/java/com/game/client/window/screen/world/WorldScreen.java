@@ -28,7 +28,7 @@ public class WorldScreen extends AbstractWindowEventListener {
     private final Queue<GraphicUnit> deletedGraphicUnitsQueue = new ConcurrentLinkedQueue<>();
     private final Map<Long, GraphicUnit> graphicUnitMap = new ConcurrentHashMap<>();
     private final Map<Long, LwjglUnit> renderedLwjglUnits = new ConcurrentHashMap<>();
-    private final WorldScreenState worldScreenState;
+    private final WorldScreenConfig worldScreenConfig;
     private final StaticDynamicSurface surface = StaticDynamicSurface.create();
     private final LightingProgram program;
     private final Camera camera;
@@ -38,8 +38,8 @@ public class WorldScreen extends AbstractWindowEventListener {
     private Matrix4f projectionMatrix;
     private boolean isProjectionMatrixChanged = false;
 
-    public WorldScreen(WorldScreenState worldScreenState) {
-        this.worldScreenState = worldScreenState;
+    public WorldScreen(WorldScreenConfig worldScreenConfig) {
+        this.worldScreenConfig = worldScreenConfig;
         this.program = new LightingProgram();
         this.batchDrawProgram = new BatchDrawProgram();
         this.camera = createCamera();
@@ -57,8 +57,8 @@ public class WorldScreen extends AbstractWindowEventListener {
                     player.getSharedUnitState().updateWorldMatrix();
                 });
         updateMatrices();
-        var windowEventListener = WorldScreenEventHandler.create(getCamera(), gameEngine);
-        addEventChildListener(windowEventListener);
+        var playerEventHandler = PlayerEventHandler.create(getCamera(), gameEngine);
+        addEventChildListener(playerEventHandler);
     }
 
     public void render() {
@@ -112,7 +112,7 @@ public class WorldScreen extends AbstractWindowEventListener {
     }
 
     private Camera createCamera() {
-        var camera = Camera.createCamera(surface, worldScreenState.getWidth(), worldScreenState.getHeight());
+        var camera = Camera.createCamera(surface, worldScreenConfig.getWidth(), worldScreenConfig.getHeight());
         addEventChildListener(camera);
         return camera;
     }
@@ -126,7 +126,7 @@ public class WorldScreen extends AbstractWindowEventListener {
         return getCamera().createProjectionMatrix();
     }
 
-    public Camera getCamera() {
+    private Camera getCamera() {
         if (camera == null) {
             throw new IllegalStateException("Camera is not created");
         }
@@ -174,8 +174,8 @@ public class WorldScreen extends AbstractWindowEventListener {
     @Override
     public void event(ResizeWindowEvent event) {
         super.event(event);
-        worldScreenState.setWidth(event.getNewWidth());
-        worldScreenState.setHeight(event.getNewHeight());
+        worldScreenConfig.setWidth(event.getNewWidth());
+        worldScreenConfig.setHeight(event.getNewHeight());
         updateMatrices();
     }
 //    @Override

@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 
 public class GameEngine {
-    private final long stepMs =50;
+    private final long stepMs = 50;
     @Getter
     private final GameWorld gameWorld;
 
@@ -37,7 +37,7 @@ public class GameEngine {
             });
             var end = System.currentTimeMillis();
             var diff = end - start;
-            LogUtil.logDebug("engine loop " + diff + " ms");
+//            LogUtil.logDebug("engine loop " + diff + " ms");
             if (diff < stepMs) {
                 Thread.sleep(stepMs - diff);
             } else {

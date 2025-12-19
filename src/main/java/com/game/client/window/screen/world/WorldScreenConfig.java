@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class WorldScreenState {
+public class WorldScreenConfig {
     private int width;
     private int height;
 }

@@ -13,6 +13,17 @@ import java.util.Random;
 public class GameUnit {
     protected static final Random RANDOM = new Random();
     private SharedUnitState sharedUnitState;
+    /**
+     * Units which can be selected
+     */
+    @Builder.Default
+    private boolean isSurface = true;
+    /**
+     * Some units should not have shadows, for ex. the sky
+     */
+    @Builder.Default
+    private boolean useShading = true;
+    private String modelKey;
 
     public void step() {
         var action = sharedUnitState.getGameUnitAction();
@@ -20,19 +31,6 @@ public class GameUnit {
             if (!action.act(this)) {
                 sharedUnitState.setGameUnitAction(null);
             }
-        }
-        if (sharedUnitState.getGameUnitType() == GameUnitType.OTHER) {
-            var random = RANDOM;
-            float step = 0.01f;
-            var dx = random.nextBoolean() ? step : -step;
-            var dy = random.nextBoolean() ? step : -step;
-            var dz = random.nextBoolean() ? step : -step;
-            var currentPosition = sharedUnitState.getPosition();
-            currentPosition.x += dx;
-            currentPosition.y += dy;
-            currentPosition.z += dz;
-
-            sharedUnitState.updateWorldMatrix();
         }
     }
 }

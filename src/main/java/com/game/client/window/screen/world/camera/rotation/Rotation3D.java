@@ -55,7 +55,12 @@ public class Rotation3D {
         return new Vector3f((float) finalX, (float) finalY, (float) finalZ);
     }
 
-    public static Vector3f rotateAroundAxis(Vector3f point, Vector3f center, Vector3f axis, double angleRadians) {
+    public static Vector3f rotateAroundAxis(
+            Vector3f point,
+            Vector3f center,
+            Vector3f axis,
+            double angleRadians
+    ) {
         // Translate point to origin
         var translatedX = point.x() - center.x();
         var translatedY = point.y() - center.y();

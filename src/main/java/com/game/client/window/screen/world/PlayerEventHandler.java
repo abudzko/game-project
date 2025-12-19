@@ -6,7 +6,6 @@ import com.game.client.window.event.listener.AbstractWindowEventListener;
 import com.game.client.window.event.mouse.MouseButton;
 import com.game.client.window.event.mouse.MouseButtonAction;
 import com.game.client.window.event.mouse.MouseButtonEvent;
-import com.game.client.window.model.GraphicUnit;
 import com.game.client.window.screen.world.camera.Camera;
 import com.game.client.window.screen.world.engine.GameEngine;
 import com.game.client.window.screen.world.engine.action.MoveAction;
@@ -17,9 +16,11 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class WorldScreenEventHandler extends AbstractWindowEventListener {
+/**
+ * Handles players events in World Screen
+ */
+public class PlayerEventHandler extends AbstractWindowEventListener {
 
-    private final float moveStep = 0.01f;
     private final Camera camera;
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(4,
@@ -30,13 +31,13 @@ public class WorldScreenEventHandler extends AbstractWindowEventListener {
             });
     private final GameEngine gameEngine;
 
-    public WorldScreenEventHandler(Camera camera, GameEngine gameEngine) {
+    public PlayerEventHandler(Camera camera, GameEngine gameEngine) {
         this.camera = camera;
         this.gameEngine = gameEngine;
     }
 
-    public static WorldScreenEventHandler create(Camera camera, GameEngine gameEngine) {
-        return new WorldScreenEventHandler(camera, gameEngine);
+    public static PlayerEventHandler create(Camera camera, GameEngine gameEngine) {
+        return new PlayerEventHandler(camera, gameEngine);
     }
 
     @Override
@@ -57,16 +58,12 @@ public class WorldScreenEventHandler extends AbstractWindowEventListener {
             case REPEAT:
                 switch (keyEvent.getKey()) {
                     case KEY_W:
-//                        moveZ(-moveStep);
                         break;
                     case KEY_S:
-//                        moveZ(moveStep);
                         break;
                     case KEY_A:
-//                        moveX(-moveStep);
                         break;
                     case KEY_D:
-//                        moveX(moveStep);
                         break;
                     default:
                         break;
@@ -76,26 +73,6 @@ public class WorldScreenEventHandler extends AbstractWindowEventListener {
             default:
                 break;
         }
-    }
-
-    private void moveX(float stepX) {
-//        var localSelectedUnit = selectedUnit;
-//        if (localSelectedUnit != null) {
-////            System.out.println("X: " + localSelectedUnit.getPosition().x);
-//            localSelectedUnit.getPosition().x += stepX;
-//            localSelectedUnit.updateWorldMatrix();
-//            surface.buildDynamicSurface();
-//        }
-    }
-
-    private void moveZ(float stepZ) {
-//        var localSelectedUnit = selectedUnit;
-//        if (localSelectedUnit != null) {
-//            System.out.println("Z: " + localSelectedUnit.getPosition().z);
-//            localSelectedUnit.getPosition().z += stepZ;
-//            localSelectedUnit.updateWorldMatrix();
-//            surface.buildDynamicSurface();
-//        }
     }
 
     @Override
@@ -136,17 +113,5 @@ public class WorldScreenEventHandler extends AbstractWindowEventListener {
                 Precision.round(point.y, scale),
                 Precision.round(point.z, scale)
         );
-    }
-
-    private void addUnit(GraphicUnit tmpGraphicUnit) {
-//        window.addGraphicUnit(tmpGraphicUnit);
-//        tmpUnits.add(tmpGraphicUnit);
-
-//        surface.addDynamicGraphicUnit(tmpGraphicUnit);
-//        surface.buildDynamicSurface();
-//        if (tmpUnits.size() > 10) {
-//            var last = tmpUnits.remove();
-//            window.deleteGameUnit(last);
-//        }
     }
 }

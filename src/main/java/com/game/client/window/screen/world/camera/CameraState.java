@@ -24,12 +24,17 @@ public class CameraState {
     private float zNear = 0.005f;
     private float zFar = 1000.f;
     private float moveStep = 0.01f;
+    private float rotationStepDegree = 0.5f;
     private Matrix4f cameraViewMatrix;
     private Matrix4f projectionMatrix;
     private boolean cameraViewMatrixChanged = false;
 
     private int cameraWidth;
     private int cameraHeight;
+
+    private float moveDirectionX = 0;
+    private float moveDirectionY = 0;
+    private float moveDirectionZ = 0;
 
     public Matrix4f getCameraViewMatrixCopy() {
         return new Matrix4f(cameraViewMatrix);

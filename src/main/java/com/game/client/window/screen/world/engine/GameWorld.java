@@ -2,6 +2,7 @@ package com.game.client.window.screen.world.engine;
 
 import com.game.client.window.screen.world.engine.unit.GameUnit;
 import com.game.client.window.screen.world.engine.unit.GameUnitFactory;
+import com.game.client.window.screen.world.engine.unit.GameUnitType;
 import lombok.Getter;
 import org.joml.Vector3f;
 
@@ -31,19 +32,24 @@ public class GameWorld {
                         Function.identity()
                 ));
         gameUnitMap.putAll(gameUnits);
-        addUnits();
+        addTrees();
     }
 
-    private void addUnits() {
+    private void addTrees() {
         var random = new Random();
-        for (int i = 0; i < 40000; i++) {
-            var gameUnit = GameUnitFactory.INSTANCE.createGameUnit();
+        for (int i = 0; i < 1700; i++) {
+            String type = random.nextBoolean() ? GameUnitType.TREE_THIJA : GameUnitType.TREE_SPRUCE;
+            var gameUnit = GameUnitFactory.INSTANCE.createGameUnit(type);
             var x = random.nextFloat() * (random.nextBoolean() ? 10f : -10f);
-            var y = random.nextFloat();
+            var y = 0;
             var z = random.nextFloat() * (random.nextBoolean() ? 10f : -10f);
-            gameUnit.getSharedUnitState().setPosition(new Vector3f(x, y, z));
-            gameUnitMap.put(gameUnit.getSharedUnitState().getGameUnitId(), gameUnit);
+            var sharedUnitState = gameUnit.getSharedUnitState();
+            sharedUnitState.setPosition(new Vector3f(x, y, z));
+            var scale = sharedUnitState.getScale() * (random.nextFloat() * .8f + .2f);
+            sharedUnitState.setScale(scale);
+            gameUnitMap.put(sharedUnitState.getGameUnitId(), gameUnit);
         }
+
     }
 
     public GameUnit findById(long id) {

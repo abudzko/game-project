@@ -212,7 +212,7 @@ public class BatchDrawProgram {
 
         var end = System.currentTimeMillis();
         var diff = end - start;
-        LogUtil.logDebug("render " + diff + " ms");
+        LogUtil.logDebug(false, "render " + diff + " ms");
         disable();
     }
 
