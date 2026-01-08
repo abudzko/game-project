@@ -9,12 +9,12 @@ import com.game.client.window.event.mouse.MouseButtonEvent;
 import com.game.client.window.screen.world.camera.Camera;
 import com.game.client.window.screen.world.engine.GameEngine;
 import com.game.client.window.screen.world.engine.action.MoveAction;
-import org.apache.commons.math3.util.Precision;
-import org.joml.Vector3f;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static com.game.client.utils.log.LogUtil.toStr;
 
 /**
  * Handles players events in World Screen
@@ -94,7 +94,7 @@ public class PlayerEventHandler extends AbstractWindowEventListener {
         Optional.ofNullable(camera.findIntersection(mouseButtonEvent.getX(), mouseButtonEvent.getY()))
                 .ifPresentOrElse(
                         intersection -> {
-                            LogUtil.logDebug("Intersection intersection: " + toStr(intersection.getPoint()));
+                            LogUtil.logDebug("Intersection: id=" + intersection.getGameUnitId() + " " + toStr(intersection.getPoint()));
                             var moveAction = MoveAction.builder()
                                     .targetPosition(intersection.getPoint())
                                     .gameUnitId(intersection.getGameUnitId())
@@ -104,14 +104,5 @@ public class PlayerEventHandler extends AbstractWindowEventListener {
                         },
                         () -> LogUtil.logDebug("No intersection")
                 );
-    }
-
-    private String toStr(Vector3f point) {
-        int scale = 3;
-        return String.format("%s %s %s",
-                Precision.round(point.x, scale),
-                Precision.round(point.y, scale),
-                Precision.round(point.z, scale)
-        );
     }
 }

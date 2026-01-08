@@ -11,11 +11,11 @@ import org.joml.Vector3f;
 @Setter
 public class CameraState {
     private final float fov = (float) Math.toRadians(60f);
-    private float centerY = 0;
     private float centerX = 0;
+    private float centerY = 2;
     private float centerZ = 0;
     private volatile float eyeX = 0;
-    private volatile float eyeY = 1;
+    private volatile float eyeY = 5;
     private volatile float eyeZ = 1;
     private float upX = 0;
     private float upY = 1f;
@@ -23,7 +23,7 @@ public class CameraState {
     // zNear should be less than moveStep to correctly handle camera intersection with surface
     private float zNear = 0.005f;
     private float zFar = 1000.f;
-    private float moveStep = 0.01f;
+    private float moveStep = 1.5f;
     private float rotationStepDegree = 0.5f;
     private Matrix4f cameraViewMatrix;
     private Matrix4f projectionMatrix;

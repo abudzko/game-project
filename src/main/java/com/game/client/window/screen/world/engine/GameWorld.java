@@ -1,11 +1,16 @@
 package com.game.client.window.screen.world.engine;
 
+import com.game.client.window.model.obj.ObjectModels;
+import com.game.client.window.model.obj.zone.ZoneConfig;
+import com.game.client.window.screen.world.engine.action.SkydomeFollowAction;
 import com.game.client.window.screen.world.engine.unit.GameUnit;
 import com.game.client.window.screen.world.engine.unit.GameUnitFactory;
 import com.game.client.window.screen.world.engine.unit.GameUnitType;
 import lombok.Getter;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,42 +22,66 @@ import java.util.stream.Stream;
 public class GameWorld {
     private final Map<Long, GameUnit> gameUnitMap = new ConcurrentHashMap<>();
     private final GameUnit player;
-    private final GameUnit ground;
     private final GameUnit skydome;
     private final GameUnit sun;
+    private ZoneConfig zoneConfig;
 
     public GameWorld() {
         sun = GameUnitFactory.INSTANCE.createSun();
-        ground = GameUnitFactory.INSTANCE.createGround();
-        skydome = GameUnitFactory.INSTANCE.createSkydome();
+        var zonesGameUnit = createZones().stream().collect(Collectors.toMap(
+                gameUnit -> gameUnit.getSharedUnitState().getGameUnitId(),
+                Function.identity()
+        ));
         player = GameUnitFactory.INSTANCE.createPlayer();
-        var gameUnits = Stream.of(sun, ground, skydome, player)
+        skydome = createSkydome();
+        var gameUnits = Stream.of(sun, skydome, player)
                 .collect(Collectors.toMap(
                         gameUnit -> gameUnit.getSharedUnitState().getGameUnitId(),
                         Function.identity()
                 ));
+        gameUnitMap.putAll(zonesGameUnit);
         gameUnitMap.putAll(gameUnits);
         addTrees();
     }
 
-    private void addTrees() {
-        var random = new Random();
-        for (int i = 0; i < 1700; i++) {
-            String type = random.nextBoolean() ? GameUnitType.TREE_THIJA : GameUnitType.TREE_SPRUCE;
-            var gameUnit = GameUnitFactory.INSTANCE.createGameUnit(type);
-            var x = random.nextFloat() * (random.nextBoolean() ? 10f : -10f);
-            var y = 0;
-            var z = random.nextFloat() * (random.nextBoolean() ? 10f : -10f);
-            var sharedUnitState = gameUnit.getSharedUnitState();
-            sharedUnitState.setPosition(new Vector3f(x, y, z));
-            var scale = sharedUnitState.getScale() * (random.nextFloat() * .8f + .2f);
-            sharedUnitState.setScale(scale);
-            gameUnitMap.put(sharedUnitState.getGameUnitId(), gameUnit);
-        }
-
+    private GameUnit createSkydome() {
+        var sd = GameUnitFactory.INSTANCE.createSkydome();
+        var scale = 3 * zoneConfig.zoneSize * getZoneConfig().xzScale;
+        sd.getSharedUnitState().setScale(scale);
+        sd.getSharedUnitState().setGameUnitAction(SkydomeFollowAction.builder()
+                .skydome(sd)
+                .player(player)
+                .build());
+        return sd;
     }
 
-    public GameUnit findById(long id) {
-        return getGameUnitMap().get(id);
+    private List<GameUnit> createZones() {
+        zoneConfig = ObjectModels.getZoneConfig();
+        var zones = new ArrayList<GameUnit>();
+        for (int z = 0; z < zoneConfig.mapRowCount; z++) {
+            for (int x = 0; x < zoneConfig.mapColumnCount; x++) {
+                String key = GameUnitType.unit("zone." + z + "_" + x);
+                var gameUnit = GameUnitFactory.INSTANCE.createZone(key);
+                zones.add(gameUnit);
+            }
+        }
+        return zones;
+    }
+
+    private void addTrees() {
+        var random = new Random();
+        float scale = zoneConfig.mapColumnCount * zoneConfig.zoneSize * getZoneConfig().xzScale;
+        for (int i = 0; i < 1000; i++) {
+            String type = random.nextBoolean() ? GameUnitType.TREE_THIJA : GameUnitType.TREE_SPRUCE;
+            var gameUnit = GameUnitFactory.INSTANCE.createGameUnit(type);
+            var x = random.nextFloat() * scale;
+            var y = 0;
+            var z = -random.nextFloat() * scale;
+            var sharedUnitState = gameUnit.getSharedUnitState();
+            sharedUnitState.setPosition(new Vector3f(x, y, z));
+            var treeScale = sharedUnitState.getScale() * (random.nextFloat() * .8f + .2f);
+            sharedUnitState.setScale(treeScale);
+            gameUnitMap.put(sharedUnitState.getGameUnitId(), gameUnit);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.game.client.window.screen.world.surface;
 
+import com.game.client.utils.log.LogUtil;
 import org.joml.Vector3f;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public class BVHNode {
     public BVHNode(List<Triangle> triangles) {
         this.triangles = triangles;
         this.boundingBox = calculateBoundingBox(triangles);
-        if (triangles.size() > 10) { // Порог для разделения
+        if (triangles.size() > 1000) { // Порог для разделения
             var splitTriangles = splitTriangles(triangles);
             this.left = new BVHNode(splitTriangles.get(0));
             this.right = new BVHNode(splitTriangles.get(1));

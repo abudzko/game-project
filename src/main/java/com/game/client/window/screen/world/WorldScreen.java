@@ -30,17 +30,14 @@ public class WorldScreen extends AbstractWindowEventListener {
     private final Map<Long, LwjglUnit> renderedLwjglUnits = new ConcurrentHashMap<>();
     private final WorldScreenConfig worldScreenConfig;
     private final StaticDynamicSurface surface = StaticDynamicSurface.create();
-    private final LightingProgram program;
     private final Camera camera;
     private final GameEngine gameEngine;
-    private final boolean pressed = false;
     private BatchDrawProgram batchDrawProgram;
     private Matrix4f projectionMatrix;
     private boolean isProjectionMatrixChanged = false;
 
     public WorldScreen(WorldScreenConfig worldScreenConfig) {
         this.worldScreenConfig = worldScreenConfig;
-        this.program = new LightingProgram();
         this.batchDrawProgram = new BatchDrawProgram();
         this.camera = createCamera();
         this.gameEngine = new GameEngine();
@@ -67,7 +64,7 @@ public class WorldScreen extends AbstractWindowEventListener {
         getProgram().render(renderObjects);
         var end = System.currentTimeMillis();
         var diff = end - start;
-//        LogUtil.logDebug("world screen render " + diff + " ms");
+        LogUtil.logDebug(false, "world screen render " + diff + " ms");
     }
 
     @LwjglMainThread
@@ -153,13 +150,6 @@ public class WorldScreen extends AbstractWindowEventListener {
         deletedGraphicUnitsQueue.add(graphicUnit);
     }
 
-//    private LightingProgram getProgram() {
-//        if (program == null) {
-//            throw new IllegalStateException("Program is not created");
-//        }
-//        return program;
-//    }
-
     private BatchDrawProgram getProgram() {
         if (batchDrawProgram == null) {
             throw new IllegalStateException("Program is not created");
@@ -177,82 +167,5 @@ public class WorldScreen extends AbstractWindowEventListener {
         worldScreenConfig.setWidth(event.getNewWidth());
         worldScreenConfig.setHeight(event.getNewHeight());
         updateMatrices();
-    }
-//    @Override
-//    public void event(CursorPositionEvent event) {
-//        super.event(event);
-//        if (pressed) {
-//            addGraphicUnit(event.getX(), event.getY());
-//        }
-//    }
-//
-//    @Override
-//    public void event(MouseButtonEvent mouseButtonEvent) {
-//        super.event(mouseButtonEvent);
-//        if (MouseButton.LEFT.equals(mouseButtonEvent.getButton())) {
-//            if (MouseButtonAction.PRESSED.equals(mouseButtonEvent.getAction())) {
-//                addGraphicUnit(mouseButtonEvent.getX(), mouseButtonEvent.getY());
-//                pressed = true;
-//            } else if (MouseButtonAction.RELEASED.equals(mouseButtonEvent.getAction())) {
-//                pressed = false;
-//                rebuildSurface();
-//            }
-//        }
-//        if (MouseButton.WHEEL.equals(mouseButtonEvent.getButton())) {
-//            if (MouseButtonAction.PRESSED.equals(mouseButtonEvent.getAction())) {
-//                changeGraphicUnit(mouseButtonEvent.getX(), mouseButtonEvent.getY());
-//            }
-//        }
-
-//    }
-//    private void addGraphicUnit(double x, double y) {
-//        Runnable runnable = () -> {
-//            try {
-//                Optional.ofNullable(getCamera().findIntersection(x, y))
-//                        .ifPresentOrElse(
-//                                intersection -> {
-//                                    addGraphicUnit(GraphicUnitFactory.INSTANCE.createGraphicUnit(GameUnitDao.createUnit(intersection.getPoint())));
-//                                    LogUtil.logDebug("Intersection: id = " + intersection.getUnitId() + " point = " + LogUtil.toStr(intersection.getPoint()));
-//                                },
-//                                () -> LogUtil.logDebug("No intersection")
-//                        );
-//            } catch (Exception e) {
-//                LogUtil.logError(e.getMessage(), e);
-//            }
-//        };
-//        ParallelUtils.run(runnable);
-
-//    }
-//    private void changeGraphicUnit(double x, double y) {
-//        Runnable runnable = () -> {
-//            try {
-//                Optional.ofNullable(getCamera().findIntersection(x, y))
-//                        .ifPresentOrElse(
-//                                intersection -> {
-//                                    var graphicUnit = graphicUnitMap.get(intersection.getUnitId());
-//                                    if (graphicUnit != null) {
-//                                        addGraphicUnit(GraphicUnitFactory.INSTANCE.createGraphicUnit2(GameUnitDao.createUnit(graphicUnit.getPosition())));
-//                                        deleteGraphicUnit(graphicUnit);
-//                                    }
-//                                },
-//                                () -> LogUtil.logDebug("No intersection")
-//                        );
-//            } catch (Exception e) {
-//                LogUtil.logError(e.getMessage(), e);
-//            }
-//        };
-//        ParallelUtils.run(runnable);
-
-//    }
-
-    private void rebuildSurface() {
-        Runnable runnable = () -> {
-            try {
-                surface.buildDynamicSurface();
-            } catch (Exception e) {
-                LogUtil.logError(e.getMessage(), e);
-            }
-        };
-        ParallelUtils.run(runnable);
     }
 }

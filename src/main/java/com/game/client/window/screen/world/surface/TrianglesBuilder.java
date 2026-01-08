@@ -42,7 +42,7 @@ public class TrianglesBuilder {
                 .indexes(indexes)
                 .vertices(vertices)
                 .start(0)
-                .end(indexes.length)
+                .end(indexes.length - 1)
                 .worldMatrix(worldMatrix)
                 .pointPerVertex3d(pointPerVertex3d)
                 .build();
@@ -88,23 +88,26 @@ public class TrianglesBuilder {
             var end = parameters.getEnd();
             var indexes = parameters.getIndexes();
             var vertices = parameters.getVertices();
-            int mid = (start + end) / 2;
+            int pointPerVertex3d = parameters.getPointPerVertex3d();
+            int mid = getMid();
 
             var parameters1 = new TriangleTaskParametersBuilder()
+                    .gameUnitId(parameters.getGameUnitId())
                     .indexes(indexes)
                     .vertices(vertices)
                     .start(start)
                     .end(mid)
                     .worldMatrix(parameters.getWorldMatrix())
-                    .pointPerVertex3d(parameters.getPointPerVertex3d())
+                    .pointPerVertex3d(pointPerVertex3d)
                     .build();
             var parameters2 = new TriangleTaskParametersBuilder()
+                    .gameUnitId(parameters.getGameUnitId())
                     .indexes(indexes)
                     .vertices(vertices)
-                    .start(mid)
+                    .start(mid + 1)
                     .end(end)
                     .worldMatrix(parameters.getWorldMatrix())
-                    .pointPerVertex3d(parameters.getPointPerVertex3d())
+                    .pointPerVertex3d(pointPerVertex3d)
                     .build();
             var leftTask = new TriangleTask(parameters1);
             var rightTask = new TriangleTask(parameters2);
@@ -119,6 +122,24 @@ public class TrianglesBuilder {
             result.addAll(join2);
             return result;
         }
+
+        private int getMid() {
+            var start = parameters.getStart();
+            var end = parameters.getEnd();
+            int expectedIndexCount = end - start + 1;
+            int pointPerVertex3d = parameters.getPointPerVertex3d();
+            if (expectedIndexCount % pointPerVertex3d != 0) {
+                throw new IllegalStateException(String.format(
+                        "Expected at least %s indexes for one vertex",
+                        pointPerVertex3d)
+                );
+            }
+            int vertexCount = expectedIndexCount / pointPerVertex3d;
+            if (vertexCount < 2) {
+                throw new IllegalStateException("Expected at least 2 vertexes");
+            }
+            return start + vertexCount / 2 * pointPerVertex3d - 1;
+        }
     }
 }
 
@@ -128,7 +149,13 @@ class TriangleTaskParameters {
     private final long gameUnitId;
     private final int[] indexes;
     private final float[] vertices;
+    /**
+     * Position in array indexes
+     */
     private final int start;
+    /**
+     * Position in array indexes
+     */
     private final int end;
     private final Matrix4f worldMatrix;
     private final int pointPerVertex3d;

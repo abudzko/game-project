@@ -6,6 +6,7 @@ public class GameUnitType {
     public static final String SUN = unit("sun");
     public static final String SKYDOME = unit("skydome");
     public static final String GROUND = unit("ground");
+    public static final String GEN_GROUND = unit("genground");
     public static final String TREE_SPRUCE = unit("tree.spruce");
     public static final String TREE_THIJA = unit("tree.thuja");
 

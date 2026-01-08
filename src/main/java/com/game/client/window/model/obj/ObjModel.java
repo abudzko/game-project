@@ -113,47 +113,56 @@ public class ObjModel implements Model {
         var float3Result = new float[3];
         var float2Result = new float[2];
         for (var line : lines) {
-            var type = line.substring(0, line.indexOf(' '));
-            switch (type) {
-                // Vertices
-                case "v":
-                    var vertex = new Vertex();
-                    parseVertexLine(line, float3Result);
-                    vertex.x = float3Result[0];
-                    vertex.y = float3Result[1];
-                    vertex.z = float3Result[2];
-                    verticesMap.put(verticesIndex++, vertex);
-                    break;
-                // Texture vertices
-                case "vt":
-                    var textureVertex = new TextureVertex();
-                    parseTextureLine(line, float2Result);
-                    textureVertex.x = float2Result[0];
-                    textureVertex.y = float2Result[1];
-                    textureMap.put(textureVerticesIndex++, textureVertex);
-                    break;
-                // Normals
-                case "vn":
-                    var vertexNormal = new VertexNormal();
-                    parseVertexLine(line, float3Result);
-                    vertexNormal.x = float3Result[0];
-                    vertexNormal.y = float3Result[1];
-                    vertexNormal.z = float3Result[2];
-                    normalsMap.put(vertexNormalsIndex++, vertexNormal);
-                    break;
-                // Faces
-                case "f":
-                    parseFLine(line, int9Result);
-                    for (int i = 0; i < int9Result.length; i++) {
-                        var indexTuple = new IndexTuple();
-                        indexTuple.vertexIndex = int9Result[i];
-                        indexTuple.textureIndex = int9Result[++i];
-                        indexTuple.normalIndex = int9Result[++i];
-                        indexTupleList.add(indexTuple);
-                    }
-                    break;
-                default:
-                    break;
+            try {
+                int endIndex = line.indexOf(' ');
+                if (endIndex < 0) {
+                    LogUtil.logDebug("Skipped line: " + objModelParameters.getModelKey() + " " + line);
+                    continue;
+                }
+                var type = line.substring(0, endIndex);
+                switch (type) {
+                    // Vertices
+                    case "v":
+                        var vertex = new Vertex();
+                        parseVertexLine(line, float3Result);
+                        vertex.x = float3Result[0];
+                        vertex.y = float3Result[1];
+                        vertex.z = float3Result[2];
+                        verticesMap.put(verticesIndex++, vertex);
+                        break;
+                    // Texture vertices
+                    case "vt":
+                        var textureVertex = new TextureVertex();
+                        parseTextureLine(line, float2Result);
+                        textureVertex.x = float2Result[0];
+                        textureVertex.y = float2Result[1];
+                        textureMap.put(textureVerticesIndex++, textureVertex);
+                        break;
+                    // Normals
+                    case "vn":
+                        var vertexNormal = new VertexNormal();
+                        parseVertexLine(line, float3Result);
+                        vertexNormal.x = float3Result[0];
+                        vertexNormal.y = float3Result[1];
+                        vertexNormal.z = float3Result[2];
+                        normalsMap.put(vertexNormalsIndex++, vertexNormal);
+                        break;
+                    // Faces
+                    case "f":
+                        parseFLine(line, int9Result);
+                        for (int i = 0; i < int9Result.length; i++) {
+                            var indexTuple = new IndexTuple();
+                            indexTuple.vertexIndex = int9Result[i];
+                            indexTuple.textureIndex = int9Result[++i];
+                            indexTuple.normalIndex = int9Result[++i];
+                            indexTupleList.add(indexTuple);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Line: " + line, e);
             }
         }
         LogUtil.logDebug("for: " + (System.currentTimeMillis() - start) + "ms");

@@ -6,8 +6,10 @@ import com.game.client.window.screen.world.engine.unit.GameUnit;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
+import static com.game.client.utils.log.LogUtil.toStr;
+
 public class GameEngine {
-    private final long stepMs = 50;
+    private final long stepMs = 1000 / 60;
     @Getter
     private final GameWorld gameWorld;
 
@@ -51,10 +53,10 @@ public class GameEngine {
     }
 
     public void handleMoveAction(MoveAction moveAction) {
-        var player = gameWorld.findById(gameWorld.getPlayer().getSharedUnitState().getGameUnitId());
+        var player = gameWorld.getPlayer();
         if (player != null) {
             player.getSharedUnitState().setGameUnitAction(moveAction);
         }
-        LogUtil.logDebug(String.format("Move %s to %s", moveAction.getGameUnitId(), moveAction.getTargetPosition()));
+        LogUtil.logDebug(String.format("Move id=%s to %s", player.getSharedUnitState().getGameUnitId(), toStr(moveAction.getTargetPosition())));
     }
 }

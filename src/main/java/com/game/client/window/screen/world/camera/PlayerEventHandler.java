@@ -65,7 +65,6 @@ class PlayerEventHandler implements WindowEventListener {
 
     @Override
     public void event(KeyEvent keyEvent) {
-        var step = getState().getMoveStep();
         switch (keyEvent.getKeyActionType()) {
             case PRESSED:
                 switch (keyEvent.getKey()) {
@@ -136,9 +135,9 @@ class PlayerEventHandler implements WindowEventListener {
         float dx = getState().getMoveDirectionX();
         float dz = getState().getMoveDirectionZ();
         var a = Math.atan2(dz, dx);
-        position.x -= .2f * (float) Math.cos(a);
-        position.y = position.y + .1f;
-        position.z -= .2f * (float) Math.sin(a);
+        position.x -= 2f * (float) Math.cos(a);
+        position.y += 1f;
+        position.z -= 2f * (float) Math.sin(a);
         setCameraPosition(position);
     }
 

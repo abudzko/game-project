@@ -1,5 +1,6 @@
 package com.game.client.window.screen.world.surface;
 
+import com.game.client.utils.log.LogUtil;
 import com.game.client.window.model.GraphicUnit;
 
 import java.util.Optional;
@@ -35,12 +36,12 @@ public class StaticDynamicSurface {
     public void buildStaticSurface() {
         var start = System.currentTimeMillis();
         staticSurface.build();
-//        LogUtil.logDebug("buildStaticSurface: " + (System.currentTimeMillis() - start) + "ms");
+//        LogUtil.logDebug(false, "buildStaticSurface: " + (System.currentTimeMillis() - start) + "ms");
     }
 
     public void buildDynamicSurface() {
         var start = System.currentTimeMillis();
         dynamicSurface.build();
-//        LogUtil.logDebug("buildDynamicSurface: " + (System.currentTimeMillis() - start) + "ms");
+//        LogUtil.logDebug(false, "buildDynamicSurface: " + (System.currentTimeMillis() - start) + "ms");
     }
 }

@@ -15,7 +15,7 @@ import java.util.Optional;
 public class MoveAction implements GameUnitAction {
     private final long gameUnitId;
     private final Vector3f targetPosition;
-    private final float speed = 0.01f;
+    private final float speed = 15f * 1 / 60f; // 3 m per sec - run
     private final Camera camera;
     @Builder.Default
     private boolean move = true;

@@ -40,7 +40,7 @@ public class LogUtil {
 
     public static String toStr(Vector3f point) {
         int scale = 3;
-        return String.format("%s %s %s",
+        return String.format("x:%s y:%s z:%s",
                 Precision.round(point.x, scale),
                 Precision.round(point.y, scale),
                 Precision.round(point.z, scale)

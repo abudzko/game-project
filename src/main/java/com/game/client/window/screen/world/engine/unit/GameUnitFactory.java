@@ -18,8 +18,8 @@ public class GameUnitFactory {
 
     public GameUnit createPlayer() {
         var sharedUnitState = sharedUnitState();
+        sharedUnitState.setPosition(new Vector3f(0f, .2f, 0f));
         sharedUnitState.setDynamic(true);
-        sharedUnitState.setScale(0.1f);
         return GameUnit.builder()
                 .sharedUnitState(sharedUnitState)
                 .modelKey(GameUnitType.PLAYER)
@@ -28,7 +28,7 @@ public class GameUnitFactory {
 
     public GameUnit createSun() {
         var sharedUnitState = sharedUnitState();
-        sharedUnitState.setPosition(new Vector3f(10.0f, 100.0f, 0.0f));
+        sharedUnitState.setPosition(new Vector3f(50.0f, 50.0f, 0.0f));
         var light = Light.builder()
                 .lightColor(new Vector3f(1.0f, 1.0f, 1.0f))
                 .lightPosition(sharedUnitState.getPosition())
@@ -52,16 +52,22 @@ public class GameUnitFactory {
 
     public GameUnit createGround() {
         var sharedUnitState = sharedUnitState();
-        sharedUnitState.setScale(1);
         return GameUnit.builder()
                 .sharedUnitState(sharedUnitState)
-                .modelKey(GameUnitType.GROUND)
+                .modelKey(GameUnitType.GEN_GROUND)
+                .build();
+    }
+
+    public GameUnit createZone(String key) {
+        var sharedUnitState = sharedUnitState();
+        return GameUnit.builder()
+                .sharedUnitState(sharedUnitState)
+                .modelKey(key)
                 .build();
     }
 
     public GameUnit createGameUnit(String modelKey) {
         var sharedUnitState = sharedUnitState();
-        sharedUnitState.setScale(0.05f);
         return GameUnit.builder()
                 .sharedUnitState(sharedUnitState)
                 .modelKey(modelKey)
