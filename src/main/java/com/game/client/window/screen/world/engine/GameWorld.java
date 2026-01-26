@@ -27,11 +27,12 @@ public class GameWorld {
     private ZoneConfig zoneConfig;
 
     public GameWorld() {
-        sun = GameUnitFactory.INSTANCE.createSun();
+        zoneConfig = ObjectModels.getZoneConfig();
         var zonesGameUnit = createZones().stream().collect(Collectors.toMap(
                 gameUnit -> gameUnit.getSharedUnitState().getGameUnitId(),
                 Function.identity()
         ));
+        sun = GameUnitFactory.INSTANCE.createSun();
         player = GameUnitFactory.INSTANCE.createPlayer();
         skydome = createSkydome();
         var gameUnits = Stream.of(sun, skydome, player)
@@ -56,7 +57,6 @@ public class GameWorld {
     }
 
     private List<GameUnit> createZones() {
-        zoneConfig = ObjectModels.getZoneConfig();
         var zones = new ArrayList<GameUnit>();
         for (int z = 0; z < zoneConfig.mapRowCount; z++) {
             for (int x = 0; x < zoneConfig.mapColumnCount; x++) {
@@ -71,7 +71,7 @@ public class GameWorld {
     private void addTrees() {
         var random = new Random();
         float scale = zoneConfig.mapColumnCount * zoneConfig.zoneSize * getZoneConfig().xzScale;
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 200; i++) {
             String type = random.nextBoolean() ? GameUnitType.TREE_THIJA : GameUnitType.TREE_SPRUCE;
             var gameUnit = GameUnitFactory.INSTANCE.createGameUnit(type);
             var x = random.nextFloat() * scale;

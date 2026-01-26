@@ -7,20 +7,25 @@ uniform mat4 projectionMatrix;
 uniform mat4 cameraViewMatrix;
 uniform int baseInstance;
 
+uniform mat4 lightSpaceMatrix;
+
 in vec2 textureAttribute;
 in vec3 positionAttribute;
 in vec3 normalAttribute;
 
 out vec2 fragmentTextureAttribute;
-out vec3 fragmentPositionAttribute;
+out vec3 worldPosition;
 out vec3 fragmentNormalAttribute;
+
+out vec4 lightMatrixPosition;
 
 void main() {
     int instanceIndex = baseInstance + gl_InstanceID;
     mat4 worldMatrix = worldMatrices[instanceIndex];
 
     fragmentTextureAttribute = textureAttribute;
-    fragmentPositionAttribute = vec3(worldMatrix * vec4(positionAttribute, 1.0));
+    worldPosition = vec3(worldMatrix * vec4(positionAttribute, 1.0));
     fragmentNormalAttribute = mat3(transpose(inverse(worldMatrix))) * normalAttribute;
+    lightMatrixPosition = lightSpaceMatrix * vec4(worldPosition, 1.0);
     gl_Position = projectionMatrix * cameraViewMatrix * worldMatrix * vec4(positionAttribute, 1.0);
 }

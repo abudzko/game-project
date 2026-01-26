@@ -7,6 +7,7 @@ import com.game.client.window.model.GraphicUnit;
 import com.game.client.window.model.LwjglUnitImpl;
 import com.game.client.window.model.obj.Model;
 import com.game.client.window.model.obj.texture.Texture;
+import com.game.client.window.screen.world.WorldScreenConfig;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
@@ -19,6 +20,9 @@ import static com.game.client.window.lwjgl.program.ProgramDebugger.checkIndividu
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.GL_DYNAMIC_DRAW;
 import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.glBufferSubData;
@@ -28,12 +32,14 @@ import static org.lwjgl.opengl.GL30.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL30.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL30.GL_FLOAT;
 import static org.lwjgl.opengl.GL30.GL_FRAGMENT_SHADER;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL30.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL30.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL30.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL30.glAttachShader;
 import static org.lwjgl.opengl.GL30.glBindBuffer;
 import static org.lwjgl.opengl.GL30.glBindBufferBase;
+import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glBufferData;
 import static org.lwjgl.opengl.GL30.glClear;
@@ -66,6 +72,8 @@ public class BatchDrawProgram {
     protected static final String LIGHT_COLOR_NAME = "lightColor";
     protected static final String LIGHT_POSITION_NAME = "lightPosition";
     protected static final String LIGHT_COUNT_NAME = "lightCount";
+    protected static final String SHADOW_MAP_NAME = "shadowMap";
+    protected static final String LIGHT_SPACE_MATRIX_NAME = "lightSpaceMatrix";
     private final Shader vertexShader;
     private final Shader fragmentShader;
     private final ConcurrentHashMap<String, Integer> uniformCache = new ConcurrentHashMap<>();
@@ -73,13 +81,15 @@ public class BatchDrawProgram {
     private final ConcurrentHashMap<String, Integer> vaoIdCache = new ConcurrentHashMap<>();
     // For the same models we can reuse texture id
     private final ConcurrentHashMap<String, Integer> lwjglTexturesCache = new ConcurrentHashMap<>();
+    private final WorldScreenConfig worldScreenConfig;
     private int programId;
     private Integer positionAttributeId;
     private Integer textureAttributeId;
     private Integer normalAttributeId;
     private int ssboMatricesId;
 
-    public BatchDrawProgram() {
+    public BatchDrawProgram(WorldScreenConfig worldScreenConfig) {
+        this.worldScreenConfig = worldScreenConfig;
         this.vertexShader = new Shader(SHADER_PATH + "/vb.vert", GL_VERTEX_SHADER);
         this.fragmentShader = new Shader(SHADER_PATH + "/fb.frag", GL_FRAGMENT_SHADER);
         linkProgram();
@@ -133,10 +143,18 @@ public class BatchDrawProgram {
 
     public void render(RenderObjects renderObjects) {
         var start = System.currentTimeMillis();
+        glViewport(0, 0, worldScreenConfig.getWidth(), worldScreenConfig.getHeight());
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
-        enable();
+        enableProgram();
+
+        glActiveTexture(TextureUnits.SHADOW_UNIT);
+        glBindTexture(GL_TEXTURE_2D, renderObjects.getDepthMapTexture());
+        setUniformInt(SHADOW_MAP_NAME, TextureUnits.SHADOW_MAP_INDEX);
+        setUniformMatrix4f(LIGHT_SPACE_MATRIX_NAME, renderObjects.getLightSpaceMatrix());
+
         int matrixSize = 16;
         var matrices16fBuffer = BufferUtils.createFloatBuffer(renderObjects.getLwjglUnits().size() * matrixSize);
         var lights = new ArrayList<LwjglUnit>();
@@ -173,9 +191,11 @@ public class BatchDrawProgram {
         matrices16fBuffer.flip();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboMatricesId);
         glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, matrices16fBuffer);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboMatricesId);
 
         BufferUtils.memFree(matrices16fBuffer);
 
+        glActiveTexture(GL_TEXTURE0);
         renderObjects.getVaoIdLwjglUnitMap().forEach((vaoId, lwjglUnits) -> {
             var lwjglUnit = lwjglUnits.get(0);
             int indexCount = lwjglUnit.getIndexCount();
@@ -213,7 +233,7 @@ public class BatchDrawProgram {
         var end = System.currentTimeMillis();
         var diff = end - start;
         LogUtil.logDebug(false, "render " + diff + " ms");
-        disable();
+        disableProgram();
     }
 
     public LwjglUnit createLwjglUnit(GraphicUnit graphicUnit) {
@@ -358,11 +378,11 @@ public class BatchDrawProgram {
         return programId;
     }
 
-    private void enable() {
+    private void enableProgram() {
         glUseProgram(getProgramId());
     }
 
-    private void disable() {
+    private void disableProgram() {
         glUseProgram(0);
     }
 }

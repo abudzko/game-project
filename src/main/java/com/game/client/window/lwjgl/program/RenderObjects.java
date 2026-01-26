@@ -14,7 +14,11 @@ import java.util.Map;
 public class RenderObjects {
     private Collection<LwjglUnit> lwjglUnits;
     private Map<Integer, List<LwjglUnit>> vaoIdLwjglUnitMap;
+    private Collection<LwjglUnit> shadowLwjglUnits;
+    private Map<Integer, List<LwjglUnit>> shadowVaoIdLwjglUnitMap;
     private Vector3f cameraPosition;
     private Matrix4f cameraViewMatrix;
     private Matrix4f projectionMatrix;
+    private Matrix4f lightSpaceMatrix;
+    private int depthMapTexture;
 }

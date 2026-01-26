@@ -19,13 +19,17 @@ public class ObjectModels {
     private static final Map<String, Model> MODEL_CACHE = new ConcurrentHashMap<>();
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static ZoneConfig ZONE_CONFIG;
 
     public static ZoneConfig getZoneConfig() {
         try {
-            return OBJECT_MAPPER.readValue(RESOURCES.getResource(ZONE_CONFIG_PATH), ZoneConfig.class);
+            if (ZONE_CONFIG == null) {
+                ZONE_CONFIG = OBJECT_MAPPER.readValue(RESOURCES.getResource(ZONE_CONFIG_PATH), ZoneConfig.class);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return ZONE_CONFIG;
     }
 
     public Model getModel(String modelKey) {

@@ -2,7 +2,7 @@ package com.game.client.zones;
 
 import com.game.client.zones.surface.export.MapConfig;
 import com.game.client.zones.surface.export.MapConfigExporter;
-import com.game.client.zones.surface.export.ObjExportYUp;
+import com.game.client.zones.surface.export.MapExportYUp;
 import com.game.client.zones.surface.perlinnoise.PerlinNoiseSurface3D;
 
 import java.io.IOException;
@@ -193,7 +193,7 @@ public class ZoneGenerator {
             );
 
             var fileName = currentZonePath.resolve("model.obj").toString();
-            var exporter = new ObjExportYUp(zone);
+            var exporter = new MapExportYUp(zone);
 
             exporter.exportToOBJ_YUp(
                     fileName,

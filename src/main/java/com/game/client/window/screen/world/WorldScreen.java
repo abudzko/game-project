@@ -1,14 +1,13 @@
 package com.game.client.window.screen.world;
 
-import com.game.client.utils.ParallelUtils;
 import com.game.client.utils.log.LogUtil;
 import com.game.client.window.event.listener.AbstractWindowEventListener;
 import com.game.client.window.event.resize.ResizeWindowEvent;
 import com.game.client.window.lwjgl.annotation.LwjglMainThread;
 import com.game.client.window.lwjgl.program.BatchDrawProgram;
-import com.game.client.window.lwjgl.program.LightingProgram;
 import com.game.client.window.lwjgl.program.LwjglUnit;
 import com.game.client.window.lwjgl.program.RenderObjects;
+import com.game.client.window.lwjgl.program.ShadowProgram;
 import com.game.client.window.model.GraphicUnit;
 import com.game.client.window.model.GraphicUnitFactory;
 import com.game.client.window.screen.world.camera.Camera;
@@ -27,18 +26,21 @@ public class WorldScreen extends AbstractWindowEventListener {
     private final Queue<GraphicUnit> graphicUnitsQueue = new ConcurrentLinkedQueue<>();
     private final Queue<GraphicUnit> deletedGraphicUnitsQueue = new ConcurrentLinkedQueue<>();
     private final Map<Long, GraphicUnit> graphicUnitMap = new ConcurrentHashMap<>();
+    private final Map<Long, LwjglUnit> shadowRenderedLwjglUnits = new ConcurrentHashMap<>();
     private final Map<Long, LwjglUnit> renderedLwjglUnits = new ConcurrentHashMap<>();
     private final WorldScreenConfig worldScreenConfig;
     private final StaticDynamicSurface surface = StaticDynamicSurface.create();
     private final Camera camera;
     private final GameEngine gameEngine;
     private BatchDrawProgram batchDrawProgram;
+    private ShadowProgram shadowProgram;
     private Matrix4f projectionMatrix;
     private boolean isProjectionMatrixChanged = false;
 
     public WorldScreen(WorldScreenConfig worldScreenConfig) {
         this.worldScreenConfig = worldScreenConfig;
-        this.batchDrawProgram = new BatchDrawProgram();
+        this.batchDrawProgram = new BatchDrawProgram(worldScreenConfig);
+        this.shadowProgram = new ShadowProgram();
         this.camera = createCamera();
         this.gameEngine = new GameEngine();
         var gameWorld = gameEngine.getGameWorld();
@@ -61,6 +63,7 @@ public class WorldScreen extends AbstractWindowEventListener {
     public void render() {
         var start = System.currentTimeMillis();
         var renderObjects = createRenderObjects();
+        shadowProgram.render(renderObjects);
         getProgram().render(renderObjects);
         var end = System.currentTimeMillis();
         var diff = end - start;
@@ -77,6 +80,7 @@ public class WorldScreen extends AbstractWindowEventListener {
             if (lwjglUnit == null) {
                 graphicUnitMap.put(gameUnitId, graphicUnit);
                 renderedLwjglUnits.put(gameUnitId, getProgram().createLwjglUnit(graphicUnit));
+                shadowRenderedLwjglUnits.put(gameUnitId, shadowProgram.createLwjglUnit(graphicUnit));
             }
         }
 
@@ -85,6 +89,7 @@ public class WorldScreen extends AbstractWindowEventListener {
                 var graphicUnit = deletedGraphicUnitsQueue.poll();
                 long gameUnitId = graphicUnit.getSharedUnitState().getGameUnitId();
                 renderedLwjglUnits.remove(gameUnitId);
+                shadowRenderedLwjglUnits.remove(gameUnitId);
                 graphicUnitMap.remove(gameUnitId);
             }
         }
@@ -94,6 +99,12 @@ public class WorldScreen extends AbstractWindowEventListener {
                 .stream()
                 .collect(Collectors.groupingBy(LwjglUnit::getVaoId));
         renderObjects.setVaoIdLwjglUnitMap(vaoIdLwjglUnitMap);
+
+        var shadowVaoIdLwjglUnitMap = shadowRenderedLwjglUnits.values()
+                .stream()
+                .collect(Collectors.groupingBy(LwjglUnit::getVaoId));
+        renderObjects.setShadowVaoIdLwjglUnitMap(shadowVaoIdLwjglUnitMap);
+
         getCamera().getCameraViewMatrixCopyIfChanged().ifPresent(matrix4f -> {
             getCamera().setCameraViewMatrixChanged(false);
             renderObjects.setCameraViewMatrix(matrix4f);
@@ -104,6 +115,7 @@ public class WorldScreen extends AbstractWindowEventListener {
         }
 
         renderObjects.setCameraPosition(camera.getCameraPosition());
+        renderObjects.setDepthMapTexture(shadowProgram.getDepthMapTextureId());
 
         return renderObjects;
     }

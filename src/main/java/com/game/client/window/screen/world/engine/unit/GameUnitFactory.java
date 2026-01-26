@@ -28,7 +28,7 @@ public class GameUnitFactory {
 
     public GameUnit createSun() {
         var sharedUnitState = sharedUnitState();
-        sharedUnitState.setPosition(new Vector3f(50.0f, 50.0f, 0.0f));
+        sharedUnitState.setPosition(new Vector3f(0.0f, 400.0f, 100.0f));
         var light = Light.builder()
                 .lightColor(new Vector3f(1.0f, 1.0f, 1.0f))
                 .lightPosition(sharedUnitState.getPosition())
