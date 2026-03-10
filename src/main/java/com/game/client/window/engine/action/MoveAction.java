@@ -1,8 +1,8 @@
-package com.game.client.window.screen.world.engine.action;
+package com.game.client.window.engine.action;
 
 import com.game.client.utils.log.LogUtil;
+import com.game.client.window.engine.unit.GameUnit;
 import com.game.client.window.screen.world.camera.Camera;
-import com.game.client.window.screen.world.engine.unit.GameUnit;
 import com.game.client.window.screen.world.surface.Intersection;
 import lombok.Builder;
 import lombok.Getter;
@@ -54,9 +54,9 @@ public class MoveAction implements GameUnitAction {
             }
             calculateNextPosition(gameUnit.getSharedUnitState().getPosition(), targetPosition)
                     .ifPresentOrElse(position -> {
-                                camera.follow(position);// Don't reorder to avoid camera jerks
                                 gameUnit.getSharedUnitState().setPosition(position);
                                 gameUnit.getSharedUnitState().updateWorldMatrix();
+                                camera.follow(position);
                             }, () -> move = false
                     );
         }

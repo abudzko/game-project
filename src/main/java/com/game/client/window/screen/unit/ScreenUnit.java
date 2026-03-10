@@ -1,18 +1,12 @@
-package com.game.client.window.model;
+package com.game.client.window.screen.unit;
 
 import com.game.client.window.model.obj.Model;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * Represents the game unit:
- * - positions
- * - rotation
- * - scale
- */
 @Getter
 @Builder
-public class GraphicUnit {
+public class ScreenUnit {
     private SharedUnitState sharedUnitState;
     private Model model;
     /**

@@ -105,11 +105,9 @@ class PlayerEventHandler implements WindowEventListener {
         if (scrollEvent.getOffsetY() < 0) {
             step = -step;
         }
-        var cameraPosition = findPosition(getState().getCameraPosition(), getState().getCenterPosition(), step);
+        var cameraPosition = findPosition(getState().eye(), getState().center(), step);
         cameraPosition = CameraUtils.resolveCameraPositionIfUnderSurface(cameraPosition, surfaceIntersectionFinder, getState());
-        getState().setEyeX(cameraPosition.x());
-        getState().setEyeY(cameraPosition.y());
-        getState().setEyeZ(cameraPosition.z());
+        getState().setEyePosition(cameraPosition);
         look();
     }
 
@@ -131,9 +129,10 @@ class PlayerEventHandler implements WindowEventListener {
     }
 
     private void defaultCameraPosition() {
-        var position = getState().getCenterPosition();
-        float dx = getState().getMoveDirectionX();
-        float dz = getState().getMoveDirectionZ();
+        var position = getState().center();
+        var moveDirection = getState().moveDirection();
+        float dx = moveDirection.x;
+        float dz = moveDirection.z;
         var a = Math.atan2(dz, dx);
         position.x -= 2f * (float) Math.cos(a);
         position.y += 1f;
@@ -164,12 +163,14 @@ class PlayerEventHandler implements WindowEventListener {
                 rotationResult = Optional.of(rotateAroundCustomAxis((float) Math.toRadians(rotationAngle)))
                         /* prevent undesired behavior of camera when exceeding of 90 degrees */
                         .filter(p -> {
-                            var centerX = getState().getCenterX();
-                            var eyeX = getState().getEyeX();
+                            var centerPosition = getState().center();
+                            var centerX = centerPosition.x;
+                            var eyePosition = getState().eye();
+                            var eyeX = eyePosition.x;
                             var resultX = centerX > eyeX ? centerX > p.x() : centerX < p.x();
                             if (resultX) {
-                                var centerZ = getState().getCenterZ();
-                                var eyeZ = getState().getEyeZ();
+                                var centerZ = centerPosition.z;
+                                var eyeZ = eyePosition.z;
                                 return centerZ > eyeZ ? centerZ > p.z() : centerZ < p.z();
                             }
                             return false;
@@ -186,7 +187,7 @@ class PlayerEventHandler implements WindowEventListener {
                 rotationResult = Optional.of(
                         rotateDeltaOy(
                                 (float) Math.toRadians(rotationAngle),
-                                rotationResult.orElse(getState().getCameraPosition())
+                                rotationResult.orElse(getState().eye())
                         )
                 );
 
@@ -201,17 +202,14 @@ class PlayerEventHandler implements WindowEventListener {
     }
 
     private void setCameraPosition(Vector3f position) {
-        getState().setEyeX(position.x());
-        getState().setEyeY(position.y());
-        getState().setEyeZ(position.z());
-
+        getState().setEyePosition(position);
         LogUtil.logDebug(false, String.format("setCameraPosition x = %s y = %s z = %s", position.x(), position.y(), position.z()));
         look();
     }
 
     private Vector3f rotateAroundCustomAxis(float angleDeltaRadians) {
-        var center = state.getCenterPosition();
-        var cameraEye = getState().getCameraPosition();
+        var center = state.center();
+        var cameraEye = getState().eye();
 
         var axis = Rotation3D.calculatePerpendicularAxisZXPlane(center, cameraEye);
 
@@ -220,7 +218,7 @@ class PlayerEventHandler implements WindowEventListener {
     }
 
     private Vector3f rotateDeltaOy(float angleDeltaRadians, Vector3f cameraEye) {
-        return Rotation3D.rotateAroundPoint(cameraEye, getState().getCenterPosition(), 0, angleDeltaRadians, 0);
+        return Rotation3D.rotateAroundPoint(cameraEye, getState().center(), 0, angleDeltaRadians, 0);
     }
 
     private CameraState getState() {

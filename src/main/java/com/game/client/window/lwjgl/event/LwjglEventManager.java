@@ -20,6 +20,9 @@ import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Configures lwjgl callbacks to handle window events
+ */
 public class LwjglEventManager {
     private final Long windowId;
     private final List<WindowEventListener> eventListeners = new CopyOnWriteArrayList<>();

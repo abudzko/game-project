@@ -1,7 +1,7 @@
-package com.game.client.window.screen.world.engine.unit;
+package com.game.client.window.engine.unit;
 
 import com.game.client.window.lwjgl.program.Light;
-import com.game.client.window.model.SharedUnitState;
+import com.game.client.window.screen.unit.SharedUnitState;
 import lombok.Getter;
 import org.joml.Vector3f;
 

@@ -1,6 +1,5 @@
 package com.game.client.window.screen.world.surface;
 
-import com.game.client.utils.log.LogUtil;
 import org.joml.Vector3f;
 
 import java.util.List;

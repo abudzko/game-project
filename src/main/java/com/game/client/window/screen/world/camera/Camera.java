@@ -19,7 +19,7 @@ public class Camera extends AbstractWindowEventListener {
             PlayerEventHandler playerEventHandler) {
         this.cameraState = cameraState;
         this.surfaceIntersectionFinder = surfaceIntersectionFinder;
-        addEventChildListener(playerEventHandler);
+        addEventListener(playerEventHandler);
     }
 
     public static Camera createCamera(StaticDynamicSurface surface, int width, int height) {
@@ -53,30 +53,28 @@ public class Camera extends AbstractWindowEventListener {
     }
 
     public Vector3f getCameraPosition() {
-        return cameraState.getCameraPosition();
+        return cameraState.eye();
     }
 
     public void follow(Vector3f position) {
-        var dx = position.x - cameraState.getCenterX();
-        var dy = position.y - cameraState.getCenterY();
-        var dz = position.z - cameraState.getCenterZ();
 
-        cameraState.setMoveDirectionX(dx);
-        cameraState.setMoveDirectionY(dy);
-        cameraState.setMoveDirectionZ(dz);
+        var centerPosition = cameraState.center();
+        var dx = position.x - centerPosition.x;
+        var dy = position.y - centerPosition.y;
+        var dz = position.z - centerPosition.z;
 
-        float eyeX = cameraState.getEyeX() + dx;
-        float eyeY = cameraState.getEyeY() + dy;
-        float eyeZ = cameraState.getEyeZ() + dz;
+        cameraState.setMoveDirection(new Vector3f(dx, dy, dz));
+
+        var eye = cameraState.eye();
+        float eyeX = eye.x + dx;
+        float eyeY = eye.y + dy;
+        float eyeZ = eye.z + dz;
+
         var cameraPosition = new Vector3f(eyeX, eyeY, eyeZ);
         cameraPosition = CameraUtils.resolveCameraPositionIfUnderSurface(cameraPosition, surfaceIntersectionFinder, cameraState);
-        cameraState.setCenterX(position.x);
-        cameraState.setCenterY(position.y);
-        cameraState.setCenterZ(position.z);
 
-        cameraState.setEyeX(cameraPosition.x);
-        cameraState.setEyeY(cameraPosition.y);
-        cameraState.setEyeZ(cameraPosition.z);
+        cameraState.setCenterPosition(position);
+        cameraState.setEyePosition(cameraPosition);
 
         cameraState.look();
     }
@@ -93,7 +91,7 @@ public class Camera extends AbstractWindowEventListener {
         return surfaceIntersectionFinder.findIntersection(position);
     }
 
-    private CameraState getCameraState() {
+    public CameraState getCameraState() {
         return cameraState;
     }
 

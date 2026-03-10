@@ -4,10 +4,9 @@ import com.game.client.utils.BufferUtils;
 import com.game.client.utils.debug.ShadowDebug;
 import com.game.client.utils.log.LogUtil;
 import com.game.client.window.lwjgl.program.shader.Shader;
-import com.game.client.window.model.GraphicUnit;
-import com.game.client.window.model.LwjglUnitImpl;
 import com.game.client.window.model.obj.Model;
 import com.game.client.window.model.obj.ObjectModels;
+import com.game.client.window.screen.unit.ScreenUnit;
 import lombok.Getter;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -304,10 +303,10 @@ public class ShadowProgram {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboMatricesId);
     }
 
-    public LwjglUnit createLwjglUnit(GraphicUnit graphicUnit) {
-        var model = graphicUnit.getModel();
+    public LwjglUnit createLwjglUnit(ScreenUnit screenUnit) {
+        var model = screenUnit.getModel();
         int vaoId = vaoIdCache.computeIfAbsent(model.modelKey(), key -> loadModel(model));
-        return new LwjglUnitImpl(vaoId, 0, graphicUnit);
+        return new LwjglUnitImpl(vaoId, 0, screenUnit);
     }
 
     /**

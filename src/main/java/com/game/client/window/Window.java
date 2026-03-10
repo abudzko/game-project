@@ -6,32 +6,33 @@ import com.game.client.window.event.listener.AbstractWindowEventListener;
 import com.game.client.window.event.resize.ResizeWindowEvent;
 import com.game.client.window.lwjgl.annotation.LwjglMainThread;
 import com.game.client.window.lwjgl.event.LwjglEventManager;
+import com.game.client.window.screen.world.Screen;
 import com.game.client.window.screen.world.WorldScreen;
-import com.game.client.window.screen.world.WorldScreenConfig;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window extends AbstractWindowEventListener {
-    private final WindowState windowState;
+    private final WindowConfig windowConfig;
     private final long windowId;
-    private WorldScreen worldScreen;
+    private List<Screen> screens = new ArrayList<>();
     private boolean windowSizeChanged;
 
-    public Window(WindowState windowState) {
-        this.windowState = windowState;
+    private Window() {
+        this.windowConfig = new WindowConfig();
         this.windowId = initWindow();
         configureEventManager();
     }
 
     public static Window createWindow() {
-        var windowState = new WindowState();
-        return new Window(windowState);
+        return new Window();
     }
 
     private long initWindow() {
@@ -41,9 +42,9 @@ public class Window extends AbstractWindowEventListener {
         assert videoMode != null;
 
         var id = GLFW.glfwCreateWindow(
-                windowState.getWidth(),
-                windowState.getHeight(),
-                windowState.getName(),
+                windowConfig.getWidth(),
+                windowConfig.getHeight(),
+                windowConfig.getName(),
                 monitorId,
                 NULL
         );
@@ -57,9 +58,9 @@ public class Window extends AbstractWindowEventListener {
     }
 
     private void configureEventManager() {
-        eventManager = new LwjglEventManager(getWindowId());
-        getEventManager().configureEventCallbacks();
-        addRootEventListener(this);
+        lwjglEventManager = new LwjglEventManager(getWindowId());
+        getLwjglEventManager().configureEventCallbacks();
+        listenLwjglEvents(this);
     }
 
     public void start() throws InterruptedException {
@@ -69,7 +70,7 @@ public class Window extends AbstractWindowEventListener {
             public void run() {
                 try {
                     init();
-                    createWorldScreen();
+                    createScreens();
                     countDownLatch.countDown();
                     while (!shouldBeClosed()) {
                         render();
@@ -89,25 +90,23 @@ public class Window extends AbstractWindowEventListener {
         show();
     }
 
-    private void createWorldScreen() {
-        var worldScreenState = new WorldScreenConfig();
-        worldScreenState.setWidth(windowState.getWidth());
-        worldScreenState.setHeight(windowState.getHeight());
-        worldScreen = new WorldScreen(worldScreenState);
-        addEventChildListener(worldScreen);
+    private void createScreens() {
+        var worldScreen = WorldScreen.create();
+        screens.add(worldScreen);
+        addEventListener(worldScreen);
     }
 
     private void init() {
         GLFW.glfwMakeContextCurrent(windowId);
         GL.createCapabilities();
-        GLFW.glfwSwapInterval(windowState.getSwapInterval());
+        GLFW.glfwSwapInterval(windowConfig.getSwapInterval());
     }
 
     public void render() {
-        worldScreen.render();
+        screens.forEach(Screen::render);
         GLFW.glfwSwapBuffers(getWindowId());
         if (windowSizeChanged) {
-            GL30.glViewport(0, 0, windowState.getWidth(), windowState.getHeight());
+            GL30.glViewport(0, 0, windowConfig.getWidth(), windowConfig.getHeight());
             windowSizeChanged = false;
         }
     }
@@ -134,8 +133,8 @@ public class Window extends AbstractWindowEventListener {
     }
 
     private void windowSizeChanged(ResizeWindowEvent resizeWindowEvent) {
-        windowState.setWidth(resizeWindowEvent.getNewWidth());
-        windowState.setHeight(resizeWindowEvent.getNewHeight());
+        windowConfig.setWidth(resizeWindowEvent.getNewWidth());
+        windowConfig.setHeight(resizeWindowEvent.getNewHeight());
         windowSizeChanged = true;
     }
 

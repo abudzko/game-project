@@ -1,8 +1,8 @@
-package com.game.client.window.screen.world.engine;
+package com.game.client.window.engine;
 
 import com.game.client.utils.log.LogUtil;
-import com.game.client.window.screen.world.engine.action.MoveAction;
-import com.game.client.window.screen.world.engine.unit.GameUnit;
+import com.game.client.window.engine.action.MoveAction;
+import com.game.client.window.engine.unit.GameUnit;
 import lombok.Getter;
 import lombok.SneakyThrows;
 

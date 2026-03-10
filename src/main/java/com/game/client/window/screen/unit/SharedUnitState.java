@@ -1,7 +1,7 @@
-package com.game.client.window.model;
+package com.game.client.window.screen.unit;
 
+import com.game.client.window.engine.action.GameUnitAction;
 import com.game.client.window.lwjgl.program.Light;
-import com.game.client.window.screen.world.engine.action.GameUnitAction;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +9,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * Shared between {@link com.game.client.window.screen.world.engine.unit.GameUnit} and {@link GraphicUnit}
+ * Shared between {@link com.game.client.window.engine.unit.GameUnit} and {@link ScreenUnit}
  * <p>
  * Required to reflect and sync changes between these classes
  */
@@ -19,7 +19,7 @@ import org.joml.Vector3f;
 public class SharedUnitState {
     private long gameUnitId;
     @Builder.Default
-    private Vector3f position = new Vector3f(0, 0, 0);
+    private volatile Vector3f position = new Vector3f(0, 0, 0);
     /**
      * Angles are measured in degrees
      */

@@ -1,21 +1,21 @@
 package com.game.client.window.screen.world.surface;
 
 import com.game.client.utils.log.LogUtil;
-import com.game.client.window.model.GraphicUnit;
+import com.game.client.window.screen.unit.ScreenUnit;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Surface {
-    private final Map<Long, GraphicUnit> graphicUnitMap = new ConcurrentHashMap<>();
+    private final Map<Long, ScreenUnit> screenUnitMap = new ConcurrentHashMap<>();
     private BVHNode bvhRoot;
 
     public void build() {
         var start = System.currentTimeMillis();
         var triangleBuilder = new TrianglesBuilder();
-        var triangles = graphicUnitMap.values().stream()
-                .flatMap(graphicUnit -> triangleBuilder.toTriangles(graphicUnit).stream())
+        var triangles = screenUnitMap.values().stream()
+                .flatMap(screenUnit -> triangleBuilder.toTriangles(screenUnit).stream())
                 .collect(Collectors.toList());
 
         LogUtil.logDebug("toTriangles: count " + triangles.size() + " " + (System.currentTimeMillis() - start) + "ms");
@@ -24,10 +24,10 @@ public class Surface {
         LogUtil.logDebug("new BVHNode: " + (System.currentTimeMillis() - start) + "ms");
     }
 
-    public void addGraphicUnit(GraphicUnit graphicUnit) {
-        var unit = this.graphicUnitMap.get(graphicUnit.getSharedUnitState().getGameUnitId());
+    public void addScreenUnit(ScreenUnit screenUnit) {
+        var unit = this.screenUnitMap.get(screenUnit.getSharedUnitState().getGameUnitId());
         if (unit == null) {
-            graphicUnitMap.put(graphicUnit.getSharedUnitState().getGameUnitId(), graphicUnit);
+            screenUnitMap.put(screenUnit.getSharedUnitState().getGameUnitId(), screenUnit);
         }
     }
 

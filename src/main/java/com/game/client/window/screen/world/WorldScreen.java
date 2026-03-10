@@ -1,17 +1,16 @@
 package com.game.client.window.screen.world;
 
 import com.game.client.utils.log.LogUtil;
-import com.game.client.window.event.listener.AbstractWindowEventListener;
+import com.game.client.window.engine.GameEngine;
 import com.game.client.window.event.resize.ResizeWindowEvent;
 import com.game.client.window.lwjgl.annotation.LwjglMainThread;
 import com.game.client.window.lwjgl.program.BatchDrawProgram;
 import com.game.client.window.lwjgl.program.LwjglUnit;
 import com.game.client.window.lwjgl.program.RenderObjects;
 import com.game.client.window.lwjgl.program.ShadowProgram;
-import com.game.client.window.model.GraphicUnit;
-import com.game.client.window.model.GraphicUnitFactory;
+import com.game.client.window.screen.unit.ScreenUnit;
+import com.game.client.window.screen.unit.ScreenUnitFactory;
 import com.game.client.window.screen.world.camera.Camera;
-import com.game.client.window.screen.world.engine.GameEngine;
 import com.game.client.window.screen.world.surface.StaticDynamicSurface;
 import org.joml.Matrix4f;
 
@@ -22,10 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
-public class WorldScreen extends AbstractWindowEventListener {
-    private final Queue<GraphicUnit> graphicUnitsQueue = new ConcurrentLinkedQueue<>();
-    private final Queue<GraphicUnit> deletedGraphicUnitsQueue = new ConcurrentLinkedQueue<>();
-    private final Map<Long, GraphicUnit> graphicUnitMap = new ConcurrentHashMap<>();
+public class WorldScreen extends Screen {
+    private final Queue<ScreenUnit> screenUnitsQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<ScreenUnit> deletedScreenUnitsQueue = new ConcurrentLinkedQueue<>();
+    private final Map<Long, ScreenUnit> screenUnitMap = new ConcurrentHashMap<>();
     private final Map<Long, LwjglUnit> shadowRenderedLwjglUnits = new ConcurrentHashMap<>();
     private final Map<Long, LwjglUnit> renderedLwjglUnits = new ConcurrentHashMap<>();
     private final WorldScreenConfig worldScreenConfig;
@@ -37,8 +36,8 @@ public class WorldScreen extends AbstractWindowEventListener {
     private Matrix4f projectionMatrix;
     private boolean isProjectionMatrixChanged = false;
 
-    public WorldScreen(WorldScreenConfig worldScreenConfig) {
-        this.worldScreenConfig = worldScreenConfig;
+    public WorldScreen() {
+        this.worldScreenConfig = new WorldScreenConfig();
         this.batchDrawProgram = new BatchDrawProgram(worldScreenConfig);
         this.shadowProgram = new ShadowProgram();
         this.camera = createCamera();
@@ -47,7 +46,7 @@ public class WorldScreen extends AbstractWindowEventListener {
         gameEngine.start();
         gameWorld.getGameUnitMap().forEach((key, gameUnit) -> {
             gameUnit.getSharedUnitState().updateWorldMatrix();
-            addGraphicUnit(GraphicUnitFactory.createGraphicUnit(gameUnit));
+            addScreenUnit(ScreenUnitFactory.createScreenUnit(gameUnit));
         });
         var player = gameWorld.getPlayer();
         Optional.ofNullable(camera.findIntersection(player.getSharedUnitState().getPosition()))
@@ -57,7 +56,11 @@ public class WorldScreen extends AbstractWindowEventListener {
                 });
         updateMatrices();
         var playerEventHandler = PlayerEventHandler.create(getCamera(), gameEngine);
-        addEventChildListener(playerEventHandler);
+        addEventListener(playerEventHandler);
+    }
+
+    public static Screen create() {
+        return new WorldScreen();
     }
 
     public void render() {
@@ -73,24 +76,24 @@ public class WorldScreen extends AbstractWindowEventListener {
     @LwjglMainThread
     private RenderObjects createRenderObjects() {
         var renderObjects = new RenderObjects();
-        while (!graphicUnitsQueue.isEmpty()) {
-            var graphicUnit = graphicUnitsQueue.poll();
-            long gameUnitId = graphicUnit.getSharedUnitState().getGameUnitId();
+        while (!screenUnitsQueue.isEmpty()) {
+            var screenUnit = screenUnitsQueue.poll();
+            long gameUnitId = screenUnit.getSharedUnitState().getGameUnitId();
             var lwjglUnit = renderedLwjglUnits.get(gameUnitId);
             if (lwjglUnit == null) {
-                graphicUnitMap.put(gameUnitId, graphicUnit);
-                renderedLwjglUnits.put(gameUnitId, getProgram().createLwjglUnit(graphicUnit));
-                shadowRenderedLwjglUnits.put(gameUnitId, shadowProgram.createLwjglUnit(graphicUnit));
+                screenUnitMap.put(gameUnitId, screenUnit);
+                renderedLwjglUnits.put(gameUnitId, getProgram().createLwjglUnit(screenUnit));
+                shadowRenderedLwjglUnits.put(gameUnitId, shadowProgram.createLwjglUnit(screenUnit));
             }
         }
 
-        if (!deletedGraphicUnitsQueue.isEmpty()) {
-            while (!deletedGraphicUnitsQueue.isEmpty()) {
-                var graphicUnit = deletedGraphicUnitsQueue.poll();
-                long gameUnitId = graphicUnit.getSharedUnitState().getGameUnitId();
+        if (!deletedScreenUnitsQueue.isEmpty()) {
+            while (!deletedScreenUnitsQueue.isEmpty()) {
+                var screenUnit = deletedScreenUnitsQueue.poll();
+                long gameUnitId = screenUnit.getSharedUnitState().getGameUnitId();
                 renderedLwjglUnits.remove(gameUnitId);
                 shadowRenderedLwjglUnits.remove(gameUnitId);
-                graphicUnitMap.remove(gameUnitId);
+                screenUnitMap.remove(gameUnitId);
             }
         }
 
@@ -122,7 +125,7 @@ public class WorldScreen extends AbstractWindowEventListener {
 
     private Camera createCamera() {
         var camera = Camera.createCamera(surface, worldScreenConfig.getWidth(), worldScreenConfig.getHeight());
-        addEventChildListener(camera);
+        addEventListener(camera);
         return camera;
     }
 
@@ -142,24 +145,24 @@ public class WorldScreen extends AbstractWindowEventListener {
         return camera;
     }
 
-    private void addGraphicUnit(GraphicUnit graphicUnit) {
-        var lwjglUnit = renderedLwjglUnits.get(graphicUnit.getSharedUnitState().getGameUnitId());
+    private void addScreenUnit(ScreenUnit screenUnit) {
+        var lwjglUnit = renderedLwjglUnits.get(screenUnit.getSharedUnitState().getGameUnitId());
         if (lwjglUnit == null) {
-            graphicUnitsQueue.add(graphicUnit);
-            if (graphicUnit.isSurface()) {
-                if (graphicUnit.getSharedUnitState().isDynamic()) {
-                    surface.addDynamicGraphicUnit(graphicUnit);
+            screenUnitsQueue.add(screenUnit);
+            if (screenUnit.isSurface()) {
+                if (screenUnit.getSharedUnitState().isDynamic()) {
+                    surface.addDynamicScreenUnit(screenUnit);
 //                    surface.buildDynamicSurface();
                 } else {
-                    surface.addStaticGraphicUnit(graphicUnit);
+                    surface.addStaticScreenUnit(screenUnit);
                     surface.buildStaticSurface();
                 }
             }
         }
     }
 
-    private void deleteGraphicUnit(GraphicUnit graphicUnit) {
-        deletedGraphicUnitsQueue.add(graphicUnit);
+    private void deleteScreenUnit(ScreenUnit screenUnit) {
+        deletedScreenUnitsQueue.add(screenUnit);
     }
 
     private BatchDrawProgram getProgram() {

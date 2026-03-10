@@ -1,4 +1,4 @@
-package com.game.client.window.screen.world.engine.unit;
+package com.game.client.window.engine.unit;
 
 public class GameUnitType {
     public static final String UNITS = "units";

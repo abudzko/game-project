@@ -7,34 +7,40 @@ import lombok.Setter;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-@Getter
-@Setter
 public class CameraState {
+    @Getter
     private final float fov = (float) Math.toRadians(60f);
-    private float centerX = 0;
-    private float centerY = 2;
-    private float centerZ = 0;
-    private volatile float eyeX = 0;
-    private volatile float eyeY = 5;
-    private volatile float eyeZ = 1;
-    private float upX = 0;
-    private float upY = 1f;
-    private float upZ = 0f;
+    @Setter
+    private volatile Vector3f centerPosition = new Vector3f(0, 2, 0);
+    @Setter
+    private volatile Vector3f eyePosition = new Vector3f(0, 5, 1);
+    private volatile Vector3f upVector = new Vector3f(0, 1, 0);
     // zNear should be less than moveStep to correctly handle camera intersection with surface
+    @Getter
     private float zNear = 0.005f;
+    @Getter
     private float zFar = 1000.f;
+    @Getter
     private float moveStep = 1.5f;
+    @Getter
     private float rotationStepDegree = 0.5f;
-    private Matrix4f cameraViewMatrix;
+    private volatile Matrix4f cameraViewMatrix;
+    @Getter
+    @Setter
     private Matrix4f projectionMatrix;
-    private boolean cameraViewMatrixChanged = false;
+    @Setter
+    @Getter
+    private volatile boolean cameraViewMatrixChanged = false;
 
+    @Setter
+    @Getter
     private int cameraWidth;
+    @Setter
+    @Getter
     private int cameraHeight;
 
-    private float moveDirectionX = 0;
-    private float moveDirectionY = 0;
-    private float moveDirectionZ = 0;
+    @Setter
+    private volatile Vector3f moveDirection = new Vector3f(0, 0, 0);
 
     public Matrix4f getCameraViewMatrixCopy() {
         return new Matrix4f(cameraViewMatrix);
@@ -53,7 +59,7 @@ public class CameraState {
 
     public void setCameraViewMatrix(Matrix4f cameraViewMatrix) {
         this.cameraViewMatrix = cameraViewMatrix;
-        setCameraViewMatrixChanged(true);
+        cameraViewMatrixChanged = true;
     }
 
     public Ray getRay(double x, double y) {
@@ -66,15 +72,7 @@ public class CameraState {
                 .height(getCameraHeight())
                 .build();
         var directionPoint = converter.directionPoint();
-        return Ray.builder().startPoint(getCameraPosition()).directionPoint(directionPoint).build();
-    }
-
-    public Vector3f getCameraPosition() {
-        return new Vector3f(getEyeX(), getEyeY(), getEyeZ());
-    }
-
-    public Vector3f getCenterPosition() {
-        return new Vector3f(getCenterX(), getCenterY(), getCenterZ());
+        return Ray.builder().startPoint(eye()).directionPoint(directionPoint).build();
     }
 
     public void look() {
@@ -83,15 +81,20 @@ public class CameraState {
         setCameraViewMatrix(m);
     }
 
-    private Vector3f eye() {
-        return new Vector3f(getEyeX(), getEyeY(), getEyeZ());
+    public Vector3f eye() {
+        return new Vector3f(eyePosition);
     }
 
-    private Vector3f center() {
-        return new Vector3f(getCenterX(), getCenterY(), getCenterZ());
+    //
+    public Vector3f center() {
+        return new Vector3f(centerPosition);
     }
 
     private Vector3f up() {
-        return new Vector3f(getUpX(), getUpY(), getUpZ());
+        return new Vector3f(upVector);
+    }
+
+    public Vector3f moveDirection() {
+        return new Vector3f(moveDirection);
     }
 }

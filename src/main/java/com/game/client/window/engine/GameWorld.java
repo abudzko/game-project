@@ -1,11 +1,11 @@
-package com.game.client.window.screen.world.engine;
+package com.game.client.window.engine;
 
+import com.game.client.window.engine.action.SkydomeFollowAction;
+import com.game.client.window.engine.unit.GameUnit;
+import com.game.client.window.engine.unit.GameUnitFactory;
+import com.game.client.window.engine.unit.GameUnitType;
 import com.game.client.window.model.obj.ObjectModels;
 import com.game.client.window.model.obj.zone.ZoneConfig;
-import com.game.client.window.screen.world.engine.action.SkydomeFollowAction;
-import com.game.client.window.screen.world.engine.unit.GameUnit;
-import com.game.client.window.screen.world.engine.unit.GameUnitFactory;
-import com.game.client.window.screen.world.engine.unit.GameUnitType;
 import lombok.Getter;
 import org.joml.Vector3f;
 

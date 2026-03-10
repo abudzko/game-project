@@ -1,6 +1,6 @@
-package com.game.client.window.screen.world.engine.action;
+package com.game.client.window.engine.action;
 
-import com.game.client.window.screen.world.engine.unit.GameUnit;
+import com.game.client.window.engine.unit.GameUnit;
 import lombok.Builder;
 import lombok.Getter;
 

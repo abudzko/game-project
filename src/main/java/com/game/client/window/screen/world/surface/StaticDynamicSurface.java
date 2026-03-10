@@ -1,7 +1,6 @@
 package com.game.client.window.screen.world.surface;
 
-import com.game.client.utils.log.LogUtil;
-import com.game.client.window.model.GraphicUnit;
+import com.game.client.window.screen.unit.ScreenUnit;
 
 import java.util.Optional;
 
@@ -20,12 +19,12 @@ public class StaticDynamicSurface {
         return new StaticDynamicSurface(staticSurface, dynamicSurface);
     }
 
-    public void addDynamicGraphicUnit(GraphicUnit graphicUnit) {
-        dynamicSurface.addGraphicUnit(graphicUnit);
+    public void addDynamicScreenUnit(ScreenUnit screenUnit) {
+        dynamicSurface.addScreenUnit(screenUnit);
     }
 
-    public void addStaticGraphicUnit(GraphicUnit graphicUnit) {
-        staticSurface.addGraphicUnit(graphicUnit);
+    public void addStaticScreenUnit(ScreenUnit screenUnit) {
+        staticSurface.addScreenUnit(screenUnit);
     }
 
     public Intersection findIntersection(Ray ray) {

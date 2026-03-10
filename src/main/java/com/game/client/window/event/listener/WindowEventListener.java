@@ -16,32 +16,32 @@ public interface WindowEventListener extends
         ResizeWindowEventListener,
         ScrollEventListener {
 
-    default List<WindowEventListener> getEventChildListeners() {
+    default List<WindowEventListener> getEventListeners() {
         return Collections.emptyList();
     }
 
     @Override
     default void event(CursorPositionEvent event) {
-        getEventChildListeners().forEach(listener -> listener.event(event));
+        getEventListeners().forEach(listener -> listener.event(event));
     }
 
     @Override
     default void event(KeyEvent event) {
-        getEventChildListeners().forEach(listener -> listener.event(event));
+        getEventListeners().forEach(listener -> listener.event(event));
     }
 
     @Override
     default void event(MouseButtonEvent event) {
-        getEventChildListeners().forEach(listener -> listener.event(event));
+        getEventListeners().forEach(listener -> listener.event(event));
     }
 
     @Override
     default void event(ResizeWindowEvent event) {
-        getEventChildListeners().forEach(listener -> listener.event(event));
+        getEventListeners().forEach(listener -> listener.event(event));
     }
 
     @Override
     default void event(ScrollEvent event) {
-        getEventChildListeners().forEach(listener -> listener.event(event));
+        getEventListeners().forEach(listener -> listener.event(event));
     }
 }

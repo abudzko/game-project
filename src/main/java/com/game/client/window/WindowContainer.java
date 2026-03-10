@@ -72,12 +72,8 @@ public class WindowContainer {
         }
     }
 
-    public Map<Long, Window> getWindows() {
-        return windows;
-    }
-
     private void createWindows() throws InterruptedException {
-        iniLwjgl();
+        initLwjgl();
         createWindow();
     }
 
@@ -86,10 +82,10 @@ public class WindowContainer {
         windows.put(window.getWindowId(), window);
     }
 
-    private void iniLwjgl() {
-        // Set an error callback. The default implementation will print the error message in System.err.
+    private void initLwjgl() {
+        // Set an error callback. The default implementation will print the error message in System.err
         GLFWErrorCallback.createPrint(System.err).set();
-        // Initialize GLFW. Most GLFW functions will not work before doing this.
+        // Initialize GLFW. Most GLFW functions will not work before doing this
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
