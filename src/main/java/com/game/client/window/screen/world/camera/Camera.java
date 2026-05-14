@@ -52,29 +52,31 @@ public class Camera extends AbstractWindowEventListener {
         return Optional.empty();
     }
 
-    public Vector3f getCameraPosition() {
-        return cameraState.eye();
-    }
-
     public void follow(Vector3f position) {
+        var immutableCameraPosition = cameraState.getCameraPosition();
+        if (immutableCameraPosition.getCenterPosition().equals(position)) {
+            return;
+        }
 
-        var centerPosition = cameraState.center();
+        var centerPosition = immutableCameraPosition.getCenterPosition();
         var dx = position.x - centerPosition.x;
         var dy = position.y - centerPosition.y;
         var dz = position.z - centerPosition.z;
 
         cameraState.setMoveDirection(new Vector3f(dx, dy, dz));
 
-        var eye = cameraState.eye();
+        var eye = immutableCameraPosition.getEyePosition();
         float eyeX = eye.x + dx;
         float eyeY = eye.y + dy;
         float eyeZ = eye.z + dz;
 
-        var cameraPosition = new Vector3f(eyeX, eyeY, eyeZ);
-        cameraPosition = CameraUtils.resolveCameraPositionIfUnderSurface(cameraPosition, surfaceIntersectionFinder, cameraState);
+        var eyePosition = new Vector3f(eyeX, eyeY, eyeZ);
+        eyePosition = CameraUtils.resolveCameraPositionIfUnderSurface(eyePosition, surfaceIntersectionFinder, cameraState);
 
-        cameraState.setCenterPosition(position);
-        cameraState.setEyePosition(cameraPosition);
+        cameraState.setCameraPosition(ImmutableCameraPosition.builder()
+                .centerPosition(position)
+                .eyePosition(eyePosition)
+                .build());
 
         cameraState.look();
     }

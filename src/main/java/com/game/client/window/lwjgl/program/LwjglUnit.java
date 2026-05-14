@@ -34,4 +34,9 @@ public interface LwjglUnit {
      * @return matrix for transformation unit coordinates to world ones
      */
     Matrix4f getWorldMatrix();
+
+    /**
+     * World matrix may frequently change in other places(threads), in render loop we have to freeze world matrix state
+     */
+    void prepareWorldMatrix();
 }

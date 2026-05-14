@@ -54,9 +54,7 @@ public class MoveAction implements GameUnitAction {
             }
             calculateNextPosition(gameUnit.getSharedUnitState().getPosition(), targetPosition)
                     .ifPresentOrElse(position -> {
-                                gameUnit.getSharedUnitState().setPosition(position);
-                                gameUnit.getSharedUnitState().updateWorldMatrix();
-                                camera.follow(position);
+                                gameUnit.getSharedUnitState().updateWorldMatrix(position);
                             }, () -> move = false
                     );
         }

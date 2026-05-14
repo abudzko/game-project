@@ -41,6 +41,11 @@ public class LwjglUnitImpl implements LwjglUnit {
 
     @Override
     public Matrix4f getWorldMatrix() {
-        return getScreenUnit().getSharedUnitState().getWorldMatrix();
+        return getScreenUnit().getSharedUnitState().getLwjglWorldMatrix().getWorldMatrix();
+    }
+
+    @Override
+    public void prepareWorldMatrix() {
+        getScreenUnit().getSharedUnitState().prepareLwjglWorldMatrix();
     }
 }

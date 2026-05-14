@@ -46,9 +46,8 @@ public class GameWorld {
     }
 
     private GameUnit createSkydome() {
-        var sd = GameUnitFactory.INSTANCE.createSkydome();
         var scale = 3 * zoneConfig.zoneSize * getZoneConfig().xzScale;
-        sd.getSharedUnitState().setScale(scale);
+        var sd = GameUnitFactory.INSTANCE.createSkydome(scale);
         sd.getSharedUnitState().setGameUnitAction(SkydomeFollowAction.builder()
                 .skydome(sd)
                 .player(player)
@@ -78,7 +77,7 @@ public class GameWorld {
             var y = 0;
             var z = -random.nextFloat() * scale;
             var sharedUnitState = gameUnit.getSharedUnitState();
-            sharedUnitState.setPosition(new Vector3f(x, y, z));
+            sharedUnitState.updateWorldMatrix(new Vector3f(x, y, z));
             var treeScale = sharedUnitState.getScale() * (random.nextFloat() * .8f + .2f);
             sharedUnitState.setScale(treeScale);
             gameUnitMap.put(sharedUnitState.getGameUnitId(), gameUnit);

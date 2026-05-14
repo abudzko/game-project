@@ -20,8 +20,7 @@ public class SkydomeFollowAction implements GameUnitAction {
                 || Math.abs(playerPosition.x - skydomePosition.x) > DIFF
                 || Math.abs(playerPosition.y - skydomePosition.y) > DIFF
         ) {
-            skydomePosition.set(playerPosition);
-            skydome.getSharedUnitState().updateWorldMatrix();
+            skydome.getSharedUnitState().updateWorldMatrix(playerPosition);
         }
         return true;
     }

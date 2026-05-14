@@ -11,9 +11,11 @@ public class CameraState {
     @Getter
     private final float fov = (float) Math.toRadians(60f);
     @Setter
-    private volatile Vector3f centerPosition = new Vector3f(0, 2, 0);
-    @Setter
-    private volatile Vector3f eyePosition = new Vector3f(0, 5, 1);
+    @Getter
+    private volatile ImmutableCameraPosition cameraPosition = ImmutableCameraPosition.builder()
+            .eyePosition(new Vector3f(0, 5, 1))
+            .centerPosition(new Vector3f(0, 2, 0))
+            .build();
     private volatile Vector3f upVector = new Vector3f(0, 1, 0);
     // zNear should be less than moveStep to correctly handle camera intersection with surface
     @Getter
@@ -72,22 +74,14 @@ public class CameraState {
                 .height(getCameraHeight())
                 .build();
         var directionPoint = converter.directionPoint();
-        return Ray.builder().startPoint(eye()).directionPoint(directionPoint).build();
+        return Ray.builder().startPoint(getCameraPosition().getEyePosition()).directionPoint(directionPoint).build();
     }
 
     public void look() {
         var m = new Matrix4f();
-        m.lookAt(eye(), center(), up());
+        var cameraPosition = getCameraPosition();
+        m.lookAt(cameraPosition.getEyePosition(), cameraPosition.getCenterPosition(), up());
         setCameraViewMatrix(m);
-    }
-
-    public Vector3f eye() {
-        return new Vector3f(eyePosition);
-    }
-
-    //
-    public Vector3f center() {
-        return new Vector3f(centerPosition);
     }
 
     private Vector3f up() {

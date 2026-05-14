@@ -13,12 +13,18 @@ public class GameUnitFactory {
     private static final AtomicLong idGenerator = new AtomicLong();
 
     private static SharedUnitState sharedUnitState() {
-        return SharedUnitState.builder().gameUnitId(idGenerator.incrementAndGet()).build();
+        var sharedUnitState = SharedUnitState.builder().gameUnitId(idGenerator.incrementAndGet()).build();
+        updateWordMatrix(sharedUnitState);
+        return sharedUnitState;
+    }
+
+    private static void updateWordMatrix(SharedUnitState sharedUnitState) {
+        sharedUnitState.updateWorldMatrix(sharedUnitState.getPosition());
     }
 
     public GameUnit createPlayer() {
         var sharedUnitState = sharedUnitState();
-        sharedUnitState.setPosition(new Vector3f(0f, .2f, 0f));
+        sharedUnitState.updateWorldMatrix(new Vector3f(0f, .2f, 0f));
         sharedUnitState.setDynamic(true);
         return GameUnit.builder()
                 .sharedUnitState(sharedUnitState)
@@ -28,7 +34,7 @@ public class GameUnitFactory {
 
     public GameUnit createSun() {
         var sharedUnitState = sharedUnitState();
-        sharedUnitState.setPosition(new Vector3f(0.0f, 400.0f, 100.0f));
+        sharedUnitState.updateWorldMatrix(new Vector3f(0.0f, 400.0f, 100.0f));
         var light = Light.builder()
                 .lightColor(new Vector3f(1.0f, 1.0f, 1.0f))
                 .lightPosition(sharedUnitState.getPosition())
@@ -40,8 +46,10 @@ public class GameUnitFactory {
                 .build();
     }
 
-    public GameUnit createSkydome() {
+    public GameUnit createSkydome(float scale) {
         var sharedUnitState = sharedUnitState();
+        sharedUnitState.setScale(scale);
+        updateWordMatrix(sharedUnitState);
         return GameUnit.builder()
                 .sharedUnitState(sharedUnitState)
                 .modelKey(GameUnitType.SKYDOME)

@@ -5,6 +5,7 @@ import com.game.client.window.event.cursor.CursorPositionEvent;
 import com.game.client.window.event.key.KeyEvent;
 import com.game.client.window.event.listener.WindowEventListener;
 import com.game.client.window.event.mouse.MouseButton;
+import com.game.client.window.event.mouse.MouseButtonAction;
 import com.game.client.window.event.mouse.MouseButtonEvent;
 import com.game.client.window.event.scroll.ScrollEvent;
 import com.game.client.window.screen.world.camera.rotation.Rotation3D;
@@ -105,9 +106,13 @@ class PlayerEventHandler implements WindowEventListener {
         if (scrollEvent.getOffsetY() < 0) {
             step = -step;
         }
-        var cameraPosition = findPosition(getState().eye(), getState().center(), step);
+        var currentCameraPosition = getState().getCameraPosition();
+        var cameraPosition = findPosition(currentCameraPosition.getEyePosition(), currentCameraPosition.getCenterPosition(), step);
         cameraPosition = CameraUtils.resolveCameraPositionIfUnderSurface(cameraPosition, surfaceIntersectionFinder, getState());
-        getState().setEyePosition(cameraPosition);
+        getState().setCameraPosition(ImmutableCameraPosition.builder()
+                .centerPosition(currentCameraPosition.getCenterPosition())
+                .eyePosition(cameraPosition)
+                .build());
         look();
     }
 
@@ -123,13 +128,15 @@ class PlayerEventHandler implements WindowEventListener {
                     break;
             }
         } else if (mouseButtonEvent.getButton() == MouseButton.WHEEL) {
-            defaultCameraPosition();
+            if (mouseButtonEvent.getAction() == MouseButtonAction.PRESSED) {
+                defaultCameraPosition();
+            }
         }
         LogUtil.logDebug(false, String.format("%s, X: %s, Y: %s", MouseButtonEvent.class.getSimpleName(), mouseButtonEvent.getX(), mouseButtonEvent.getY()));
     }
 
     private void defaultCameraPosition() {
-        var position = getState().center();
+        var position = new Vector3f(getState().getCameraPosition().getCenterPosition());
         var moveDirection = getState().moveDirection();
         float dx = moveDirection.x;
         float dz = moveDirection.z;
@@ -163,9 +170,10 @@ class PlayerEventHandler implements WindowEventListener {
                 rotationResult = Optional.of(rotateAroundCustomAxis((float) Math.toRadians(rotationAngle)))
                         /* prevent undesired behavior of camera when exceeding of 90 degrees */
                         .filter(p -> {
-                            var centerPosition = getState().center();
+                            var cameraPosition = getState().getCameraPosition();
+                            var centerPosition = cameraPosition.getCenterPosition();
                             var centerX = centerPosition.x;
-                            var eyePosition = getState().eye();
+                            var eyePosition = cameraPosition.getEyePosition();
                             var eyeX = eyePosition.x;
                             var resultX = centerX > eyeX ? centerX > p.x() : centerX < p.x();
                             if (resultX) {
@@ -187,7 +195,7 @@ class PlayerEventHandler implements WindowEventListener {
                 rotationResult = Optional.of(
                         rotateDeltaOy(
                                 (float) Math.toRadians(rotationAngle),
-                                rotationResult.orElse(getState().eye())
+                                rotationResult.orElse(getState().getCameraPosition().getEyePosition())
                         )
                 );
 
@@ -201,15 +209,18 @@ class PlayerEventHandler implements WindowEventListener {
         }
     }
 
-    private void setCameraPosition(Vector3f position) {
-        getState().setEyePosition(position);
-        LogUtil.logDebug(false, String.format("setCameraPosition x = %s y = %s z = %s", position.x(), position.y(), position.z()));
+    private void setCameraPosition(Vector3f eyePosition) {
+        getState().setCameraPosition(ImmutableCameraPosition.builder()
+                .eyePosition(eyePosition)
+                .centerPosition(getState().getCameraPosition().getCenterPosition())
+                .build());
+        LogUtil.logDebug(false, String.format("setCameraPosition x = %s y = %s z = %s", eyePosition.x(), eyePosition.y(), eyePosition.z()));
         look();
     }
 
     private Vector3f rotateAroundCustomAxis(float angleDeltaRadians) {
-        var center = state.center();
-        var cameraEye = getState().eye();
+        var center = getState().getCameraPosition().getCenterPosition();
+        var cameraEye = getState().getCameraPosition().getEyePosition();
 
         var axis = Rotation3D.calculatePerpendicularAxisZXPlane(center, cameraEye);
 
@@ -218,7 +229,13 @@ class PlayerEventHandler implements WindowEventListener {
     }
 
     private Vector3f rotateDeltaOy(float angleDeltaRadians, Vector3f cameraEye) {
-        return Rotation3D.rotateAroundPoint(cameraEye, getState().center(), 0, angleDeltaRadians, 0);
+        return Rotation3D.rotateAroundPoint(
+                cameraEye,
+                getState().getCameraPosition().getCenterPosition(),
+                0,
+                angleDeltaRadians,
+                0
+        );
     }
 
     private CameraState getState() {

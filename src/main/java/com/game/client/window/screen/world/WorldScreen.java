@@ -45,14 +45,12 @@ public class WorldScreen extends Screen {
         var gameWorld = gameEngine.getGameWorld();
         gameEngine.start();
         gameWorld.getGameUnitMap().forEach((key, gameUnit) -> {
-            gameUnit.getSharedUnitState().updateWorldMatrix();
             addScreenUnit(ScreenUnitFactory.createScreenUnit(gameUnit));
         });
         var player = gameWorld.getPlayer();
         Optional.ofNullable(camera.findIntersection(player.getSharedUnitState().getPosition()))
                 .ifPresent(intersection -> {
-                    player.getSharedUnitState().setPosition(intersection.getPoint());
-                    player.getSharedUnitState().updateWorldMatrix();
+                    player.getSharedUnitState().updateWorldMatrix(intersection.getPoint());
                 });
         updateMatrices();
         var playerEventHandler = PlayerEventHandler.create(getCamera(), gameEngine);
@@ -108,6 +106,13 @@ public class WorldScreen extends Screen {
                 .collect(Collectors.groupingBy(LwjglUnit::getVaoId));
         renderObjects.setShadowVaoIdLwjglUnitMap(shadowVaoIdLwjglUnitMap);
 
+        renderedLwjglUnits.values().forEach(LwjglUnit::prepareWorldMatrix);
+        var playerState = gameEngine.getGameWorld().getPlayer().getSharedUnitState();
+        var position = playerState.getLwjglWorldMatrix().getPosition();
+
+        getCamera().follow(position);
+        renderObjects.setCameraPosition(position);
+
         getCamera().getCameraViewMatrixCopyIfChanged().ifPresent(matrix4f -> {
             getCamera().setCameraViewMatrixChanged(false);
             renderObjects.setCameraViewMatrix(matrix4f);
@@ -117,7 +122,6 @@ public class WorldScreen extends Screen {
             renderObjects.setProjectionMatrix(projectionMatrix);
         }
 
-        renderObjects.setCameraPosition(camera.getCameraPosition());
         renderObjects.setDepthMapTexture(shadowProgram.getDepthMapTextureId());
 
         return renderObjects;

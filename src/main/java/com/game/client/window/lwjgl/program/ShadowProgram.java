@@ -249,7 +249,7 @@ public class ShadowProgram {
         int matrixSize = 16;
         var matrices16fBuffer = BufferUtils.createFloatBuffer(unitCount.get() * matrixSize);
 
-        int position = 0;
+        int bufferPosition = 0;
         int baseInstance = 0;
         var vaoIdBaseInstanceMap = new HashMap<Integer, Integer>();
 
@@ -260,8 +260,8 @@ public class ShadowProgram {
             baseInstance += lwjglUnits.size();
             for (LwjglUnit lwjglUnit : lwjglUnits) {
                 new Matrix4f(lwjglUnit.getWorldMatrix()).get(matrices16fBuffer);
-                position += matrixSize;
-                matrices16fBuffer.position(position);
+                bufferPosition += matrixSize;
+                matrices16fBuffer.position(bufferPosition);
             }
         }
 
