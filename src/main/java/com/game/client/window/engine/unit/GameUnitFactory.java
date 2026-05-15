@@ -1,7 +1,7 @@
 package com.game.client.window.engine.unit;
 
 import com.game.client.window.lwjgl.program.Light;
-import com.game.client.window.screen.unit.SharedUnitState;
+import com.game.client.window.model.obj.ObjectModels;
 import lombok.Getter;
 import org.joml.Vector3f;
 
@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Getter
 public class GameUnitFactory {
     public static final GameUnitFactory INSTANCE = new GameUnitFactory();
+    private static final ObjectModels objectModels = new ObjectModels();
     private static final AtomicLong idGenerator = new AtomicLong();
 
     private static SharedUnitState sharedUnitState() {
@@ -22,13 +23,17 @@ public class GameUnitFactory {
         sharedUnitState.updateWorldMatrix(sharedUnitState.getPosition());
     }
 
+    private static GameUnit.GameUnitBuilder createDefaultGameUnitBuilder(String modelKey) {
+        return GameUnit.builder()
+                .model(objectModels.getModel(modelKey));
+    }
+
     public GameUnit createPlayer() {
         var sharedUnitState = sharedUnitState();
-        sharedUnitState.updateWorldMatrix(new Vector3f(0f, .2f, 0f));
+        sharedUnitState.updateWorldMatrix(new Vector3f(100f, .2f, -100f));
         sharedUnitState.setDynamic(true);
-        return GameUnit.builder()
+        return createDefaultGameUnitBuilder(GameUnitType.PLAYER)
                 .sharedUnitState(sharedUnitState)
-                .modelKey(GameUnitType.PLAYER)
                 .build();
     }
 
@@ -40,9 +45,8 @@ public class GameUnitFactory {
                 .lightPosition(sharedUnitState.getPosition())
                 .build();
         sharedUnitState.setLight(light);
-        return GameUnit.builder()
+        return createDefaultGameUnitBuilder(GameUnitType.SUN)
                 .sharedUnitState(sharedUnitState)
-                .modelKey(GameUnitType.SUN)
                 .build();
     }
 
@@ -50,35 +54,24 @@ public class GameUnitFactory {
         var sharedUnitState = sharedUnitState();
         sharedUnitState.setScale(scale);
         updateWordMatrix(sharedUnitState);
-        return GameUnit.builder()
+        return createDefaultGameUnitBuilder(GameUnitType.SKYDOME)
                 .sharedUnitState(sharedUnitState)
-                .modelKey(GameUnitType.SKYDOME)
                 .isSurface(false)
                 .useShading(false)
                 .build();
     }
 
-    public GameUnit createGround() {
-        var sharedUnitState = sharedUnitState();
-        return GameUnit.builder()
-                .sharedUnitState(sharedUnitState)
-                .modelKey(GameUnitType.GEN_GROUND)
-                .build();
-    }
-
     public GameUnit createZone(String key) {
         var sharedUnitState = sharedUnitState();
-        return GameUnit.builder()
+        return createDefaultGameUnitBuilder(key)
                 .sharedUnitState(sharedUnitState)
-                .modelKey(key)
                 .build();
     }
 
     public GameUnit createGameUnit(String modelKey) {
         var sharedUnitState = sharedUnitState();
-        return GameUnit.builder()
+        return createDefaultGameUnitBuilder(modelKey)
                 .sharedUnitState(sharedUnitState)
-                .modelKey(modelKey)
                 .isSurface(false)
                 .useShading(true)
                 .build();

@@ -1,30 +1,32 @@
 package com.game.client.window.screen.world.surface;
 
-import com.game.client.window.screen.unit.ScreenUnit;
+import com.game.client.utils.log.LogUtil;
+import com.game.client.window.engine.unit.GameUnit;
 
 import java.util.Optional;
 
 public class StaticDynamicSurface {
+    public static final StaticDynamicSurface INSTANCE = create();
     private final Surface staticSurface;
     private final Surface dynamicSurface;
 
-    public StaticDynamicSurface(Surface staticSurface, Surface dynamicSurface) {
+    private StaticDynamicSurface(Surface staticSurface, Surface dynamicSurface) {
         this.staticSurface = staticSurface;
         this.dynamicSurface = dynamicSurface;
     }
 
-    public static StaticDynamicSurface create() {
+    private static StaticDynamicSurface create() {
         var staticSurface = new Surface();
         var dynamicSurface = new Surface();
         return new StaticDynamicSurface(staticSurface, dynamicSurface);
     }
 
-    public void addDynamicScreenUnit(ScreenUnit screenUnit) {
-        dynamicSurface.addScreenUnit(screenUnit);
+    public void addDynamicGameUnit(GameUnit gameUnit) {
+        dynamicSurface.addGameUnit(gameUnit);
     }
 
-    public void addStaticScreenUnit(ScreenUnit screenUnit) {
-        staticSurface.addScreenUnit(screenUnit);
+    public void addStaticGameUnit(GameUnit gameUnit) {
+        staticSurface.addGameUnit(gameUnit);
     }
 
     public Intersection findIntersection(Ray ray) {
@@ -35,12 +37,12 @@ public class StaticDynamicSurface {
     public void buildStaticSurface() {
         var start = System.currentTimeMillis();
         staticSurface.build();
-//        LogUtil.logDebug(false, "buildStaticSurface: " + (System.currentTimeMillis() - start) + "ms");
+        LogUtil.logDebug(false, "buildStaticSurface: " + (System.currentTimeMillis() - start) + "ms");
     }
 
     public void buildDynamicSurface() {
         var start = System.currentTimeMillis();
         dynamicSurface.build();
-//        LogUtil.logDebug(false, "buildDynamicSurface: " + (System.currentTimeMillis() - start) + "ms");
+        LogUtil.logDebug(false, "buildDynamicSurface: " + (System.currentTimeMillis() - start) + "ms");
     }
 }

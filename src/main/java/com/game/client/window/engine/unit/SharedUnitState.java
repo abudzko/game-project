@@ -1,4 +1,4 @@
-package com.game.client.window.screen.unit;
+package com.game.client.window.engine.unit;
 
 import com.game.client.window.engine.action.GameUnitAction;
 import com.game.client.window.lwjgl.program.Light;
@@ -9,7 +9,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * Shared between {@link com.game.client.window.engine.unit.GameUnit} and {@link ScreenUnit}
+ * Shared between {@link com.game.client.window.engine.unit.GameUnit} and {@link GameUnit}
  * <p>
  * Required to reflect and sync changes between these classes
  */

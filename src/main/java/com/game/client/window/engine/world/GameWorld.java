@@ -1,18 +1,18 @@
-package com.game.client.window.engine;
+package com.game.client.window.engine.world;
 
 import com.game.client.window.engine.action.SkydomeFollowAction;
 import com.game.client.window.engine.unit.GameUnit;
 import com.game.client.window.engine.unit.GameUnitFactory;
 import com.game.client.window.engine.unit.GameUnitType;
+import com.game.client.window.engine.world.layer.surface.TreeLayer;
 import com.game.client.window.model.obj.ObjectModels;
 import com.game.client.window.model.obj.zone.ZoneConfig;
+import com.game.client.window.screen.world.surface.StaticDynamicSurface;
 import lombok.Getter;
-import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -20,10 +20,11 @@ import java.util.stream.Stream;
 
 @Getter
 public class GameWorld {
-    private final Map<Long, GameUnit> gameUnitMap = new ConcurrentHashMap<>();
-    private final GameUnit player;
-    private final GameUnit skydome;
-    private final GameUnit sun;
+    private final StaticDynamicSurface surface = StaticDynamicSurface.INSTANCE;
+    private final ConcurrentHashMap<Long, GameUnit> gameUnitMap = new ConcurrentHashMap<>();
+    private final com.game.client.window.engine.unit.GameUnit player;
+    private final com.game.client.window.engine.unit.GameUnit skydome;
+    private final com.game.client.window.engine.unit.GameUnit sun;
     private ZoneConfig zoneConfig;
 
     public GameWorld() {
@@ -40,12 +41,12 @@ public class GameWorld {
                         gameUnit -> gameUnit.getSharedUnitState().getGameUnitId(),
                         Function.identity()
                 ));
-        gameUnitMap.putAll(zonesGameUnit);
-        gameUnitMap.putAll(gameUnits);
+        add(zonesGameUnit);
+        add(gameUnits);
         addTrees();
     }
 
-    private GameUnit createSkydome() {
+    private com.game.client.window.engine.unit.GameUnit createSkydome() {
         var scale = 3 * zoneConfig.zoneSize * getZoneConfig().xzScale;
         var sd = GameUnitFactory.INSTANCE.createSkydome(scale);
         sd.getSharedUnitState().setGameUnitAction(SkydomeFollowAction.builder()
@@ -55,8 +56,8 @@ public class GameWorld {
         return sd;
     }
 
-    private List<GameUnit> createZones() {
-        var zones = new ArrayList<GameUnit>();
+    private List<com.game.client.window.engine.unit.GameUnit> createZones() {
+        var zones = new ArrayList<com.game.client.window.engine.unit.GameUnit>();
         for (int z = 0; z < zoneConfig.mapRowCount; z++) {
             for (int x = 0; x < zoneConfig.mapColumnCount; x++) {
                 String key = GameUnitType.unit("zone." + z + "_" + x);
@@ -68,19 +69,25 @@ public class GameWorld {
     }
 
     private void addTrees() {
-        var random = new Random();
         float scale = zoneConfig.mapColumnCount * zoneConfig.zoneSize * getZoneConfig().xzScale;
-        for (int i = 0; i < 200; i++) {
-            String type = random.nextBoolean() ? GameUnitType.TREE_THIJA : GameUnitType.TREE_SPRUCE;
-            var gameUnit = GameUnitFactory.INSTANCE.createGameUnit(type);
-            var x = random.nextFloat() * scale;
-            var y = 0;
-            var z = -random.nextFloat() * scale;
-            var sharedUnitState = gameUnit.getSharedUnitState();
-            sharedUnitState.updateWorldMatrix(new Vector3f(x, y, z));
-            var treeScale = sharedUnitState.getScale() * (random.nextFloat() * .8f + .2f);
-            sharedUnitState.setScale(treeScale);
-            gameUnitMap.put(sharedUnitState.getGameUnitId(), gameUnit);
+        add(new TreeLayer(scale, surface).appendTrees());
+    }
+
+    private void add(Map<Long, GameUnit> gameUnitMap) {
+        this.gameUnitMap.putAll(gameUnitMap);
+        gameUnitMap.forEach((id, gameUnit) -> {
+            addGameUnitToSurfaces(gameUnit);
+        });
+    }
+
+    private void addGameUnitToSurfaces(GameUnit gameUnit) {
+        if (gameUnit.isSurface()) {
+            if (gameUnit.getSharedUnitState().isDynamic()) {
+                surface.addDynamicGameUnit(gameUnit);
+            } else {
+                surface.addStaticGameUnit(gameUnit);
+                surface.buildStaticSurface();
+            }
         }
     }
 }

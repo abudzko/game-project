@@ -1,6 +1,6 @@
 package com.game.client.window.lwjgl.program;
 
-import com.game.client.window.screen.unit.ScreenUnit;
+import com.game.client.window.engine.unit.GameUnit;
 import lombok.Getter;
 import org.joml.Matrix4f;
 
@@ -8,44 +8,44 @@ import org.joml.Matrix4f;
 public class LwjglUnitImpl implements LwjglUnit {
     private final int vaoId;
     private final int textureId;
-    private final ScreenUnit screenUnit;
+    private final GameUnit gameUnit;
 
     public LwjglUnitImpl(
             int vaoId,
             int textureId,
-            ScreenUnit screenUnit
+            GameUnit gameUnit
     ) {
         this.vaoId = vaoId;
         this.textureId = textureId;
-        this.screenUnit = screenUnit;
+        this.gameUnit = gameUnit;
     }
 
     @Override
     public int getIndexCount() {
-        return getScreenUnit().getModel().indexesCount();
+        return getGameUnit().getModel().indexesCount();
     }
 
     @Override
     public boolean useShading() {
-        return screenUnit.isUseShading() && !isLight();
+        return gameUnit.isUseShading() && !isLight();
     }
 
     @Override
     public Light getLight() {
-        return getScreenUnit().getSharedUnitState().getLight();
+        return getGameUnit().getSharedUnitState().getLight();
     }
 
-    private ScreenUnit getScreenUnit() {
-        return screenUnit;
+    private GameUnit getGameUnit() {
+        return gameUnit;
     }
 
     @Override
     public Matrix4f getWorldMatrix() {
-        return getScreenUnit().getSharedUnitState().getLwjglWorldMatrix().getWorldMatrix();
+        return getGameUnit().getSharedUnitState().getLwjglWorldMatrix().getWorldMatrix();
     }
 
     @Override
     public void prepareWorldMatrix() {
-        getScreenUnit().getSharedUnitState().prepareLwjglWorldMatrix();
+        getGameUnit().getSharedUnitState().prepareLwjglWorldMatrix();
     }
 }

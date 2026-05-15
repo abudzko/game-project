@@ -3,6 +3,7 @@ package com.game.client.window.engine;
 import com.game.client.utils.log.LogUtil;
 import com.game.client.window.engine.action.MoveAction;
 import com.game.client.window.engine.unit.GameUnit;
+import com.game.client.window.engine.world.GameWorld;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
@@ -39,7 +40,7 @@ public class GameEngine {
             });
             var end = System.currentTimeMillis();
             var diff = end - start;
-//            LogUtil.logDebug("engine loop " + diff + " ms");
+            LogUtil.logDebug(false, "engine loop " + diff + " ms");
             if (diff < stepMs) {
                 Thread.sleep(stepMs - diff);
             } else {

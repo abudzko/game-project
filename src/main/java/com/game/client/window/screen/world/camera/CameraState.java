@@ -13,7 +13,7 @@ public class CameraState {
     @Setter
     @Getter
     private volatile ImmutableCameraPosition cameraPosition = ImmutableCameraPosition.builder()
-            .eyePosition(new Vector3f(0, 5, 1))
+            .eyePosition(new Vector3f(5, 5, 1))
             .centerPosition(new Vector3f(0, 2, 0))
             .build();
     private volatile Vector3f upVector = new Vector3f(0, 1, 0);

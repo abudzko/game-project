@@ -2,10 +2,10 @@ package com.game.client.window.lwjgl.program;
 
 import com.game.client.utils.BufferUtils;
 import com.game.client.utils.log.LogUtil;
+import com.game.client.window.engine.unit.GameUnit;
 import com.game.client.window.lwjgl.program.shader.Shader;
 import com.game.client.window.model.obj.Model;
 import com.game.client.window.model.obj.texture.Texture;
-import com.game.client.window.screen.unit.ScreenUnit;
 import com.game.client.window.screen.world.WorldScreenConfig;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -235,10 +235,10 @@ public class BatchDrawProgram {
         disableProgram();
     }
 
-    public LwjglUnit createLwjglUnit(ScreenUnit screenUnit) {
-        var model = screenUnit.getModel();
+    public LwjglUnit createLwjglUnit(GameUnit gameUnit) {
+        var model = gameUnit.getModel();
         int vaoId = vaoIdCache.computeIfAbsent(model.modelKey(), key -> loadModel(model));
-        return new LwjglUnitImpl(vaoId, loadTexture(model), screenUnit);
+        return new LwjglUnitImpl(vaoId, loadTexture(model), gameUnit);
     }
 
     private int loadModel(Model model) {

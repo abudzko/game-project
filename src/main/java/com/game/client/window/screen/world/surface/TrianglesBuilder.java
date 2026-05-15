@@ -1,7 +1,7 @@
 package com.game.client.window.screen.world.surface;
 
 import com.game.client.utils.ParallelUtils;
-import com.game.client.window.screen.unit.ScreenUnit;
+import com.game.client.window.engine.unit.GameUnit;
 import com.game.client.window.screen.world.surface.TriangleTaskParameters.TriangleTaskParametersBuilder;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,9 +28,9 @@ public class TrianglesBuilder {
     }
 
     @SneakyThrows
-    public List<Triangle> toTriangles(ScreenUnit screenUnit) {
-        var model = screenUnit.getModel();
-        var worldMatrix = screenUnit.getSharedUnitState().getWorldMatrix();
+    public List<Triangle> toTriangles(GameUnit gameUnit) {
+        var model = gameUnit.getModel();
+        var worldMatrix = gameUnit.getSharedUnitState().getWorldMatrix();
         var start = System.currentTimeMillis();
         var vertices = model.getVertices();
         var indexes = model.getIndexes();
@@ -38,7 +38,7 @@ public class TrianglesBuilder {
         int pointPerVertex3d = model.getPointPerVertex3d();
         start = System.currentTimeMillis();
         var parameters = TriangleTaskParameters.builder()
-                .gameUnitId(screenUnit.getSharedUnitState().getGameUnitId())
+                .gameUnitId(gameUnit.getSharedUnitState().getGameUnitId())
                 .indexes(indexes)
                 .vertices(vertices)
                 .start(0)

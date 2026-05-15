@@ -1,6 +1,6 @@
 package com.game.client.window.engine.unit;
 
-import com.game.client.window.screen.unit.SharedUnitState;
+import com.game.client.window.model.obj.Model;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +23,7 @@ public class GameUnit {
      */
     @Builder.Default
     private boolean useShading = true;
-    private String modelKey;
+    private Model model;
 
     public void step() {
         var action = sharedUnitState.getGameUnitAction();

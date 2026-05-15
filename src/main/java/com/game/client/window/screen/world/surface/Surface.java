@@ -1,21 +1,21 @@
 package com.game.client.window.screen.world.surface;
 
 import com.game.client.utils.log.LogUtil;
-import com.game.client.window.screen.unit.ScreenUnit;
+import com.game.client.window.engine.unit.GameUnit;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Surface {
-    private final Map<Long, ScreenUnit> screenUnitMap = new ConcurrentHashMap<>();
+    private final Map<Long, GameUnit> gameUnitMap = new ConcurrentHashMap<>();
     private BVHNode bvhRoot;
 
     public void build() {
         var start = System.currentTimeMillis();
         var triangleBuilder = new TrianglesBuilder();
-        var triangles = screenUnitMap.values().stream()
-                .flatMap(screenUnit -> triangleBuilder.toTriangles(screenUnit).stream())
+        var triangles = gameUnitMap.values().stream()
+                .flatMap(gameUnit -> triangleBuilder.toTriangles(gameUnit).stream())
                 .collect(Collectors.toList());
 
         LogUtil.logDebug("toTriangles: count " + triangles.size() + " " + (System.currentTimeMillis() - start) + "ms");
@@ -24,10 +24,10 @@ public class Surface {
         LogUtil.logDebug("new BVHNode: " + (System.currentTimeMillis() - start) + "ms");
     }
 
-    public void addScreenUnit(ScreenUnit screenUnit) {
-        var unit = this.screenUnitMap.get(screenUnit.getSharedUnitState().getGameUnitId());
+    public void addGameUnit(GameUnit gameUnit) {
+        var unit = this.gameUnitMap.get(gameUnit.getSharedUnitState().getGameUnitId());
         if (unit == null) {
-            screenUnitMap.put(screenUnit.getSharedUnitState().getGameUnitId(), screenUnit);
+            gameUnitMap.put(gameUnit.getSharedUnitState().getGameUnitId(), gameUnit);
         }
     }
 
@@ -37,7 +37,7 @@ public class Surface {
             return null;
         }
         var intersection = bvhRoot.findIntersection(ray);
-//        LogUtil.logDebug("findIntersection: " + (System.currentTimeMillis() - start) + "ms");
+        LogUtil.logDebug(false, "findIntersection: " + (System.currentTimeMillis() - start) + "ms");
         return intersection;
     }
 }
